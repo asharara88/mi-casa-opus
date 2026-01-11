@@ -1,215 +1,132 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DollarSign, Package, FileCheck } from 'lucide-react';
+import { DollarSign, Package, Loader2 } from 'lucide-react';
 import { CommissionLedger } from './CommissionLedger';
 import { PayoutBatchBuilder } from './PayoutBatchBuilder';
+import { useCommissions, usePayoutBatches, useUpdatePayoutBatch, useCreatePayoutBatch } from '@/hooks/useCommissions';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
-// Demo data
-const demoCommissions = [
-  {
-    id: '1',
-    commission_id: 'COM-2024-001',
-    deal_id: 'deal-1',
-    broker_id: 'broker-1',
-    broker_name: 'Ahmed Hassan',
-    deal_reference: 'DEAL-2024-001',
-    status: 'Received' as const,
-    gross_amount: 150000,
-    net_amount: 112500,
-    split_percent: 75,
-    calculation_trace: { baseRate: 2, grossValue: 7500000 },
-    created_at: '2024-01-15T10:00:00Z',
-  },
-  {
-    id: '2',
-    commission_id: 'COM-2024-002',
-    deal_id: 'deal-2',
-    broker_id: 'broker-2',
-    broker_name: 'Sara Al Maktoum',
-    deal_reference: 'DEAL-2024-002',
-    status: 'Allocated' as const,
-    gross_amount: 200000,
-    net_amount: 160000,
-    split_percent: 80,
-    calculation_trace: { baseRate: 2.5, grossValue: 8000000 },
-    created_at: '2024-01-18T14:30:00Z',
-  },
-  {
-    id: '3',
-    commission_id: 'COM-2024-003',
-    deal_id: 'deal-3',
-    broker_id: 'broker-1',
-    broker_name: 'Ahmed Hassan',
-    deal_reference: 'DEAL-2024-003',
-    status: 'Expected' as const,
-    gross_amount: 100000,
-    net_amount: 75000,
-    split_percent: 75,
-    calculation_trace: { baseRate: 2, grossValue: 5000000 },
-    created_at: '2024-01-20T09:15:00Z',
-  },
-  {
-    id: '4',
-    commission_id: 'COM-2024-004',
-    deal_id: 'deal-4',
-    broker_id: 'broker-3',
-    broker_name: 'Mohammed Khan',
-    deal_reference: 'DEAL-2024-004',
-    status: 'PaidOut' as const,
-    gross_amount: 180000,
-    net_amount: 135000,
-    split_percent: 75,
-    calculation_trace: { baseRate: 2, grossValue: 9000000 },
-    created_at: '2024-01-10T11:00:00Z',
-  },
-  {
-    id: '5',
-    commission_id: 'COM-2024-005',
-    deal_id: 'deal-5',
-    broker_id: 'broker-2',
-    broker_name: 'Sara Al Maktoum',
-    deal_reference: 'DEAL-2024-005',
-    status: 'Received' as const,
-    gross_amount: 250000,
-    net_amount: 200000,
-    split_percent: 80,
-    calculation_trace: { baseRate: 2.5, grossValue: 10000000 },
-    created_at: '2024-01-22T16:45:00Z',
-  },
-];
-
-interface PayoutBatch {
-  id: string;
-  batch_id: string;
-  status: 'Draft' | 'PendingApproval' | 'Approved' | 'Executed' | 'Rejected';
-  total_amount: number;
-  line_count: number;
-  created_by: string;
-  created_by_name?: string;
-  approved_by?: string;
-  approved_by_name?: string;
-  created_at: string;
-  approved_at?: string;
-  executed_at?: string;
-}
-
-const demoBatches: PayoutBatch[] = [
-  {
-    id: 'batch-1',
-    batch_id: 'PAY-2024-001',
-    status: 'Executed',
-    total_amount: 135000,
-    line_count: 1,
-    created_by: 'user-1',
-    created_by_name: 'Admin User',
-    approved_by: 'user-2',
-    approved_by_name: 'Finance Manager',
-    created_at: '2024-01-11T10:00:00Z',
-    approved_at: '2024-01-11T14:00:00Z',
-    executed_at: '2024-01-12T09:00:00Z',
-  },
-  {
-    id: 'batch-2',
-    batch_id: 'PAY-2024-002',
-    status: 'PendingApproval',
-    total_amount: 272500,
-    line_count: 2,
-    created_by: 'user-1',
-    created_by_name: 'Admin User',
-    created_at: '2024-01-23T11:30:00Z',
-  },
-  {
-    id: 'batch-3',
-    batch_id: 'PAY-2024-003',
-    status: 'Draft',
-    total_amount: 200000,
-    line_count: 1,
-    created_by: 'user-1',
-    created_by_name: 'Admin User',
-    created_at: '2024-01-24T09:00:00Z',
-  },
-];
-
 export const CommissionsSection: React.FC = () => {
-  const [commissions, setCommissions] = useState(demoCommissions);
-  const [batches, setBatches] = useState(demoBatches);
+  const { profile } = useAuth();
+  const { data: rawCommissions, isLoading: commissionsLoading } = useCommissions();
+  const { data: rawBatches, isLoading: batchesLoading } = usePayoutBatches();
+  const createBatch = useCreatePayoutBatch();
+  const updateBatch = useUpdatePayoutBatch();
+  
   const [selectedCommissionIds, setSelectedCommissionIds] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState('ledger');
+
+  // Transform commissions to expected format
+  const commissions = (rawCommissions || []).map(c => ({
+    id: c.id,
+    commission_id: c.commission_id,
+    deal_id: c.deal_id,
+    broker_id: c.broker_id,
+    broker_name: (c as any).broker_profiles?.broker_id || 'Unknown Broker',
+    deal_reference: (c as any).deals?.deal_id || c.deal_id,
+    status: c.status === 'Expected' ? 'Expected' :
+            c.status === 'Earned' ? 'Allocated' :
+            c.status === 'Received' ? 'Received' :
+            c.status === 'Paid' ? 'PaidOut' : 'Expected',
+    gross_amount: Number(c.gross_amount) || 0,
+    net_amount: Number(c.net_amount) || 0,
+    split_percent: Number(c.split_percent) || 100,
+    calculation_trace: c.calculation_trace || {},
+    created_at: c.created_at,
+  }));
+
+  // Transform batches to expected format
+  const batches = (rawBatches || []).map(b => ({
+    id: b.id,
+    batch_id: b.batch_id,
+    status: b.status,
+    total_amount: Number(b.total_amount) || 0,
+    line_count: 0, // Would need to query payout_lines to get this
+    created_by: b.created_by,
+    created_by_name: 'User',
+    approved_by: b.approved_by || undefined,
+    approved_by_name: b.approved_by ? 'Approver' : undefined,
+    created_at: b.created_at,
+    approved_at: b.approved_at || undefined,
+    executed_at: b.executed_at || undefined,
+  }));
 
   const selectedTotal = commissions
     .filter(c => selectedCommissionIds.includes(c.id))
     .reduce((sum, c) => sum + c.net_amount, 0);
 
-  const handleCreateBatch = (commissionIds: string[]) => {
+  const handleCreateBatch = async (commissionIds: string[]) => {
     const selectedCommissions = commissions.filter(c => commissionIds.includes(c.id));
     const totalAmount = selectedCommissions.reduce((sum, c) => sum + c.net_amount, 0);
     
-    const newBatch = {
-      id: `batch-${Date.now()}`,
-      batch_id: `PAY-2024-${String(batches.length + 1).padStart(3, '0')}`,
-      status: 'Draft' as const,
-      total_amount: totalAmount,
-      line_count: commissionIds.length,
-      created_by: 'current-user',
-      created_by_name: 'Current User',
-      created_at: new Date().toISOString(),
-    };
-
-    setBatches([newBatch, ...batches]);
-    setSelectedCommissionIds([]);
-    toast.success(`Payout batch ${newBatch.batch_id} created with ${commissionIds.length} commission(s)`);
-    setActiveTab('payouts');
+    try {
+      await createBatch.mutateAsync({
+        batch_id: `PAY-${Date.now()}`,
+        total_amount: totalAmount,
+        created_by: profile?.user_id || '',
+        status: 'Draft',
+      });
+      setSelectedCommissionIds([]);
+      setActiveTab('payouts');
+    } catch (error) {
+      console.error('Failed to create batch', error);
+    }
   };
 
-  const handleViewBatch = (batch: typeof demoBatches[0]) => {
+  const handleViewBatch = (batch: typeof batches[0]) => {
     toast.info(`Viewing batch ${batch.batch_id}`);
   };
 
-  const handleSubmitForApproval = (batch: typeof demoBatches[0]) => {
-    setBatches(batches.map(b => 
-      b.id === batch.id ? { ...b, status: 'PendingApproval' as const } : b
-    ));
-    toast.success(`Batch ${batch.batch_id} submitted for approval`);
+  const handleSubmitForApproval = async (batch: typeof batches[0]) => {
+    await updateBatch.mutateAsync({
+      id: batch.id,
+      updates: { status: 'PendingApproval' },
+    });
   };
 
-  const handleApprove = (batch: typeof demoBatches[0]) => {
-    setBatches(batches.map(b => 
-      b.id === batch.id ? { 
-        ...b, 
-        status: 'Approved' as const,
-        approved_by: 'current-user',
-        approved_by_name: 'Current User',
+  const handleApprove = async (batch: typeof batches[0]) => {
+    await updateBatch.mutateAsync({
+      id: batch.id,
+      updates: { 
+        status: 'Approved',
+        approved_by: profile?.user_id,
         approved_at: new Date().toISOString(),
-      } : b
-    ));
-    toast.success(`Batch ${batch.batch_id} approved`);
+      },
+    });
   };
 
-  const handleReject = (batch: typeof demoBatches[0]) => {
-    setBatches(batches.map(b => 
-      b.id === batch.id ? { ...b, status: 'Rejected' as const } : b
-    ));
-    toast.error(`Batch ${batch.batch_id} rejected`);
+  const handleReject = async (batch: typeof batches[0]) => {
+    await updateBatch.mutateAsync({
+      id: batch.id,
+      updates: { status: 'Voided' },
+    });
   };
 
-  const handleExecute = (batch: typeof demoBatches[0]) => {
-    setBatches(batches.map(b => 
-      b.id === batch.id ? { 
-        ...b, 
-        status: 'Executed' as const,
+  const handleExecute = async (batch: typeof batches[0]) => {
+    await updateBatch.mutateAsync({
+      id: batch.id,
+      updates: { 
+        status: 'Executed',
         executed_at: new Date().toISOString(),
-      } : b
-    ));
-    toast.success(`Batch ${batch.batch_id} executed successfully`);
+      },
+    });
   };
+
+  if (commissionsLoading || batchesLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Commissions & Payouts</h1>
         <p className="text-muted-foreground mt-1">
-          Manage commission records and process broker payouts
+          {commissions.length} commission records • {batches.length} payout batches
         </p>
       </div>
 
@@ -227,7 +144,7 @@ export const CommissionsSection: React.FC = () => {
 
         <TabsContent value="ledger" className="mt-6">
           <CommissionLedger
-            commissions={commissions}
+            commissions={commissions as any}
             selectedIds={selectedCommissionIds}
             onSelectionChange={setSelectedCommissionIds}
             selectable={true}
@@ -257,15 +174,15 @@ export const CommissionsSection: React.FC = () => {
 
         <TabsContent value="payouts" className="mt-6">
           <PayoutBatchBuilder
-            batches={batches}
+            batches={batches as any}
             selectedCommissionIds={selectedCommissionIds}
             selectedTotal={selectedTotal}
             onCreateBatch={handleCreateBatch}
-            onViewBatch={handleViewBatch}
-            onSubmitForApproval={handleSubmitForApproval}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            onExecute={handleExecute}
+            onViewBatch={handleViewBatch as any}
+            onSubmitForApproval={handleSubmitForApproval as any}
+            onApprove={handleApprove as any}
+            onReject={handleReject as any}
+            onExecute={handleExecute as any}
             canApprove={true}
           />
         </TabsContent>
