@@ -1,8 +1,15 @@
-import { UserRole, Lead, Deal, CommissionRecord } from '@/types/bos';
+import { UserRole } from '@/types/bos';
 import { MetricCard } from './MetricCard';
 import { StateBadge } from './StateBadge';
 import { EventLog } from '@/components/events/EventLog';
-import { getEventLog } from '@/lib/event-log';
+import { useLeads } from '@/hooks/useLeads';
+import { useDeals } from '@/hooks/useDeals';
+import { useCommissions } from '@/hooks/useCommissions';
+import { useEventLog } from '@/hooks/useEventLog';
+import { DealState } from '@/types/bos';
+import { transformDbLeadToFrontend, transformEventLogsToFrontend } from '@/lib/transforms';
+import { Skeleton } from '@/components/ui/skeleton';
+import CountUp from 'react-countup';
 import {
   Users,
   Handshake,
@@ -15,31 +22,61 @@ import {
 
 interface DashboardViewProps {
   role: UserRole;
-  leads: Lead[];
-  deals: Deal[];
-  commissions: CommissionRecord[];
 }
 
-export function DashboardView({ role, leads, deals, commissions }: DashboardViewProps) {
-  const events = getEventLog();
+export function DashboardView({ role }: DashboardViewProps) {
+  const { data: dbLeads, isLoading: isLoadingLeads } = useLeads();
+  const { data: dbDeals, isLoading: isLoadingDeals } = useDeals();
+  const { data: dbCommissions, isLoading: isLoadingCommissions } = useCommissions();
+  const { data: dbEvents, isLoading: isLoadingEvents } = useEventLog();
+
+  const isLoading = isLoadingLeads || isLoadingDeals || isLoadingCommissions;
+
+  // Transform leads to frontend format for display
+  const leads = (dbLeads || []).map(transformDbLeadToFrontend);
+  
+  // Transform events for display
+  const events = transformEventLogsToFrontend(dbEvents || []);
 
   // Calculate metrics
   const activeLeads = leads.filter(l => !['Disqualified', 'Converted'].includes(l.lead_state)).length;
-  const activeDeals = deals.filter(d => !['Closed_Won', 'Closed_Lost'].includes(d.deal_state)).length;
-  const wonDeals = deals.filter(d => d.deal_state === 'Closed_Won').length;
-  const totalPipeline = deals
-    .filter(d => !['Closed_Won', 'Closed_Lost'].includes(d.deal_state))
-    .reduce((sum, d) => sum + (d.agreed_price || 0), 0);
+  const activeDeals = (dbDeals || []).filter(d => !['ClosedWon', 'ClosedLost'].includes(d.deal_state)).length;
+  const wonDeals = (dbDeals || []).filter(d => d.deal_state === 'ClosedWon').length;
+  
+  // Calculate pipeline value from deal economics
+  const totalPipeline = (dbDeals || [])
+    .filter(d => !['ClosedWon', 'ClosedLost'].includes(d.deal_state))
+    .reduce((sum, d) => {
+      const economics = d.deal_economics as Record<string, unknown> | null;
+      return sum + ((economics?.agreed_price as number) || 0);
+    }, 0);
 
-  const expectedCommissions = commissions
+  // Calculate expected commissions
+  const expectedCommissions = (dbCommissions || [])
     .filter(c => c.status === 'Expected')
-    .reduce((sum, c) => sum + c.calculation_trace.net_payable, 0);
+    .reduce((sum, c) => sum + (c.net_amount || 0), 0);
 
   const formatCurrency = (value: number) => {
     if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
     if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
     return value.toString();
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div>
+          <Skeleton className="h-8 w-64 mb-2" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -60,29 +97,29 @@ export function DashboardView({ role, leads, deals, commissions }: DashboardView
         </p>
       </div>
 
-      {/* Metrics Grid */}
+      {/* Metrics Grid with Animated Counters */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Active Leads"
           value={activeLeads}
           icon={Users}
-          change={{ value: 12, type: 'increase' }}
+          change={activeLeads > 0 ? { value: 12, type: 'increase' } : undefined}
         />
         <MetricCard
           label="Active Deals"
           value={activeDeals}
           icon={Handshake}
-          change={{ value: 8, type: 'increase' }}
+          change={activeDeals > 0 ? { value: 8, type: 'increase' } : undefined}
         />
         <MetricCard
           label="Pipeline Value"
-          value={`${formatCurrency(totalPipeline)} AED`}
+          value={totalPipeline > 0 ? `${formatCurrency(totalPipeline)} AED` : '0 AED'}
           icon={TrendingUp}
           variant="gold"
         />
         <MetricCard
           label="Expected Commission"
-          value={`${formatCurrency(expectedCommissions)} AED`}
+          value={expectedCommissions > 0 ? `${formatCurrency(expectedCommissions)} AED` : '0 AED'}
           icon={DollarSign}
           variant="success"
         />
@@ -99,22 +136,28 @@ export function DashboardView({ role, leads, deals, commissions }: DashboardView
               Recent Leads
             </h3>
             <div className="space-y-3">
-              {leads.slice(0, 5).map(lead => (
-                <div key={lead.lead_id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-medium">
-                      {lead.contact_identity.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+              {leads.length > 0 ? (
+                leads.slice(0, 5).map(lead => (
+                  <div key={lead.lead_id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-medium">
+                        {lead.contact_identity.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {lead.contact_identity.full_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{lead.source}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {lead.contact_identity.full_name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{lead.source}</p>
-                    </div>
+                    <StateBadge state={lead.lead_state} type="lead" size="sm" />
                   </div>
-                  <StateBadge state={lead.lead_state} type="lead" size="sm" />
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No leads yet. Start adding leads to see them here.
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -125,26 +168,39 @@ export function DashboardView({ role, leads, deals, commissions }: DashboardView
               Active Deals
             </h3>
             <div className="space-y-3">
-              {deals.filter(d => !['Closed_Won', 'Closed_Lost'].includes(d.deal_state)).slice(0, 5).map(deal => (
-                <div key={deal.deal_id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-foreground font-mono">
-                      {deal.deal_id}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {deal.deal_type} • {deal.side}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <StateBadge state={deal.deal_state} type="deal" size="sm" />
-                    {deal.agreed_price && (
-                      <p className="text-xs text-primary mt-1 font-medium">
-                        {formatCurrency(deal.agreed_price)} AED
-                      </p>
-                    )}
-                  </div>
+              {(dbDeals || []).filter(d => !['ClosedWon', 'ClosedLost'].includes(d.deal_state)).length > 0 ? (
+                (dbDeals || [])
+                  .filter(d => !['ClosedWon', 'ClosedLost'].includes(d.deal_state))
+                  .slice(0, 5)
+                  .map(deal => {
+                    const economics = deal.deal_economics as Record<string, unknown> | null;
+                    const agreedPrice = economics?.agreed_price as number | undefined;
+                    return (
+                      <div key={deal.deal_id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium text-foreground font-mono">
+                            {deal.deal_id}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {deal.deal_type} • {deal.side}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <StateBadge state={deal.deal_state === 'ClosedWon' ? 'Closed_Won' : deal.deal_state === 'ClosedLost' ? 'Closed_Lost' : deal.deal_state as DealState} type="deal" size="sm" />
+                          {agreedPrice && (
+                            <p className="text-xs text-primary mt-1 font-medium">
+                              {formatCurrency(agreedPrice)} AED
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+              ) : (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No active deals. Create a deal from a qualified lead.
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -156,7 +212,15 @@ export function DashboardView({ role, leads, deals, commissions }: DashboardView
               <Clock className="w-4 h-4 text-primary" />
               Audit Trail
             </h3>
-            <EventLog events={events} maxItems={10} />
+            {isLoadingEvents ? (
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full" />
+                ))}
+              </div>
+            ) : (
+              <EventLog events={events} maxItems={10} />
+            )}
           </div>
 
           {/* Quick Stats */}

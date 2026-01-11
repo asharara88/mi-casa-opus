@@ -12,8 +12,59 @@ import {
   StateTransitionResult,
   ValidationContext,
   UserRole,
+  EventLogEntry,
 } from '@/types/bos';
-import { createEventLogEntry } from './event-log';
+
+// Simple hash function for event logs
+function generateHash(data: string): string {
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    const char = data.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(16).padStart(16, '0');
+}
+
+const RULE_SET_VERSION = '1.0.0';
+
+// Create an event log entry (for local use, actual persistence happens via hooks)
+function createLocalEventLogEntry(
+  actorUserId: string,
+  actorRole: UserRole,
+  entityType: string,
+  entityId: string,
+  action: string,
+  before: Record<string, unknown> | null,
+  after: Record<string, unknown> | null,
+  decision: 'ALLOWED' | 'BLOCKED',
+  blockReasons: string[] = []
+): EventLogEntry {
+  const timestamp = new Date().toISOString();
+  const eventId = `EVT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  
+  const eventData = {
+    timestamp,
+    actor_user_id: actorUserId,
+    actor_role: actorRole,
+    entity_ref: { entity_type: entityType, entity_id: entityId },
+    action,
+    before,
+    after,
+    rule_set_version: RULE_SET_VERSION,
+    decision,
+    block_reasons: blockReasons,
+    prev_event_hash: null,
+  };
+  
+  const eventHash = generateHash(JSON.stringify(eventData));
+  
+  return {
+    event_id: eventId,
+    ...eventData,
+    event_hash: eventHash,
+  };
+}
 
 // ============================================
 // LEAD STATE MACHINE
@@ -35,10 +86,9 @@ export function validateLeadTransition(
   const currentRequirements = LEAD_STATE_REQUIREMENTS[lead.lead_state];
   const blockReasons: string[] = [];
   
-  // Check if transition is allowed
   if (!currentRequirements.next_states.includes(targetState)) {
     blockReasons.push(
-      `Transition from "${lead.lead_state}" to "${targetState}" is not allowed. Valid transitions: ${currentRequirements.next_states.join(', ') || 'None'}`
+      `Transition from "${lead.lead_state}" to "${targetState}" is not allowed.`
     );
     return {
       allowed: false,
@@ -49,7 +99,6 @@ export function validateLeadTransition(
     };
   }
   
-  // Check required fields for current state
   const leadAsRecord = lead as unknown as Record<string, unknown>;
   for (const field of currentRequirements.required_fields) {
     const value = getNestedValue(leadAsRecord, field);
@@ -58,7 +107,6 @@ export function validateLeadTransition(
     }
   }
   
-  // Additional validations based on target state
   if (targetState === 'Qualified') {
     if (!lead.consents || lead.consents.length === 0) {
       blockReasons.push('At least one consent record is required for qualification');
@@ -89,13 +137,13 @@ export function transitionLeadState(
   targetState: LeadState,
   actorUserId: string,
   actorRole: UserRole
-): { success: boolean; lead?: Lead; eventLog: ReturnType<typeof createEventLogEntry> } {
+): { success: boolean; lead?: Lead; eventLog: EventLogEntry } {
   const validation = validateLeadTransition(lead, targetState);
   
   const before = { lead_state: lead.lead_state };
   const after = validation.allowed ? { lead_state: targetState } : null;
   
-  const eventLog = createEventLogEntry(
+  const eventLog = createLocalEventLogEntry(
     actorUserId,
     actorRole,
     'Lead',
@@ -130,16 +178,14 @@ export function validateDealTransition(
   context: ValidationContext
 ): StateTransitionResult {
   const currentRequirements = DEAL_STATE_REQUIREMENTS[deal.deal_state];
-  const targetRequirements = DEAL_STATE_REQUIREMENTS[targetState];
   const blockReasons: string[] = [];
   const missingDocuments: string[] = [];
   const missingSignatures: string[] = [];
   const missingEvidence: string[] = [];
   
-  // Check if transition is allowed
   if (!currentRequirements.next_states.includes(targetState)) {
     blockReasons.push(
-      `Transition from "${deal.deal_state}" to "${targetState}" is not allowed. Valid transitions: ${currentRequirements.next_states.join(', ') || 'None'}`
+      `Transition from "${deal.deal_state}" to "${targetState}" is not allowed.`
     );
     return {
       allowed: false,
@@ -150,7 +196,6 @@ export function validateDealTransition(
     };
   }
   
-  // Check required documents for CURRENT state (must be satisfied before leaving)
   for (const docType of currentRequirements.required_documents) {
     const hasDoc = context.documents.some(
       d => d.entity_ref.entity_id === deal.deal_id && 
@@ -163,7 +208,6 @@ export function validateDealTransition(
     }
   }
   
-  // Check required signatures
   for (const sigType of currentRequirements.required_signatures) {
     const hasSig = context.signatures.some(
       s => s.signers.some(signer => 
@@ -176,7 +220,6 @@ export function validateDealTransition(
     }
   }
   
-  // Check required evidence
   for (const evidenceType of currentRequirements.required_evidence) {
     const hasEvidence = context.evidence.some(
       e => e.source === deal.deal_id && e.type.toLowerCase().includes(evidenceType.toLowerCase())
@@ -187,7 +230,6 @@ export function validateDealTransition(
     }
   }
   
-  // Additional business validations
   if (targetState === 'Offer' && !deal.agreed_price) {
     blockReasons.push('Agreed price must be set before making an offer');
   }
@@ -217,13 +259,13 @@ export function transitionDealState(
   context: ValidationContext,
   actorUserId: string,
   actorRole: UserRole
-): { success: boolean; deal?: Deal; eventLog: ReturnType<typeof createEventLogEntry> } {
+): { success: boolean; deal?: Deal; eventLog: EventLogEntry } {
   const validation = validateDealTransition(deal, targetState, context);
   
   const before = { deal_state: deal.deal_state };
   const after = validation.allowed ? { deal_state: targetState } : null;
   
-  const eventLog = createEventLogEntry(
+  const eventLog = createLocalEventLogEntry(
     actorUserId,
     actorRole,
     'Deal',
