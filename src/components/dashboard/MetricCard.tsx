@@ -3,7 +3,7 @@ import { LucideIcon } from 'lucide-react';
 
 interface MetricCardProps {
   label: string;
-  value: string | number;
+  value: string | number | React.ReactNode;
   change?: {
     value: number;
     type: 'increase' | 'decrease' | 'neutral';
