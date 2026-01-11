@@ -9,6 +9,7 @@ import { DealPipeline } from '@/components/deals/DealPipeline';
 import { EventLog } from '@/components/events/EventLog';
 import { DocumentsSection } from '@/components/documents/DocumentsSection';
 import { SignaturesSection } from '@/components/documents/SignaturesSection';
+import { CommissionsSection } from '@/components/commissions/CommissionsSection';
 import { 
   DEMO_LEADS, 
   DEMO_DEALS, 
@@ -167,7 +168,8 @@ export function BOSApp() {
       
       case 'commissions':
       case 'my-earnings':
-        return <CommissionsSection commissions={DEMO_COMMISSIONS} isPersonal={role === 'Broker'} />;
+      case 'payouts':
+        return <CommissionsSection />;
       
       case 'documents':
       case 'investor-docs':
@@ -188,8 +190,7 @@ export function BOSApp() {
       case 'users':
         return <UsersSection />;
       
-      case 'payouts':
-        return <PayoutsSection />;
+      // payouts handled in commissions case above
       
       case 'ai-insights':
         return <AIInsightsSection />;
@@ -275,54 +276,7 @@ function ApprovalsSection() {
   );
 }
 
-function CommissionsSection({ commissions, isPersonal }: { commissions: any[]; isPersonal: boolean }) {
-  return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h2 className="text-xl font-bold text-foreground">
-          {isPersonal ? 'My Earnings' : 'Commission Ledger'}
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          {isPersonal ? 'Your commission history' : 'View-only commission calculations and status'}
-        </p>
-      </div>
-      <div className="card-surface overflow-hidden">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Commission ID</th>
-              <th>Deal</th>
-              {!isPersonal && <th>Broker</th>}
-              <th>Status</th>
-              <th>Net Payable</th>
-            </tr>
-          </thead>
-          <tbody>
-            {commissions.map(comm => (
-              <tr key={comm.commission_id}>
-                <td className="font-mono text-xs">{comm.commission_id}</td>
-                <td className="font-mono text-xs">{comm.deal_id}</td>
-                {!isPersonal && <td className="font-mono text-xs">{comm.broker_id}</td>}
-                <td>
-                  <span className={`state-badge ${
-                    comm.status === 'Expected' ? 'state-pending' :
-                    comm.status === 'Earned' ? 'state-active' :
-                    comm.status === 'Paid' ? 'state-won' : 'state-new'
-                  }`}>
-                    {comm.status}
-                  </span>
-                </td>
-                <td className="font-bold text-primary">
-                  {comm.calculation_trace.net_payable.toLocaleString()} AED
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+// CommissionsSection is now imported from @/components/commissions/CommissionsSection
 
 // DocumentsSection and SignaturesSection are now imported from @/components/documents/
 
@@ -417,24 +371,7 @@ function UsersSection() {
   );
 }
 
-function PayoutsSection() {
-  return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center gap-3">
-        <Wallet className="w-6 h-6 text-primary" />
-        <div>
-          <h2 className="text-xl font-bold text-foreground">Payout Management</h2>
-          <p className="text-sm text-muted-foreground">Build and execute payout batches</p>
-        </div>
-      </div>
-      <div className="card-surface p-8 text-center">
-        <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground">No payout batches</p>
-        <p className="text-sm text-muted-foreground mt-1">Select payable commissions to create a batch</p>
-      </div>
-    </div>
-  );
-}
+// PayoutsSection is now integrated into CommissionsSection
 
 function AIInsightsSection() {
   return (
@@ -455,13 +392,11 @@ function AIInsightsSection() {
               AI insights in BOS are strictly read-only. AI cannot make decisions about 
               compliance, calculate commissions, or modify deal states.
             </p>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>✓ Deal risk scoring (informational only)</li>
-              <li>✓ Probability estimates (not binding)</li>
-              <li>✓ Aging alerts and reminders</li>
-              <li>✗ ROI/yield calculations (blocked)</li>
-              <li>✗ Legal advice (blocked)</li>
-              <li>✗ Property comparisons (blocked)</li>
+            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+              <li>Lead scoring and prioritization suggestions</li>
+              <li>Deal health predictions</li>
+              <li>Next-best-action recommendations</li>
+              <li>Document completeness analysis</li>
             </ul>
           </div>
         </div>
