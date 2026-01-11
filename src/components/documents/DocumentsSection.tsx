@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DocumentTemplate, DocumentInstance, DocType } from '@/types/bos';
+import { useDocumentTemplates, useDocumentInstances } from '@/hooks/useDocuments';
 import { DocumentTemplateCard } from './DocumentTemplateCard';
 import { DocumentInstanceRow } from './DocumentInstanceRow';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,182 +13,84 @@ import {
   FileText, 
   FileCheck, 
   Filter,
-  FolderOpen
+  FolderOpen,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Demo data
-const DEMO_TEMPLATES: DocumentTemplate[] = [
-  {
-    template_id: 'TPL-OL-001',
-    doc_type: 'OfferLetter',
-    template_version: 1,
-    effective_from: '2024-01-01',
-    required_signers_schema: {
-      roles: ['Buyer', 'Seller'],
-      min_signers: 2,
-    },
-    data_binding_schema: {
-      buyer_name: 'string',
-      seller_name: 'string',
-      property_address: 'string',
-      offer_amount: 'number',
-    },
-    template_content: '# Offer Letter\n\nThis offer...',
-    is_published: true,
-    created_at: new Date().toISOString(),
-  },
-  {
-    template_id: 'TPL-RF-001',
-    doc_type: 'ReservationForm',
-    template_version: 1,
-    effective_from: '2024-01-01',
-    required_signers_schema: {
-      roles: ['Buyer', 'Developer'],
-      min_signers: 2,
-    },
-    data_binding_schema: {
-      buyer_name: 'string',
-      unit_number: 'string',
-      deposit_amount: 'number',
-    },
-    template_content: '# Reservation Form\n\nThis reservation...',
-    is_published: true,
-    created_at: new Date().toISOString(),
-  },
-  {
-    template_id: 'TPL-SPA-001',
-    doc_type: 'SPA',
-    template_version: 2,
-    effective_from: '2024-01-15',
-    required_signers_schema: {
-      roles: ['Buyer', 'Seller', 'Witness'],
-      min_signers: 3,
-    },
-    data_binding_schema: {
-      buyer_name: 'string',
-      seller_name: 'string',
-      property_address: 'string',
-      sale_price: 'number',
-      completion_date: 'date',
-    },
-    template_content: '# Sales Purchase Agreement\n\nThis agreement...',
-    is_published: true,
-    created_at: new Date().toISOString(),
-  },
-  {
-    template_id: 'TPL-ICA-001',
-    doc_type: 'ICA',
-    template_version: 1,
-    effective_from: '2024-01-01',
-    required_signers_schema: {
-      roles: ['Broker', 'Brokerage'],
-      min_signers: 2,
-    },
-    data_binding_schema: {
-      broker_name: 'string',
-      license_no: 'string',
-      commission_split: 'number',
-    },
-    template_content: '# Independent Contractor Agreement\n\nThis agreement...',
-    is_published: true,
-    created_at: new Date().toISOString(),
-  },
-  {
-    template_id: 'TPL-MA-001',
-    doc_type: 'MandateAgreement',
-    template_version: 1,
-    effective_from: '2024-01-01',
-    required_signers_schema: {
-      roles: ['Owner', 'Brokerage'],
-      min_signers: 2,
-    },
-    data_binding_schema: {
-      owner_name: 'string',
-      property_address: 'string',
-      listing_price: 'number',
-      mandate_type: 'string',
-    },
-    template_content: '# Mandate Agreement\n\nThis mandate...',
-    is_published: false,
-    created_at: new Date().toISOString(),
-  },
-];
-
-const DEMO_DOCUMENTS: DocumentInstance[] = [
-  {
-    document_id: 'DOC-001',
-    template_ref: 'OfferLetter_v1',
-    entity_ref: { entity_type: 'Deal', entity_id: 'DEAL-001' },
-    data_snapshot_hash: 'abc123def456',
-    rendered_artifact_hash: 'xyz789ghi012',
-    status: 'Executed',
-    generated_at: new Date(Date.now() - 86400000 * 5).toISOString(),
-    executed_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-  },
-  {
-    document_id: 'DOC-002',
-    template_ref: 'ReservationForm_v1',
-    entity_ref: { entity_type: 'Deal', entity_id: 'DEAL-001' },
-    data_snapshot_hash: 'def456abc789',
-    rendered_artifact_hash: 'ghi012xyz345',
-    status: 'PendingSignature',
-    generated_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-  },
-  {
-    document_id: 'DOC-003',
-    template_ref: 'SPA_v2',
-    entity_ref: { entity_type: 'Deal', entity_id: 'DEAL-002' },
-    data_snapshot_hash: 'jkl345mno678',
-    rendered_artifact_hash: 'pqr901stu234',
-    status: 'Generated',
-    generated_at: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    document_id: 'DOC-004',
-    template_ref: 'ICA_v1',
-    entity_ref: { entity_type: 'Broker', entity_id: 'BRK-001' },
-    data_snapshot_hash: 'vwx567yza890',
-    rendered_artifact_hash: 'bcd123efg456',
-    status: 'Executed',
-    generated_at: new Date(Date.now() - 86400000 * 30).toISOString(),
-    executed_at: new Date(Date.now() - 86400000 * 28).toISOString(),
-  },
-];
-
 export function DocumentsSection() {
+  const { data: rawTemplates, isLoading: templatesLoading } = useDocumentTemplates();
+  const { data: rawDocuments, isLoading: documentsLoading } = useDocumentInstances();
+  
   const [activeTab, setActiveTab] = useState('instances');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [docTypeFilter, setDocTypeFilter] = useState<string>('all');
 
-  const filteredTemplates = DEMO_TEMPLATES.filter(template => {
+  // Transform templates to expected format
+  const templates = (rawTemplates || []).map(t => ({
+    template_id: t.template_id,
+    doc_type: t.doc_type,
+    template_version: parseInt(t.template_version) || 1,
+    effective_from: t.effective_from,
+    required_signers_schema: t.required_signers_schema || {},
+    data_binding_schema: t.data_binding_schema || {},
+    template_content: t.template_content || '',
+    is_published: t.status === 'Published',
+    created_at: t.created_at,
+  }));
+
+  // Transform documents to expected format
+  const documents = (rawDocuments || []).map(d => ({
+    document_id: d.document_id,
+    template_ref: `${(d as any).document_templates?.doc_type || 'Unknown'}_v${(d as any).document_templates?.template_version || '1'}`,
+    entity_ref: { entity_type: d.entity_type, entity_id: d.entity_id },
+    data_snapshot_hash: d.data_snapshot_hash || '',
+    rendered_artifact_hash: d.rendered_artifact_hash || '',
+    status: d.status === 'Draft' ? 'Draft' :
+            d.status === 'Pending' ? 'PendingSignature' :
+            d.status === 'Executed' ? 'Executed' : 'Generated',
+    generated_at: d.created_at,
+    executed_at: d.executed_at || undefined,
+  }));
+
+  const filteredTemplates = templates.filter(template => {
     const matchesSearch = template.doc_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           template.template_id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = docTypeFilter === 'all' || template.doc_type === docTypeFilter;
     return matchesSearch && matchesType;
   });
 
-  const filteredDocuments = DEMO_DOCUMENTS.filter(doc => {
+  const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.document_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           doc.template_ref.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || doc.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const handleViewTemplate = (template: DocumentTemplate) => {
+  const handleViewTemplate = (template: typeof templates[0]) => {
     toast.info(`Viewing template: ${template.doc_type}`);
   };
 
-  const handleViewDocument = (doc: DocumentInstance) => {
+  const handleViewDocument = (doc: typeof documents[0]) => {
     toast.info(`Viewing document: ${doc.document_id}`);
   };
 
-  const handleRequestSignature = (doc: DocumentInstance) => {
+  const handleRequestSignature = (doc: typeof documents[0]) => {
     toast.success('Signature request sent', {
       description: `Envelope created for ${doc.document_id}`,
     });
   };
+
+  const isLoading = templatesLoading || documentsLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -215,7 +117,7 @@ export function DocumentsSection() {
                 <FileText className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{DEMO_TEMPLATES.length}</p>
+                <p className="text-2xl font-bold">{templates.length}</p>
                 <p className="text-xs text-muted-foreground">Templates</p>
               </div>
             </div>
@@ -228,7 +130,7 @@ export function DocumentsSection() {
                 <FolderOpen className="w-5 h-5 text-blue-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{DEMO_DOCUMENTS.length}</p>
+                <p className="text-2xl font-bold">{documents.length}</p>
                 <p className="text-xs text-muted-foreground">Documents</p>
               </div>
             </div>
@@ -242,7 +144,7 @@ export function DocumentsSection() {
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {DEMO_DOCUMENTS.filter(d => d.status === 'PendingSignature').length}
+                  {documents.filter(d => d.status === 'PendingSignature').length}
                 </p>
                 <p className="text-xs text-muted-foreground">Pending Signature</p>
               </div>
@@ -257,7 +159,7 @@ export function DocumentsSection() {
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {DEMO_DOCUMENTS.filter(d => d.status === 'Executed').length}
+                  {documents.filter(d => d.status === 'Executed').length}
                 </p>
                 <p className="text-xs text-muted-foreground">Executed</p>
               </div>
@@ -310,11 +212,12 @@ export function DocumentsSection() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="OfferLetter">Offer Letter</SelectItem>
-                  <SelectItem value="ReservationForm">Reservation Form</SelectItem>
+                  <SelectItem value="MOU">MOU</SelectItem>
                   <SelectItem value="SPA">SPA</SelectItem>
+                  <SelectItem value="Reservation">Reservation</SelectItem>
+                  <SelectItem value="Mandate">Mandate</SelectItem>
                   <SelectItem value="ICA">ICA</SelectItem>
-                  <SelectItem value="MandateAgreement">Mandate Agreement</SelectItem>
+                  <SelectItem value="NDA">NDA</SelectItem>
                 </SelectContent>
               </Select>
             )}
@@ -336,10 +239,10 @@ export function DocumentsSection() {
                   {filteredDocuments.map((doc) => (
                     <DocumentInstanceRow
                       key={doc.document_id}
-                      document={doc}
-                      onView={handleViewDocument}
+                      document={doc as any}
+                      onView={handleViewDocument as any}
                       onDownload={(d) => toast.info(`Downloading ${d.document_id}`)}
-                      onRequestSignature={handleRequestSignature}
+                      onRequestSignature={handleRequestSignature as any}
                     />
                   ))}
                 </div>
@@ -359,8 +262,8 @@ export function DocumentsSection() {
             {filteredTemplates.map((template) => (
               <DocumentTemplateCard
                 key={template.template_id}
-                template={template}
-                onView={handleViewTemplate}
+                template={template as any}
+                onView={handleViewTemplate as any}
                 onEdit={(t) => toast.info(`Editing ${t.template_id}`)}
                 onDuplicate={(t) => toast.success(`Template duplicated: ${t.doc_type}`)}
               />
