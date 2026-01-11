@@ -7,7 +7,7 @@
 export type ImmutabilityClass = 'HASH_LOCKED' | 'BLOCKCHAIN_ANCHORED' | 'NOTARIZED';
 
 // Role definitions
-export type UserRole = 'Operator' | 'LegalOwner' | 'Broker';
+export type UserRole = 'Operator' | 'LegalOwner' | 'Broker' | 'Investor';
 export type BrokerStatus = 'Active' | 'Suspended' | 'Terminated';
 export type UserStatus = 'Active' | 'Pending' | 'Suspended' | 'Deactivated';
 
