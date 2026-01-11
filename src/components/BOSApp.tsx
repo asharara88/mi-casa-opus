@@ -4,7 +4,7 @@ import { Lead, Deal, DealState, ValidationContext } from '@/types/bos';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { DashboardView } from '@/components/dashboard/DashboardView';
-import { LeadPipeline } from '@/components/leads/LeadPipeline';
+import { LeadsSection } from '@/components/leads/LeadsSection';
 import { DealPipeline } from '@/components/deals/DealPipeline';
 import { EventLog } from '@/components/events/EventLog';
 import { 
@@ -135,26 +135,7 @@ export function BOSApp() {
 
       case 'leads':
       case 'my-leads':
-        return (
-          <div className="space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-foreground">
-                  {role === 'Broker' ? 'My Leads' : 'Lead Pipeline'}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {leads.length} total leads • {leads.filter(l => l.lead_state === 'New').length} unassigned
-                </p>
-              </div>
-              {role === 'Operator' && <Button className="btn-gold">+ Add Lead</Button>}
-            </div>
-            <LeadPipeline
-              leads={leads}
-              onLeadClick={(lead) => toast({ title: 'Lead Selected', description: lead.contact_identity.full_name })}
-              onTransition={handleLeadTransition}
-            />
-          </div>
-        );
+        return <LeadsSection />;
 
       case 'deals':
       case 'my-deals':
