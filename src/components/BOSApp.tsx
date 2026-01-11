@@ -6,10 +6,17 @@ import { Header } from '@/components/layout/Header';
 import { DashboardView } from '@/components/dashboard/DashboardView';
 import { LeadsSection } from '@/components/leads/LeadsSection';
 import { DealPipeline } from '@/components/deals/DealPipeline';
+import { DealDetail } from '@/components/deals/DealDetail';
 import { EventLog } from '@/components/events/EventLog';
 import { DocumentsSection } from '@/components/documents/DocumentsSection';
 import { SignaturesSection } from '@/components/documents/SignaturesSection';
 import { CommissionsSection } from '@/components/commissions/CommissionsSection';
+import { EvidenceSection } from '@/components/evidence/EvidenceSection';
+import { ApprovalsSection } from '@/components/approvals/ApprovalsSection';
+import { ExportsSection } from '@/components/exports/ExportsSection';
+import { UsersSection } from '@/components/users/UsersSection';
+import { ListingsSection } from '@/components/listings/ListingsSection';
+import { TemplatesSection } from '@/components/templates/TemplatesSection';
 import { 
   DEMO_LEADS, 
   DEMO_DEALS, 
@@ -70,6 +77,7 @@ export function BOSApp() {
   const [leads, setLeads] = useState<Lead[]>(DEMO_LEADS);
   const [deals, setDeals] = useState<Deal[]>(DEMO_DEALS);
   const [events, setEvents] = useState(getEventLog());
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
 
   // Empty validation context for demo
   const validationContext: ValidationContext = {
@@ -142,6 +150,19 @@ export function BOSApp() {
 
       case 'deals':
       case 'my-deals':
+        if (selectedDeal) {
+          return (
+            <DealDetail
+              deal={selectedDeal}
+              context={validationContext}
+              onBack={() => setSelectedDeal(null)}
+              onTransition={(deal, state) => {
+                handleDealTransition(deal, state);
+                setSelectedDeal(null);
+              }}
+            />
+          );
+        }
         return (
           <div className="space-y-4 animate-fade-in">
             <div className="flex items-center justify-between">
@@ -157,7 +178,7 @@ export function BOSApp() {
             <DealPipeline
               deals={deals}
               context={validationContext}
-              onDealClick={(deal) => toast({ title: 'Deal Selected', description: deal.deal_id })}
+              onDealClick={(deal) => setSelectedDeal(deal)}
               onTransition={handleDealTransition}
             />
           </div>
