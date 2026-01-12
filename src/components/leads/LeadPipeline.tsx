@@ -1,9 +1,11 @@
 import { Lead, LeadState, LEAD_STATE_REQUIREMENTS } from '@/types/bos';
 import { StateBadge } from '@/components/dashboard/StateBadge';
 import { cn } from '@/lib/utils';
-import { Phone, Mail, Calendar, User, ChevronRight, AlertCircle } from 'lucide-react';
+import { Phone, Mail, User, ChevronRight, AlertCircle } from 'lucide-react';
 import { validateLeadTransition } from '@/lib/state-machine';
 import { Button } from '@/components/ui/button';
+import { AgingBadge } from '@/components/pipeline/AgingBadge';
+import { LEAD_AGING_THRESHOLDS } from '@/hooks/useAgingAlerts';
 
 interface LeadPipelineProps {
   leads: Lead[];
@@ -86,17 +88,23 @@ function LeadCard({ lead, onClick, onTransition }: LeadCardProps) {
 
   return (
     <div className="pipeline-card group" onClick={onClick}>
-      {/* Lead Name & Source */}
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <p className="font-medium text-foreground text-sm">
-            {lead.contact_identity.full_name}
-          </p>
-          <p className="text-xs text-muted-foreground">{lead.source}</p>
-        </div>
+      {/* Aging Badge */}
+      <div className="flex items-center justify-between mb-2">
+        <AgingBadge 
+          updatedAt={lead.updated_at} 
+          thresholds={LEAD_AGING_THRESHOLDS[lead.lead_state] || LEAD_AGING_THRESHOLDS.New} 
+        />
         <span className="text-xs font-mono text-muted-foreground">
           {lead.lead_id.slice(-6)}
         </span>
+      </div>
+
+      {/* Lead Name & Source */}
+      <div className="mb-2">
+        <p className="font-medium text-foreground text-sm">
+          {lead.contact_identity.full_name}
+        </p>
+        <p className="text-xs text-muted-foreground">{lead.source}</p>
       </div>
 
       {/* Contact Info */}

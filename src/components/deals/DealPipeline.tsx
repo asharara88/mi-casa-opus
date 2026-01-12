@@ -1,9 +1,11 @@
 import { Deal, DealState, DEAL_STATE_REQUIREMENTS, ValidationContext } from '@/types/bos';
 import { StateBadge } from '@/components/dashboard/StateBadge';
 import { cn } from '@/lib/utils';
-import { FileText, PenTool, Camera, AlertCircle, ChevronRight, DollarSign } from 'lucide-react';
+import { FileText, PenTool, AlertCircle, ChevronRight, DollarSign, Camera } from 'lucide-react';
 import { validateDealTransition } from '@/lib/state-machine';
 import { Button } from '@/components/ui/button';
+import { AgingBadge } from '@/components/pipeline/AgingBadge';
+import { DEAL_AGING_THRESHOLDS } from '@/hooks/useAgingAlerts';
 
 interface DealPipelineProps {
   deals: Deal[];
@@ -157,16 +159,22 @@ function DealCard({ deal, context, onClick, onTransition }: DealCardProps) {
 
   return (
     <div className="pipeline-card group" onClick={onClick}>
-      {/* Deal ID & Type */}
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <p className="font-mono text-xs text-muted-foreground">
-            {deal.deal_id}
-          </p>
-          <p className="font-medium text-foreground text-sm mt-0.5">
-            {deal.deal_type} • {deal.side}
-          </p>
-        </div>
+      {/* Aging Badge & Deal ID */}
+      <div className="flex items-center justify-between mb-2">
+        <AgingBadge 
+          updatedAt={deal.updated_at} 
+          thresholds={DEAL_AGING_THRESHOLDS[deal.deal_state] || DEAL_AGING_THRESHOLDS.Created} 
+        />
+        <span className="font-mono text-xs text-muted-foreground">
+          {deal.deal_id.slice(-6)}
+        </span>
+      </div>
+
+      {/* Deal Type */}
+      <div className="mb-2">
+        <p className="font-medium text-foreground text-sm">
+          {deal.deal_type} • {deal.side}
+        </p>
       </div>
 
       {/* Price */}
