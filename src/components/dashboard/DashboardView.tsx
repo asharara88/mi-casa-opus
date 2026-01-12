@@ -1,6 +1,7 @@
 import { UserRole } from '@/types/bos';
 import { MetricCard } from './MetricCard';
 import { StateBadge } from './StateBadge';
+import { ForecastWidget } from './ForecastWidget';
 import { EventLog } from '@/components/events/EventLog';
 import { useLeads } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
@@ -205,8 +206,16 @@ export function DashboardView({ role }: DashboardViewProps) {
           </div>
         </div>
 
-        {/* Right Column - Event Log */}
+        {/* Right Column - Forecast & Event Log */}
         <div className="space-y-6">
+          {/* Forecast Widget */}
+          <ForecastWidget 
+            deals={(dbDeals || []).map(d => ({
+              deal_id: d.deal_id,
+              deal_state: d.deal_state,
+              deal_economics: d.deal_economics as Record<string, unknown> | null,
+            }))}
+          />
           <div className="card-surface p-4">
             <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <Clock className="w-4 h-4 text-primary" />
