@@ -314,6 +314,9 @@ export type Database = {
           lost_at: string | null
           lost_reason: Database["public"]["Enums"]["lost_reason"] | null
           lost_reason_notes: string | null
+          next_action: Database["public"]["Enums"]["next_action_type"] | null
+          next_action_due: string | null
+          next_action_owner: string | null
           notes: string | null
           property_id: string | null
           registry_actions: Json | null
@@ -332,6 +335,9 @@ export type Database = {
           lost_at?: string | null
           lost_reason?: Database["public"]["Enums"]["lost_reason"] | null
           lost_reason_notes?: string | null
+          next_action?: Database["public"]["Enums"]["next_action_type"] | null
+          next_action_due?: string | null
+          next_action_owner?: string | null
           notes?: string | null
           property_id?: string | null
           registry_actions?: Json | null
@@ -350,6 +356,9 @@ export type Database = {
           lost_at?: string | null
           lost_reason?: Database["public"]["Enums"]["lost_reason"] | null
           lost_reason_notes?: string | null
+          next_action?: Database["public"]["Enums"]["next_action_type"] | null
+          next_action_due?: string | null
+          next_action_owner?: string | null
           notes?: string | null
           property_id?: string | null
           registry_actions?: Json | null
@@ -584,6 +593,9 @@ export type Database = {
           lost_at: string | null
           lost_reason: Database["public"]["Enums"]["lost_reason"] | null
           lost_reason_notes: string | null
+          next_action: Database["public"]["Enums"]["next_action_type"] | null
+          next_action_due: string | null
+          next_action_owner: string | null
           notes: string | null
           qualification_data: Json | null
           source: Database["public"]["Enums"]["lead_source"]
@@ -602,6 +614,9 @@ export type Database = {
           lost_at?: string | null
           lost_reason?: Database["public"]["Enums"]["lost_reason"] | null
           lost_reason_notes?: string | null
+          next_action?: Database["public"]["Enums"]["next_action_type"] | null
+          next_action_due?: string | null
+          next_action_owner?: string | null
           notes?: string | null
           qualification_data?: Json | null
           source?: Database["public"]["Enums"]["lead_source"]
@@ -620,6 +635,9 @@ export type Database = {
           lost_at?: string | null
           lost_reason?: Database["public"]["Enums"]["lost_reason"] | null
           lost_reason_notes?: string | null
+          next_action?: Database["public"]["Enums"]["next_action_type"] | null
+          next_action_due?: string | null
+          next_action_owner?: string | null
           notes?: string | null
           qualification_data?: Json | null
           source?: Database["public"]["Enums"]["lead_source"]
@@ -955,6 +973,16 @@ export type Database = {
         | "ClientWithdrew"
         | "DuplicateLead"
         | "Other"
+      next_action_type:
+        | "Call"
+        | "WhatsApp"
+        | "Email"
+        | "Meeting"
+        | "Viewing"
+        | "FollowUp"
+        | "SendOffer"
+        | "CollectDocs"
+        | "Other"
       party_role:
         | "Buyer"
         | "Seller"
@@ -1172,6 +1200,17 @@ export const Constants = {
         "FinancingFailed",
         "ClientWithdrew",
         "DuplicateLead",
+        "Other",
+      ],
+      next_action_type: [
+        "Call",
+        "WhatsApp",
+        "Email",
+        "Meeting",
+        "Viewing",
+        "FollowUp",
+        "SendOffer",
+        "CollectDocs",
         "Other",
       ],
       party_role: [
