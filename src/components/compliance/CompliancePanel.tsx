@@ -98,9 +98,9 @@ export function CompliancePanel({
         {result && (
           <>
             <ComplianceStatusBanner
-              status={result.status}
+              status={result.complianceStatus}
               escalationReason={result.escalationReason}
-              failedCount={result.failedRules.length}
+              failedCount={result.blockingReasons.length}
             />
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -124,7 +124,7 @@ export function CompliancePanel({
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
                     <p className="text-2xl font-bold text-destructive">
-                      {result.failedModules.length}
+                      {result.modules.filter(m => !m.passed).length}
                     </p>
                     <p className="text-xs text-muted-foreground">Modules Failed</p>
                   </div>
@@ -154,7 +154,7 @@ export function CompliancePanel({
               </TabsContent>
             </Tabs>
 
-            {result.status !== "APPROVED" && canOverride && onOverride && (
+            {result.complianceStatus !== "APPROVED" && canOverride && onOverride && (
               <OverridePanel
                 canOverride={canOverride}
                 onSubmit={onOverride}
@@ -164,7 +164,7 @@ export function CompliancePanel({
 
             {onProceed && (
               <ComplianceGateButton
-                status={result.status}
+                status={result.complianceStatus}
                 labelApproved={proceedLabel}
                 onClick={onProceed}
                 isLoading={isLoading}
