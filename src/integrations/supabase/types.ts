@@ -218,6 +218,187 @@ export type Database = {
           },
         ]
       }
+      compliance_modules: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          jurisdiction: string
+          module_id: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          jurisdiction?: string
+          module_id: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          jurisdiction?: string
+          module_id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      compliance_overrides: {
+        Row: {
+          approved_at: string
+          approved_by: string | null
+          authorization_document_url: string | null
+          compliance_result_id: string
+          created_at: string
+          id: string
+          overrider_name: string
+          reason: string
+        }
+        Insert: {
+          approved_at?: string
+          approved_by?: string | null
+          authorization_document_url?: string | null
+          compliance_result_id: string
+          created_at?: string
+          id?: string
+          overrider_name: string
+          reason: string
+        }
+        Update: {
+          approved_at?: string
+          approved_by?: string | null
+          authorization_document_url?: string | null
+          compliance_result_id?: string
+          created_at?: string
+          id?: string
+          overrider_name?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_overrides_compliance_result_id_fkey"
+            columns: ["compliance_result_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_results: {
+        Row: {
+          context_type: Database["public"]["Enums"]["compliance_context_type"]
+          created_at: string
+          entity_id: string
+          entity_type: string
+          escalation_reason: string | null
+          evaluated_at: string
+          evaluated_by: string | null
+          failed_modules: string[]
+          failed_rules: string[]
+          id: string
+          modules_detail: Json
+          payload_snapshot: Json
+          required_actions: string[]
+          status: Database["public"]["Enums"]["compliance_status"]
+        }
+        Insert: {
+          context_type: Database["public"]["Enums"]["compliance_context_type"]
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          escalation_reason?: string | null
+          evaluated_at?: string
+          evaluated_by?: string | null
+          failed_modules?: string[]
+          failed_rules?: string[]
+          id?: string
+          modules_detail?: Json
+          payload_snapshot?: Json
+          required_actions?: string[]
+          status?: Database["public"]["Enums"]["compliance_status"]
+        }
+        Update: {
+          context_type?: Database["public"]["Enums"]["compliance_context_type"]
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          escalation_reason?: string | null
+          evaluated_at?: string
+          evaluated_by?: string | null
+          failed_modules?: string[]
+          failed_rules?: string[]
+          id?: string
+          modules_detail?: Json
+          payload_snapshot?: Json
+          required_actions?: string[]
+          status?: Database["public"]["Enums"]["compliance_status"]
+        }
+        Relationships: []
+      }
+      compliance_rules: {
+        Row: {
+          action_on_fail: Json
+          applies_to: Database["public"]["Enums"]["compliance_context_type"][]
+          created_at: string
+          id: string
+          is_active: boolean
+          module_id: string
+          name: string
+          requirements: Json
+          rule_id: string
+          severity: Database["public"]["Enums"]["compliance_rule_severity"]
+          sort_order: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          action_on_fail?: Json
+          applies_to?: Database["public"]["Enums"]["compliance_context_type"][]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          module_id: string
+          name: string
+          requirements?: Json
+          rule_id: string
+          severity?: Database["public"]["Enums"]["compliance_rule_severity"]
+          sort_order?: number
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          action_on_fail?: Json
+          applies_to?: Database["public"]["Enums"]["compliance_context_type"][]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          module_id?: string
+          name?: string
+          requirements?: Json
+          rule_id?: string
+          severity?: Database["public"]["Enums"]["compliance_rule_severity"]
+          sort_order?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_rules_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_brokers: {
         Row: {
           assigned_at: string
@@ -303,6 +484,11 @@ export type Database = {
       }
       deals: {
         Row: {
+          aml_flags: Json | null
+          aml_risk_level: Database["public"]["Enums"]["aml_risk_level"] | null
+          compliance_status:
+            | Database["public"]["Enums"]["compliance_status"]
+            | null
           created_at: string
           deal_economics: Json | null
           deal_id: string
@@ -324,6 +510,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          aml_flags?: Json | null
+          aml_risk_level?: Database["public"]["Enums"]["aml_risk_level"] | null
+          compliance_status?:
+            | Database["public"]["Enums"]["compliance_status"]
+            | null
           created_at?: string
           deal_economics?: Json | null
           deal_id: string
@@ -345,6 +536,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          aml_flags?: Json | null
+          aml_risk_level?: Database["public"]["Enums"]["aml_risk_level"] | null
+          compliance_status?:
+            | Database["public"]["Enums"]["compliance_status"]
+            | null
           created_at?: string
           deal_economics?: Json | null
           deal_id?: string
@@ -657,11 +853,16 @@ export type Database = {
         Row: {
           approved_faqs: Json | null
           asking_terms: Json | null
+          compliance_status:
+            | Database["public"]["Enums"]["compliance_status"]
+            | null
           created_at: string
           id: string
           listing_attributes: Json | null
           listing_id: string
           listing_type: Database["public"]["Enums"]["listing_type"]
+          madhmoun_listing_id: string | null
+          madhmoun_status: Database["public"]["Enums"]["madhmoun_status"] | null
           mandate_agreement_id: string | null
           owner_party_id: string | null
           property_id: string | null
@@ -671,11 +872,18 @@ export type Database = {
         Insert: {
           approved_faqs?: Json | null
           asking_terms?: Json | null
+          compliance_status?:
+            | Database["public"]["Enums"]["compliance_status"]
+            | null
           created_at?: string
           id?: string
           listing_attributes?: Json | null
           listing_id: string
           listing_type: Database["public"]["Enums"]["listing_type"]
+          madhmoun_listing_id?: string | null
+          madhmoun_status?:
+            | Database["public"]["Enums"]["madhmoun_status"]
+            | null
           mandate_agreement_id?: string | null
           owner_party_id?: string | null
           property_id?: string | null
@@ -685,11 +893,18 @@ export type Database = {
         Update: {
           approved_faqs?: Json | null
           asking_terms?: Json | null
+          compliance_status?:
+            | Database["public"]["Enums"]["compliance_status"]
+            | null
           created_at?: string
           id?: string
           listing_attributes?: Json | null
           listing_id?: string
           listing_type?: Database["public"]["Enums"]["listing_type"]
+          madhmoun_listing_id?: string | null
+          madhmoun_status?:
+            | Database["public"]["Enums"]["madhmoun_status"]
+            | null
           mandate_agreement_id?: string | null
           owner_party_id?: string | null
           property_id?: string | null
@@ -903,6 +1118,7 @@ export type Database = {
       }
     }
     Enums: {
+      aml_risk_level: "LOW" | "MEDIUM" | "HIGH"
       app_role: "Operator" | "LegalOwner" | "Broker" | "Investor"
       approval_status: "Pending" | "Approved" | "Rejected"
       approval_type:
@@ -912,6 +1128,9 @@ export type Database = {
         | "TemplatePublish"
       broker_status: "Pending" | "Active" | "Suspended" | "Terminated"
       commission_status: "Expected" | "Earned" | "Received" | "Paid" | "Voided"
+      compliance_context_type: "listing" | "transaction" | "marketing"
+      compliance_rule_severity: "BLOCK" | "ESCALATE"
+      compliance_status: "APPROVED" | "BLOCKED" | "ESCALATED"
       deal_side: "Buy" | "Sell" | "Lease" | "Let"
       deal_state:
         | "Created"
@@ -973,6 +1192,7 @@ export type Database = {
         | "ClientWithdrew"
         | "DuplicateLead"
         | "Other"
+      madhmoun_status: "DRAFT" | "PENDING" | "VERIFIED" | "REJECTED"
       next_action_type:
         | "Call"
         | "WhatsApp"
@@ -1125,6 +1345,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      aml_risk_level: ["LOW", "MEDIUM", "HIGH"],
       app_role: ["Operator", "LegalOwner", "Broker", "Investor"],
       approval_status: ["Pending", "Approved", "Rejected"],
       approval_type: [
@@ -1135,6 +1356,9 @@ export const Constants = {
       ],
       broker_status: ["Pending", "Active", "Suspended", "Terminated"],
       commission_status: ["Expected", "Earned", "Received", "Paid", "Voided"],
+      compliance_context_type: ["listing", "transaction", "marketing"],
+      compliance_rule_severity: ["BLOCK", "ESCALATE"],
+      compliance_status: ["APPROVED", "BLOCKED", "ESCALATED"],
       deal_side: ["Buy", "Sell", "Lease", "Let"],
       deal_state: [
         "Created",
@@ -1202,6 +1426,7 @@ export const Constants = {
         "DuplicateLead",
         "Other",
       ],
+      madhmoun_status: ["DRAFT", "PENDING", "VERIFIED", "REJECTED"],
       next_action_type: [
         "Call",
         "WhatsApp",
