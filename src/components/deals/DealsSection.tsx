@@ -10,6 +10,10 @@ import { toast } from 'sonner';
 import { useUpdateDeal } from '@/hooks/useDeals';
 import { useCreateEventLog } from '@/hooks/useEventLog';
 import { LostReasonModal, LostReason } from '@/components/modals/LostReasonModal';
+import { NextActionModal } from '@/components/modals/NextActionModal';
+import { Database } from '@/integrations/supabase/types';
+
+type NextActionType = Database['public']['Enums']['next_action_type'];
 
 export function DealsSection() {
   const { profile, role } = useAuth();
@@ -23,14 +27,22 @@ export function DealsSection() {
   const [lostModalOpen, setLostModalOpen] = useState(false);
   const [pendingLostDeal, setPendingLostDeal] = useState<{ deal: Deal; dbDealId: string } | null>(null);
   
+  // Next action modal state
+  const [nextActionModalOpen, setNextActionModalOpen] = useState(false);
+  const [pendingNextActionDeal, setPendingNextActionDeal] = useState<{ deal: Deal; dbDealId: string } | null>(null);
+  
   // Get parties and brokers for the selected deal
   const { data: selectedDealParties } = useDealParties(selectedDealId);
   const { data: selectedDealBrokers } = useDealBrokers(selectedDealId);
 
-  // Transform deals to frontend format
-  const deals: Deal[] = (dbDeals || []).map(dbDeal => 
-    transformDbDealToFrontend(dbDeal, [], [])
-  );
+  // Transform deals to frontend format with extended properties
+  const deals = (dbDeals || []).map(dbDeal => ({
+    ...transformDbDealToFrontend(dbDeal, [], []),
+    dbId: dbDeal.id,
+    next_action: dbDeal.next_action,
+    next_action_due: dbDeal.next_action_due,
+    next_action_owner: dbDeal.next_action_owner,
+  }));
 
   // Find the selected deal with full party/broker data
   const selectedDbDeal = dbDeals?.find(d => d.id === selectedDealId);
@@ -100,6 +112,37 @@ export function DealsSection() {
     }
   };
 
+  const handleDragTransition = async (dealDbId: string, targetState: DealState) => {
+    const dbDeal = dbDeals?.find(d => d.id === dealDbId);
+    if (!dbDeal) return;
+
+    const dbState = mapFrontendStateToDb(targetState);
+
+    try {
+      await updateDeal.mutateAsync({
+        id: dealDbId,
+        updates: { deal_state: dbState as any },
+      });
+
+      // Log the event
+      await createEventLog.mutateAsync({
+        event_id: `EVT-${Date.now()}`,
+        entity_type: 'Deal',
+        entity_id: dealDbId,
+        action: 'STATE_TRANSITION',
+        before_state: { deal_state: dbDeal.deal_state },
+        after_state: { deal_state: targetState },
+        decision: 'ALLOWED',
+        actor_user_id: profile?.user_id || null,
+        actor_role: role || null,
+      });
+
+      toast.success(`Deal moved to ${targetState}`);
+    } catch (error) {
+      toast.error('Failed to move deal');
+    }
+  };
+
   const handleLostConfirm = async (reason: LostReason, notes: string) => {
     if (!pendingLostDeal) return;
 
@@ -135,6 +178,29 @@ export function DealsSection() {
       }
     } catch (error) {
       toast.error('Failed to update deal');
+    }
+  };
+
+  const handleSetNextAction = (deal: Deal & { dbId: string }) => {
+    setPendingNextActionDeal({ deal, dbDealId: deal.dbId });
+    setNextActionModalOpen(true);
+  };
+
+  const handleNextActionConfirm = async (action: NextActionType, dueDate: Date) => {
+    if (!pendingNextActionDeal) return;
+
+    try {
+      await updateDeal.mutateAsync({
+        id: pendingNextActionDeal.dbDealId,
+        updates: {
+          next_action: action,
+          next_action_due: dueDate.toISOString(),
+        },
+      });
+      toast.success('Next action set');
+      setPendingNextActionDeal(null);
+    } catch (error) {
+      toast.error('Failed to set next action');
     }
   };
 
@@ -189,6 +255,8 @@ export function DealsSection() {
         context={validationContext}
         onDealClick={handleDealClick}
         onTransition={handleDealTransition}
+        onDragTransition={handleDragTransition}
+        onSetNextAction={handleSetNextAction}
       />
 
       {/* Lost Reason Modal */}
@@ -198,6 +266,17 @@ export function DealsSection() {
         entityType="Deal"
         entityName={pendingLostDeal?.deal.deal_id || ''}
         onConfirm={handleLostConfirm}
+      />
+
+      {/* Next Action Modal */}
+      <NextActionModal
+        open={nextActionModalOpen}
+        onOpenChange={setNextActionModalOpen}
+        entityType="Deal"
+        entityName={pendingNextActionDeal?.deal.deal_id || ''}
+        currentAction={pendingNextActionDeal ? (dbDeals?.find(d => d.id === pendingNextActionDeal.dbDealId)?.next_action) : undefined}
+        currentDueDate={pendingNextActionDeal ? (dbDeals?.find(d => d.id === pendingNextActionDeal.dbDealId)?.next_action_due) : undefined}
+        onConfirm={handleNextActionConfirm}
       />
     </div>
   );

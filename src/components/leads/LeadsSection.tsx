@@ -9,8 +9,10 @@ import { Plus, Search, Filter, LayoutGrid, List, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 import { LostReasonModal, LostReason } from '@/components/modals/LostReasonModal';
+import { NextActionModal } from '@/components/modals/NextActionModal';
 
 type LeadState = Database['public']['Enums']['lead_state'];
+type NextActionType = Database['public']['Enums']['next_action_type'];
 
 // Transform DB lead to component Lead format
 function transformLead(dbLead: Lead) {
@@ -30,6 +32,9 @@ function transformLead(dbLead: Lead) {
     updated_at: dbLead.updated_at,
     requirements: (dbLead.qualification_data as any) || undefined,
     id: dbLead.id,
+    next_action: dbLead.next_action,
+    next_action_due: dbLead.next_action_due,
+    next_action_owner: dbLead.next_action_owner,
   };
 }
 
@@ -45,6 +50,10 @@ export function LeadsSection() {
   // Lost reason modal state
   const [lostModalOpen, setLostModalOpen] = useState(false);
   const [pendingLostLead, setPendingLostLead] = useState<ReturnType<typeof transformLead> | null>(null);
+  
+  // Next action modal state
+  const [nextActionModalOpen, setNextActionModalOpen] = useState(false);
+  const [pendingNextActionLead, setPendingNextActionLead] = useState<ReturnType<typeof transformLead> | null>(null);
 
   const leads = dbLeads?.map(transformLead) || [];
   const selectedLead = selectedLeadId ? leads.find(l => l.id === selectedLeadId) : null;
@@ -94,6 +103,18 @@ export function LeadsSection() {
     }
   };
 
+  const handleDragTransition = async (leadId: string, targetState: LeadState) => {
+    try {
+      await updateLead.mutateAsync({
+        id: leadId,
+        updates: { lead_state: targetState },
+      });
+      toast.success(`Lead moved to ${targetState}`);
+    } catch (error) {
+      toast.error('Failed to move lead');
+    }
+  };
+
   const handleLostConfirm = async (reason: LostReason, notes: string) => {
     if (!pendingLostLead) return;
 
@@ -111,6 +132,29 @@ export function LeadsSection() {
       setPendingLostLead(null);
     } catch (error) {
       toast.error('Failed to update lead');
+    }
+  };
+
+  const handleSetNextAction = (lead: ReturnType<typeof transformLead>) => {
+    setPendingNextActionLead(lead);
+    setNextActionModalOpen(true);
+  };
+
+  const handleNextActionConfirm = async (action: NextActionType, dueDate: Date) => {
+    if (!pendingNextActionLead) return;
+
+    try {
+      await updateLead.mutateAsync({
+        id: pendingNextActionLead.id,
+        updates: {
+          next_action: action,
+          next_action_due: dueDate.toISOString(),
+        },
+      });
+      toast.success('Next action set');
+      setPendingNextActionLead(null);
+    } catch (error) {
+      toast.error('Failed to set next action');
     }
   };
 
@@ -214,6 +258,8 @@ export function LeadsSection() {
           leads={filteredLeads as any}
           onLeadClick={handleLeadClick as any}
           onTransition={handleTransition as any}
+          onDragTransition={handleDragTransition}
+          onSetNextAction={handleSetNextAction as any}
         />
       )}
 
@@ -227,13 +273,14 @@ export function LeadsSection() {
                 <th className="text-left p-3 text-sm font-medium">Contact</th>
                 <th className="text-left p-3 text-sm font-medium">Source</th>
                 <th className="text-left p-3 text-sm font-medium">State</th>
+                <th className="text-left p-3 text-sm font-medium">Next Action</th>
                 <th className="text-left p-3 text-sm font-medium">Created</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {filteredLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
                     No leads found
                   </td>
                 </tr>
@@ -264,6 +311,13 @@ export function LeadsSection() {
                         {lead.lead_state}
                       </span>
                     </td>
+                    <td className="p-3 text-sm">
+                      {lead.next_action ? (
+                        <span className="text-xs">{lead.next_action}</span>
+                      ) : (
+                        <span className="text-xs text-destructive">No action</span>
+                      )}
+                    </td>
                     <td className="p-3 text-sm text-muted-foreground">
                       {new Date(lead.created_at).toLocaleDateString()}
                     </td>
@@ -282,6 +336,17 @@ export function LeadsSection() {
         entityType="Lead"
         entityName={pendingLostLead?.contact_identity.full_name || ''}
         onConfirm={handleLostConfirm}
+      />
+
+      {/* Next Action Modal */}
+      <NextActionModal
+        open={nextActionModalOpen}
+        onOpenChange={setNextActionModalOpen}
+        entityType="Lead"
+        entityName={pendingNextActionLead?.contact_identity.full_name || ''}
+        currentAction={pendingNextActionLead?.next_action}
+        currentDueDate={pendingNextActionLead?.next_action_due}
+        onConfirm={handleNextActionConfirm}
       />
     </div>
   );
