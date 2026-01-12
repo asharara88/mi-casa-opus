@@ -311,6 +311,9 @@ export type Database = {
           id: string
           linked_lead_id: string | null
           listing_id: string | null
+          lost_at: string | null
+          lost_reason: Database["public"]["Enums"]["lost_reason"] | null
+          lost_reason_notes: string | null
           notes: string | null
           property_id: string | null
           registry_actions: Json | null
@@ -326,6 +329,9 @@ export type Database = {
           id?: string
           linked_lead_id?: string | null
           listing_id?: string | null
+          lost_at?: string | null
+          lost_reason?: Database["public"]["Enums"]["lost_reason"] | null
+          lost_reason_notes?: string | null
           notes?: string | null
           property_id?: string | null
           registry_actions?: Json | null
@@ -341,6 +347,9 @@ export type Database = {
           id?: string
           linked_lead_id?: string | null
           listing_id?: string | null
+          lost_at?: string | null
+          lost_reason?: Database["public"]["Enums"]["lost_reason"] | null
+          lost_reason_notes?: string | null
           notes?: string | null
           property_id?: string | null
           registry_actions?: Json | null
@@ -572,6 +581,9 @@ export type Database = {
           id: string
           lead_id: string
           lead_state: Database["public"]["Enums"]["lead_state"]
+          lost_at: string | null
+          lost_reason: Database["public"]["Enums"]["lost_reason"] | null
+          lost_reason_notes: string | null
           notes: string | null
           qualification_data: Json | null
           source: Database["public"]["Enums"]["lead_source"]
@@ -587,6 +599,9 @@ export type Database = {
           id?: string
           lead_id: string
           lead_state?: Database["public"]["Enums"]["lead_state"]
+          lost_at?: string | null
+          lost_reason?: Database["public"]["Enums"]["lost_reason"] | null
+          lost_reason_notes?: string | null
           notes?: string | null
           qualification_data?: Json | null
           source?: Database["public"]["Enums"]["lead_source"]
@@ -602,6 +617,9 @@ export type Database = {
           id?: string
           lead_id?: string
           lead_state?: Database["public"]["Enums"]["lead_state"]
+          lost_at?: string | null
+          lost_reason?: Database["public"]["Enums"]["lost_reason"] | null
+          lost_reason_notes?: string | null
           notes?: string | null
           qualification_data?: Json | null
           source?: Database["public"]["Enums"]["lead_source"]
@@ -926,6 +944,17 @@ export type Database = {
         | "Converted"
       listing_status: "Draft" | "Active" | "Reserved" | "Sold" | "Withdrawn"
       listing_type: "Sale" | "Lease" | "OffPlan"
+      lost_reason:
+        | "NoContact"
+        | "NotQualified"
+        | "BudgetMismatch"
+        | "TimelineMismatch"
+        | "ChoseCompetitor"
+        | "PropertyUnavailable"
+        | "FinancingFailed"
+        | "ClientWithdrew"
+        | "DuplicateLead"
+        | "Other"
       party_role:
         | "Buyer"
         | "Seller"
@@ -1133,6 +1162,18 @@ export const Constants = {
       ],
       listing_status: ["Draft", "Active", "Reserved", "Sold", "Withdrawn"],
       listing_type: ["Sale", "Lease", "OffPlan"],
+      lost_reason: [
+        "NoContact",
+        "NotQualified",
+        "BudgetMismatch",
+        "TimelineMismatch",
+        "ChoseCompetitor",
+        "PropertyUnavailable",
+        "FinancingFailed",
+        "ClientWithdrew",
+        "DuplicateLead",
+        "Other",
+      ],
       party_role: [
         "Buyer",
         "Seller",

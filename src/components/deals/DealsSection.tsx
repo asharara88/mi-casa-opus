@@ -3,12 +3,13 @@ import { useDeals, useDealParties, useDealBrokers } from '@/hooks/useDeals';
 import { useAuth } from '@/hooks/useAuth';
 import { DealPipeline } from './DealPipeline';
 import { DealDetail } from './DealDetail';
-import { transformDbDealToFrontend, transformDbDealPartyToFrontend, transformDbDealBrokerToFrontend } from '@/lib/transforms';
+import { transformDbDealToFrontend } from '@/lib/transforms';
 import { Deal, DealState, ValidationContext } from '@/types/bos';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useUpdateDeal } from '@/hooks/useDeals';
 import { useCreateEventLog } from '@/hooks/useEventLog';
+import { LostReasonModal, LostReason } from '@/components/modals/LostReasonModal';
 
 export function DealsSection() {
   const { profile, role } = useAuth();
@@ -17,6 +18,10 @@ export function DealsSection() {
   const createEventLog = useCreateEventLog();
   
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
+  
+  // Lost reason modal state
+  const [lostModalOpen, setLostModalOpen] = useState(false);
+  const [pendingLostDeal, setPendingLostDeal] = useState<{ deal: Deal; dbDealId: string } | null>(null);
   
   // Get parties and brokers for the selected deal
   const { data: selectedDealParties } = useDealParties(selectedDealId);
@@ -57,6 +62,13 @@ export function DealsSection() {
     const dbDeal = dbDeals?.find(d => d.deal_id === deal.deal_id);
     if (!dbDeal) return;
 
+    // If transitioning to Closed_Lost, show the lost reason modal
+    if (targetState === 'Closed_Lost') {
+      setPendingLostDeal({ deal, dbDealId: dbDeal.id });
+      setLostModalOpen(true);
+      return;
+    }
+
     const dbState = mapFrontendStateToDb(targetState);
 
     try {
@@ -85,6 +97,44 @@ export function DealsSection() {
       }
     } catch (error) {
       toast.error('Failed to transition deal');
+    }
+  };
+
+  const handleLostConfirm = async (reason: LostReason, notes: string) => {
+    if (!pendingLostDeal) return;
+
+    try {
+      await updateDeal.mutateAsync({
+        id: pendingLostDeal.dbDealId,
+        updates: {
+          deal_state: 'ClosedLost' as any,
+          lost_reason: reason,
+          lost_reason_notes: notes || null,
+          lost_at: new Date().toISOString(),
+        },
+      });
+
+      // Log the event
+      await createEventLog.mutateAsync({
+        event_id: `EVT-${Date.now()}`,
+        entity_type: 'Deal',
+        entity_id: pendingLostDeal.dbDealId,
+        action: 'STATE_TRANSITION',
+        before_state: { deal_state: pendingLostDeal.deal.deal_state },
+        after_state: { deal_state: 'Closed_Lost', lost_reason: reason },
+        decision: 'ALLOWED',
+        actor_user_id: profile?.user_id || null,
+        actor_role: role || null,
+      });
+
+      toast.success('Deal marked as lost');
+      setPendingLostDeal(null);
+      
+      if (selectedDealId) {
+        setSelectedDealId(null);
+      }
+    } catch (error) {
+      toast.error('Failed to update deal');
     }
   };
 
@@ -139,6 +189,15 @@ export function DealsSection() {
         context={validationContext}
         onDealClick={handleDealClick}
         onTransition={handleDealTransition}
+      />
+
+      {/* Lost Reason Modal */}
+      <LostReasonModal
+        open={lostModalOpen}
+        onOpenChange={setLostModalOpen}
+        entityType="Deal"
+        entityName={pendingLostDeal?.deal.deal_id || ''}
+        onConfirm={handleLostConfirm}
       />
     </div>
   );

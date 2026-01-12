@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Search, Filter, LayoutGrid, List, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
+import { LostReasonModal, LostReason } from '@/components/modals/LostReasonModal';
 
 type LeadState = Database['public']['Enums']['lead_state'];
 
@@ -40,6 +41,10 @@ export function LeadsSection() {
   const [viewMode, setViewMode] = useState<'pipeline' | 'list'>('pipeline');
   const [searchQuery, setSearchQuery] = useState('');
   const [stateFilter, setStateFilter] = useState<LeadState | 'all'>('all');
+  
+  // Lost reason modal state
+  const [lostModalOpen, setLostModalOpen] = useState(false);
+  const [pendingLostLead, setPendingLostLead] = useState<ReturnType<typeof transformLead> | null>(null);
 
   const leads = dbLeads?.map(transformLead) || [];
   const selectedLead = selectedLeadId ? leads.find(l => l.id === selectedLeadId) : null;
@@ -71,6 +76,13 @@ export function LeadsSection() {
   };
 
   const handleTransition = async (lead: ReturnType<typeof transformLead>, targetState: LeadState) => {
+    // If transitioning to Disqualified, show the lost reason modal
+    if (targetState === 'Disqualified') {
+      setPendingLostLead(lead);
+      setLostModalOpen(true);
+      return;
+    }
+
     try {
       await updateLead.mutateAsync({
         id: lead.id,
@@ -79,6 +91,26 @@ export function LeadsSection() {
       toast.success(`Lead transitioned to ${targetState}`);
     } catch (error) {
       toast.error('Transition failed');
+    }
+  };
+
+  const handleLostConfirm = async (reason: LostReason, notes: string) => {
+    if (!pendingLostLead) return;
+
+    try {
+      await updateLead.mutateAsync({
+        id: pendingLostLead.id,
+        updates: {
+          lead_state: 'Disqualified' as LeadState,
+          lost_reason: reason,
+          lost_reason_notes: notes || null,
+          lost_at: new Date().toISOString(),
+        },
+      });
+      toast.success('Lead marked as disqualified');
+      setPendingLostLead(null);
+    } catch (error) {
+      toast.error('Failed to update lead');
     }
   };
 
@@ -242,6 +274,15 @@ export function LeadsSection() {
           </table>
         </div>
       )}
+
+      {/* Lost Reason Modal */}
+      <LostReasonModal
+        open={lostModalOpen}
+        onOpenChange={setLostModalOpen}
+        entityType="Lead"
+        entityName={pendingLostLead?.contact_identity.full_name || ''}
+        onConfirm={handleLostConfirm}
+      />
     </div>
   );
 }
