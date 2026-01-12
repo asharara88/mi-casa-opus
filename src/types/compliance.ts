@@ -14,9 +14,19 @@ export interface RuleResult {
   severity: RuleSeverity;
   message?: string;
   requiredAction?: string;
+  bosField?: string | null;
 }
 
-// Module evaluation result
+// Checklist item matching spec output
+export interface ChecklistItem {
+  module: string;
+  item: string;
+  passed: boolean;
+  bosField: string | null;
+  requiredAction: string | null;
+}
+
+// Module evaluation result (for detailed UI)
 export interface ModuleResult {
   moduleId: string;
   moduleName: string;
@@ -24,18 +34,27 @@ export interface ModuleResult {
   rules: RuleResult[];
 }
 
-// Full compliance evaluation result
+// Completion confirmation
+export interface CompletionConfirmation {
+  isCompliant: boolean;
+  remainingItems: string[];
+}
+
+// Full compliance evaluation result matching spec output
 export interface ComplianceResult {
-  id?: string;
-  entityType: string;
-  entityId: string;
-  contextType: ContextType;
-  status: ComplianceStatus;
-  failedModules: string[];
-  failedRules: string[];
+  complianceStatus: ComplianceStatus;
+  canProceed: boolean;
+  checklist: ChecklistItem[];
+  blockingReasons: string[];
   requiredActions: string[];
-  escalationReason?: string | null;
+  completionConfirmation: CompletionConfirmation;
+  escalationReason: string | null;
   modules: ModuleResult[];
+  // Metadata from API
+  resultId?: string;
+  entityType?: string;
+  entityId?: string;
+  contextType?: ContextType;
   evaluatedAt?: string;
   evaluatedBy?: string;
 }

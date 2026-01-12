@@ -42,6 +42,14 @@ interface ComplianceModule {
   sort_order: number;
 }
 
+interface ChecklistItem {
+  module: string;
+  item: string;
+  passed: boolean;
+  bosField: string | null;
+  requiredAction: string | null;
+}
+
 interface RuleResult {
   ruleId: string;
   ruleName: string;
@@ -49,6 +57,7 @@ interface RuleResult {
   severity: "BLOCK" | "ESCALATE";
   message?: string;
   requiredAction?: string;
+  bosField?: string;
 }
 
 interface ModuleResult {
@@ -56,6 +65,20 @@ interface ModuleResult {
   moduleName: string;
   passed: boolean;
   rules: RuleResult[];
+}
+
+interface ComplianceOutput {
+  complianceStatus: "APPROVED" | "BLOCKED" | "ESCALATED";
+  canProceed: boolean;
+  checklist: ChecklistItem[];
+  blockingReasons: string[];
+  requiredActions: string[];
+  completionConfirmation: {
+    isCompliant: boolean;
+    remainingItems: string[];
+  };
+  escalationReason: string | null;
+  modules: ModuleResult[]; // Keep for detailed UI
 }
 
 // Get nested value from object using dot notation
@@ -268,15 +291,38 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Determine final status
-    let status: "APPROVED" | "BLOCKED" | "ESCALATED";
-    if (failedRules.length === 0) {
-      status = "APPROVED";
-    } else if (hasEscalation) {
-      status = "ESCALATED";
-    } else {
-      status = "BLOCKED";
+    // Build checklist for output
+    const checklist: ChecklistItem[] = [];
+    const blockingReasons: string[] = [];
+    
+    for (const module of moduleResults) {
+      for (const rule of module.rules) {
+        checklist.push({
+          module: module.moduleName,
+          item: rule.ruleName,
+          passed: rule.passed,
+          bosField: rule.bosField || null,
+          requiredAction: rule.requiredAction || null,
+        });
+        
+        if (!rule.passed && rule.severity === "BLOCK") {
+          blockingReasons.push(`${module.moduleName}: ${rule.ruleName}`);
+        }
+      }
     }
+
+    // Determine final status
+    let complianceStatus: "APPROVED" | "BLOCKED" | "ESCALATED";
+    if (failedRules.length === 0) {
+      complianceStatus = "APPROVED";
+    } else if (hasEscalation) {
+      complianceStatus = "ESCALATED";
+    } else {
+      complianceStatus = "BLOCKED";
+    }
+
+    const canProceed = complianceStatus === "APPROVED";
+    const remainingItems = requiredActions.filter(Boolean);
 
     // Store the result
     const { data: storedResult, error: storeError } = await supabase
@@ -285,7 +331,7 @@ Deno.serve(async (req) => {
         entity_type: entityType,
         entity_id: entityId,
         context_type: contextType,
-        status,
+        status: complianceStatus,
         failed_modules: failedModules,
         failed_rules: failedRules,
         required_actions: requiredActions,
@@ -299,26 +345,34 @@ Deno.serve(async (req) => {
 
     if (storeError) {
       console.error("Failed to store compliance result:", storeError);
-      // Continue anyway, just don't have stored result
     }
 
-    const result = {
-      id: storedResult?.id,
-      entityType,
-      entityId,
-      contextType,
-      status,
-      failedModules,
-      failedRules,
+    // Build output matching spec exactly
+    const output: ComplianceOutput = {
+      complianceStatus,
+      canProceed,
+      checklist,
+      blockingReasons,
       requiredActions,
+      completionConfirmation: {
+        isCompliant: canProceed,
+        remainingItems,
+      },
       escalationReason,
       modules: moduleResults,
-      evaluatedAt: new Date().toISOString(),
-      evaluatedBy: userId,
     };
 
     return new Response(
-      JSON.stringify({ success: true, result }),
+      JSON.stringify({ 
+        success: true, 
+        result: output,
+        resultId: storedResult?.id,
+        entityType,
+        entityId,
+        contextType,
+        evaluatedAt: new Date().toISOString(),
+        evaluatedBy: userId,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

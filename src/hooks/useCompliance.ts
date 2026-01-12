@@ -11,17 +11,44 @@ import { toast } from "@/hooks/use-toast";
 
 // Transform database result to frontend type
 function transformDbResult(dbResult: any): ComplianceResult {
+  const modulesDetail = (dbResult.modules_detail || []) as ModuleResult[];
+  const failedModulesCount = modulesDetail.filter(m => !m.passed).length;
+  
+  // Build checklist from modules
+  const checklist = modulesDetail.flatMap(m => 
+    m.rules.map(r => ({
+      module: m.moduleName,
+      item: r.ruleName,
+      passed: r.passed,
+      bosField: r.bosField || null,
+      requiredAction: r.requiredAction || null,
+    }))
+  );
+  
+  const blockingReasons = dbResult.failed_rules?.map((ruleId: string) => {
+    for (const mod of modulesDetail) {
+      const rule = mod.rules.find(r => r.ruleId === ruleId);
+      if (rule) return `${mod.moduleName}: ${rule.ruleName}`;
+    }
+    return ruleId;
+  }) || [];
+
   return {
-    id: dbResult.id,
+    complianceStatus: dbResult.status,
+    canProceed: dbResult.status === "APPROVED",
+    checklist,
+    blockingReasons,
+    requiredActions: dbResult.required_actions || [],
+    completionConfirmation: {
+      isCompliant: dbResult.status === "APPROVED",
+      remainingItems: dbResult.required_actions || [],
+    },
+    escalationReason: dbResult.escalation_reason || null,
+    modules: modulesDetail,
+    resultId: dbResult.id,
     entityType: dbResult.entity_type,
     entityId: dbResult.entity_id,
     contextType: dbResult.context_type as ContextType,
-    status: dbResult.status,
-    failedModules: dbResult.failed_modules || [],
-    failedRules: dbResult.failed_rules || [],
-    requiredActions: dbResult.required_actions || [],
-    escalationReason: dbResult.escalation_reason,
-    modules: (dbResult.modules_detail || []) as ModuleResult[],
     evaluatedAt: dbResult.evaluated_at,
     evaluatedBy: dbResult.evaluated_by,
   };
@@ -94,14 +121,14 @@ export function useRunCompliance() {
       
       const statusMessages = {
         APPROVED: "All compliance checks passed",
-        BLOCKED: `${result.failedRules.length} compliance issue(s) require attention`,
+        BLOCKED: `${result.blockingReasons.length} compliance issue(s) require attention`,
         ESCALATED: "Compliance review escalated for approval",
       };
 
       toast({
-        title: `Compliance: ${result.status}`,
-        description: statusMessages[result.status],
-        variant: result.status === "APPROVED" ? "default" : "destructive",
+        title: `Compliance: ${result.complianceStatus}`,
+        description: statusMessages[result.complianceStatus],
+        variant: result.complianceStatus === "APPROVED" ? "default" : "destructive",
       });
     },
     onError: (error) => {
