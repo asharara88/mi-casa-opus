@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import { useDemoMode } from '@/contexts/DemoContext';
-import { DEMO_COMMISSIONS } from '@/data/demoData';
+import { DEMO_COMMISSIONS, DEMO_PAYOUT_BATCHES, DEMO_PAYOUT_LINES } from '@/data/demoData';
 
 export type CommissionRecord = Tables<'commission_records'>;
 export type CommissionInsert = TablesInsert<'commission_records'>;
@@ -37,9 +37,15 @@ export function useCommissions() {
 }
 
 export function usePayoutBatches() {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['payout_batches'],
+    queryKey: ['payout_batches', isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) {
+        return DEMO_PAYOUT_BATCHES as unknown as PayoutBatch[];
+      }
+
       const { data, error } = await supabase
         .from('payout_batches')
         .select('*')
@@ -52,10 +58,17 @@ export function usePayoutBatches() {
 }
 
 export function usePayoutLines(batchId: string | null) {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['payout_lines', batchId],
+    queryKey: ['payout_lines', batchId, isDemoMode],
     queryFn: async () => {
       if (!batchId) return [];
+      
+      if (isDemoMode) {
+        return DEMO_PAYOUT_LINES.filter(line => line.batch_id === batchId) as unknown as PayoutLine[];
+      }
+
       const { data, error } = await supabase
         .from('payout_lines')
         .select('*, commission_records(*)')
