@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
+import { useDemoMode } from '@/contexts/DemoContext';
+import { DEMO_COMMISSIONS } from '@/data/demoData';
 
 export type CommissionRecord = Tables<'commission_records'>;
 export type CommissionInsert = TablesInsert<'commission_records'>;
@@ -14,9 +16,15 @@ export type PayoutBatchUpdate = TablesUpdate<'payout_batches'>;
 export type PayoutLine = Tables<'payout_lines'>;
 
 export function useCommissions() {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['commissions'],
+    queryKey: ['commissions', isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) {
+        return DEMO_COMMISSIONS as unknown as CommissionRecord[];
+      }
+
       const { data, error } = await supabase
         .from('commission_records')
         .select('*, broker_profiles(*), deals(*)')

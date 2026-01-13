@@ -2,15 +2,23 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
+import { useDemoMode } from '@/contexts/DemoContext';
+import { DEMO_LEADS } from '@/data/demoData';
 
 export type Lead = Tables<'leads'>;
 export type LeadInsert = TablesInsert<'leads'>;
 export type LeadUpdate = TablesUpdate<'leads'>;
 
 export function useLeads() {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['leads'],
+    queryKey: ['leads', isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) {
+        return DEMO_LEADS as unknown as Lead[];
+      }
+
       const { data, error } = await supabase
         .from('leads')
         .select('*')

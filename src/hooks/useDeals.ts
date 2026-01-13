@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
+import { useDemoMode } from '@/contexts/DemoContext';
+import { DEMO_DEALS } from '@/data/demoData';
 
 export type Deal = Tables<'deals'>;
 export type DealInsert = TablesInsert<'deals'>;
@@ -11,9 +13,15 @@ export type DealParty = Tables<'deal_parties'>;
 export type DealBroker = Tables<'deal_brokers'>;
 
 export function useDeals() {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['deals'],
+    queryKey: ['deals', isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) {
+        return DEMO_DEALS as unknown as Deal[];
+      }
+
       const { data, error } = await supabase
         .from('deals')
         .select('*')
