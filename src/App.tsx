@@ -4,16 +4,23 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { DemoProvider } from "@/contexts/DemoContext";
+import { DemoProvider, useDemoMode } from "@/contexts/DemoContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+
 // QueryClient for React Query
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const { isDemoBypass } = useDemoMode();
+  
+  // Allow access if demo bypass is enabled
+  if (isDemoBypass) {
+    return <>{children}</>;
+  }
   
   if (loading) {
     return (
@@ -28,6 +35,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const { isDemoBypass } = useDemoMode();
+  
+  // If demo bypass, don't redirect to home
+  if (isDemoBypass) {
+    return <Navigate to="/" replace />;
+  }
   
   if (loading) return null;
   return user ? <Navigate to="/" replace /> : <>{children}</>;

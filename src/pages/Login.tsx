@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useDemoMode } from '@/contexts/DemoContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Building2, Shield, Eye, EyeOff } from 'lucide-react';
+import { Building2, Shield, Eye, EyeOff, Play } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 export default function Login() {
@@ -13,6 +14,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
+  const { enterDemoBypass } = useDemoMode();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,6 +38,15 @@ export default function Login() {
     }
 
     setLoading(false);
+  };
+
+  const handleViewDemo = () => {
+    enterDemoBypass();
+    toast({
+      title: 'Demo Mode Activated',
+      description: 'Exploring BOS with sample data as Operator',
+    });
+    navigate('/');
   };
 
   return (
@@ -147,6 +158,26 @@ export default function Login() {
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
+
+          {/* Demo Mode Button */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Or</span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-11 gap-2 border-primary/50 text-primary hover:bg-primary/10"
+            onClick={handleViewDemo}
+          >
+            <Play className="w-4 h-4" />
+            View Demo
+          </Button>
 
           <div className="text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>
