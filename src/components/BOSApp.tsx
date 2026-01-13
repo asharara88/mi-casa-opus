@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth, AppRole } from '@/hooks/useAuth';
+import { useDemoMode } from '@/contexts/DemoContext';
 import { ValidationContext } from '@/types/bos';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
@@ -69,7 +71,13 @@ const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
 
 export function BOSApp() {
   const { profile, role, signOut } = useAuth();
+  const { isDemoBypass, exitDemoBypass } = useDemoMode();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
+  
+  // In demo bypass mode, use Operator role
+  const effectiveRole: AppRole = isDemoBypass ? 'Operator' : (role || 'Operator');
+  const effectiveUserName = isDemoBypass ? 'Demo User' : (profile?.full_name || 'User');
   
   // Live data hooks
   const { data: dbBrokerage, isLoading: isLoadingBrokerage } = useBrokerageContext();
@@ -81,19 +89,29 @@ export function BOSApp() {
   // Transform brokerage data
   const brokerage = dbBrokerage ? transformDbBrokerageToFrontend(dbBrokerage) : null;
 
+  // Handle sign out - if in demo bypass, exit demo mode
+  const handleSignOut = () => {
+    if (isDemoBypass) {
+      exitDemoBypass();
+      navigate('/login');
+    } else {
+      signOut?.();
+    }
+  };
+
   useEffect(() => {
     // Set default section based on role
-    if (role === 'LegalOwner') setActiveSection('oversight');
-    else if (role === 'Broker') setActiveSection('my-day');
-    else if (role === 'Investor') setActiveSection('investor-profile');
+    if (effectiveRole === 'LegalOwner') setActiveSection('oversight');
+    else if (effectiveRole === 'Broker') setActiveSection('my-day');
+    else if (effectiveRole === 'Investor') setActiveSection('investor-profile');
     else setActiveSection('dashboard');
-  }, [role]);
+  }, [effectiveRole]);
 
   const renderSection = () => {
     switch (activeSection) {
       case 'dashboard':
       case 'oversight':
-        return <DashboardView role={role || 'Operator'} />;
+        return <DashboardView role={effectiveRole} />;
 
       case 'leads':
       case 'my-leads':
@@ -159,11 +177,11 @@ export function BOSApp() {
   return (
     <div className="flex h-screen bg-background">
       <Sidebar
-        currentRole={role}
+        currentRole={effectiveRole}
         activeSection={activeSection}
         onSectionChange={setActiveSection}
-        userName={profile?.full_name || 'User'}
-        onSignOut={signOut}
+        userName={effectiveUserName}
+        onSignOut={handleSignOut}
       />
       
       <div className="flex-1 flex flex-col overflow-hidden">
