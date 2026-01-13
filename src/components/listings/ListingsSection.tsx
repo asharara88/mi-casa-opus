@@ -21,9 +21,12 @@ import {
   DollarSign,
   Eye,
   Edit,
-  MoreHorizontal
+  MoreHorizontal,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ListingDetailModal } from './ListingDetailModal';
+import { useListings } from '@/hooks/useListings';
 
 interface Listing {
   id: string;
@@ -141,8 +144,45 @@ export function ListingsSection() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  
+  // Fetch real listings from database
+  const { data: dbListings, refetch: refetchListings } = useListings();
 
-  const filteredListings = DEMO_LISTINGS.filter((listing) => {
+  // Convert DB listings to display format, merge with demo data
+  const allListings: Listing[] = [
+    ...DEMO_LISTINGS,
+    ...(dbListings || []).map(dbListing => ({
+      id: dbListing.id,
+      listing_id: dbListing.listing_id,
+      property_type: (dbListing.listing_attributes as any)?.propertyType || 'Property',
+      listing_type: dbListing.listing_type as 'Sale' | 'Rent' | 'OffPlan',
+      status: dbListing.status as 'Draft' | 'Active' | 'Reserved' | 'Sold' | 'Withdrawn',
+      location: {
+        community: (dbListing.listing_attributes as any)?.community || 'Abu Dhabi',
+        building: (dbListing.listing_attributes as any)?.building,
+        city: 'Abu Dhabi',
+      },
+      price: (dbListing.asking_terms as any)?.price || 0,
+      currency: 'AED',
+      bedrooms: (dbListing.listing_attributes as any)?.bedrooms || 0,
+      bathrooms: (dbListing.listing_attributes as any)?.bathrooms || 0,
+      sqft: (dbListing.listing_attributes as any)?.sqft || 0,
+      images: [],
+      created_at: dbListing.created_at,
+      madhmoun_listing_id: dbListing.madhmoun_listing_id,
+      madhmoun_status: dbListing.madhmoun_status,
+      compliance_status: dbListing.compliance_status,
+    })),
+  ];
+
+  const handleViewListing = (listing: Listing) => {
+    setSelectedListing(listing);
+    setDetailModalOpen(true);
+  };
+
+  const filteredListings = allListings.filter((listing) => {
     const matchesSearch =
       listing.listing_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       listing.location.community.toLowerCase().includes(searchQuery.toLowerCase());
@@ -160,8 +200,8 @@ export function ListingsSection() {
     return `${(price / 1000).toFixed(0)}K ${currency}`;
   };
 
-  const activeCount = DEMO_LISTINGS.filter(l => l.status === 'Active').length;
-  const totalValue = DEMO_LISTINGS.filter(l => l.status === 'Active' && l.listing_type === 'Sale')
+  const activeCount = allListings.filter(l => l.status === 'Active').length;
+  const totalValue = allListings.filter(l => l.status === 'Active' && l.listing_type === 'Sale')
     .reduce((sum, l) => sum + l.price, 0);
 
   return (
@@ -192,7 +232,7 @@ export function ListingsSection() {
             <div className="flex items-center gap-3">
               <Building2 className="h-6 w-6 text-primary" />
               <div>
-                <div className="text-xl font-bold text-foreground">{DEMO_LISTINGS.length}</div>
+                <div className="text-xl font-bold text-foreground">{allListings.length}</div>
                 <div className="text-xs text-muted-foreground">Total Listings</div>
               </div>
             </div>
@@ -329,9 +369,26 @@ export function ListingsSection() {
                 </div>
               </div>
 
+              {/* Compliance Badge */}
+              {listing.status === 'Draft' && (
+                <div className="flex items-center gap-1 mb-2">
+                  <Shield className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    {(listing as any).compliance_status === 'APPROVED' 
+                      ? 'Compliance Approved' 
+                      : 'Compliance Check Required'}
+                  </span>
+                </div>
+              )}
+
               {/* Actions */}
               <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" className="flex-1">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => handleViewListing(listing)}
+                >
                   <Eye className="h-4 w-4 mr-1" />
                   View
                 </Button>
@@ -360,6 +417,32 @@ export function ListingsSection() {
           </CardContent>
         </Card>
       )}
+
+      {/* Listing Detail Modal with Compliance */}
+      <ListingDetailModal
+        listing={selectedListing ? {
+          id: selectedListing.id,
+          listing_id: selectedListing.listing_id,
+          property_type: selectedListing.property_type,
+          listing_type: selectedListing.listing_type === 'Rent' ? 'Lease' : selectedListing.listing_type as any,
+          status: selectedListing.status,
+          location: selectedListing.location,
+          price: selectedListing.price,
+          currency: selectedListing.currency,
+          bedrooms: selectedListing.bedrooms,
+          bathrooms: selectedListing.bathrooms,
+          sqft: selectedListing.sqft,
+          madhmoun_listing_id: (selectedListing as any).madhmoun_listing_id,
+          madhmoun_status: (selectedListing as any).madhmoun_status,
+          compliance_status: (selectedListing as any).compliance_status,
+        } : null}
+        open={detailModalOpen}
+        onOpenChange={setDetailModalOpen}
+        onPublishSuccess={() => {
+          refetchListings();
+          setSelectedListing(null);
+        }}
+      />
     </div>
   );
 }

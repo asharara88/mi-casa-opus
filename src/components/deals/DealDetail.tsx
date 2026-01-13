@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,8 @@ import {
   Camera, 
   Clock,
   Building2,
-  AlertCircle
+  AlertCircle,
+  Shield
 } from 'lucide-react';
 import { Deal, DealState, ValidationContext, DEAL_STATE_REQUIREMENTS } from '@/types/bos';
 import { DealStateRail } from './DealStateRail';
@@ -20,32 +21,106 @@ import { RegistryActionsChecklist } from './RegistryActionsChecklist';
 import { EvidenceDrawer } from './EvidenceDrawer';
 import { validateDealTransition } from '@/lib/state-machine';
 import { StateBadge } from '@/components/dashboard/StateBadge';
+import { CompliancePanel } from '@/components/compliance/CompliancePanel';
+import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import type { OverridePayload } from '@/types/compliance';
 
 interface DealDetailProps {
   deal: Deal;
   context: ValidationContext;
   onBack: () => void;
   onTransition: (deal: Deal, targetState: DealState) => void;
+  dealDbId?: string;
 }
+
+// States that require compliance checks before proceeding
+const COMPLIANCE_GATED_STATES: DealState[] = ['Offer', 'Reservation', 'SPA', 'Closed_Won'];
 
 export const DealDetail: React.FC<DealDetailProps> = ({
   deal,
   context,
   onBack,
   onTransition,
+  dealDbId,
 }) => {
+  const [activeTab, setActiveTab] = useState('overview');
+  
+  const runCompliance = useRunCompliance();
+  const submitOverride = useSubmitOverride();
+  const { data: canOverrideData } = useCanOverride();
+  const canOverride = canOverrideData ?? false;
+  
+  const { data: complianceResult, isLoading: isLoadingResult, refetch: refetchCompliance } = 
+    useComplianceResult('deal', dealDbId || null);
+
   const requirements = DEAL_STATE_REQUIREMENTS[deal.deal_state];
   const nextState = requirements.next_states.find(s => s !== 'Closed_Lost');
   const validation = nextState ? validateDealTransition(deal, nextState, context) : null;
 
+  // Check if the next state requires compliance
+  const nextStateRequiresCompliance = nextState && COMPLIANCE_GATED_STATES.includes(nextState);
+  const compliancePassed = complianceResult?.complianceStatus === 'APPROVED';
+
   const canTransition = (state: DealState) => {
-    return validateDealTransition(deal, state, context).allowed;
+    const basicValidation = validateDealTransition(deal, state, context).allowed;
+    
+    // If transitioning to a compliance-gated state, also check compliance
+    if (COMPLIANCE_GATED_STATES.includes(state)) {
+      return basicValidation && compliancePassed;
+    }
+    
+    return basicValidation;
   };
 
   const handleStateClick = (state: DealState) => {
     if (canTransition(state)) {
       onTransition(deal, state);
+    } else if (COMPLIANCE_GATED_STATES.includes(state) && !compliancePassed) {
+      toast.error('Compliance check required before advancing to ' + state);
+    }
+  };
+
+  const handleRunCompliance = async () => {
+    if (!dealDbId) return;
+
+    const dealWithAml = deal as Deal & { aml_risk_level?: string; aml_flags?: Record<string, boolean> };
+
+    try {
+      await runCompliance.mutateAsync({
+        contextType: 'transaction',
+        entityId: dealDbId,
+        entityType: 'deal',
+        payload: {
+          transaction: {
+            stage: deal.deal_state,
+            createdInBOS: true,
+          },
+          aml: dealWithAml.aml_risk_level ? {
+            riskLevel: dealWithAml.aml_risk_level as any,
+            flags: dealWithAml.aml_flags as any,
+          } : undefined,
+        },
+      });
+      refetchCompliance();
+    } catch (error) {
+      toast.error('Failed to run compliance check');
+    }
+  };
+
+  const handleOverride = async (payload: OverridePayload) => {
+    if (!complianceResult?.resultId) return;
+
+    try {
+      await submitOverride.mutateAsync({
+        complianceResultId: complianceResult.resultId,
+        payload,
+      });
+      refetchCompliance();
+      toast.success('Override submitted successfully');
+    } catch (error) {
+      toast.error('Failed to submit override');
     }
   };
 
@@ -173,6 +248,10 @@ export const DealDetail: React.FC<DealDetailProps> = ({
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="compliance">
+                <Shield className="h-4 w-4 mr-1" />
+                Compliance
+              </TabsTrigger>
               <TabsTrigger value="parties">Parties</TabsTrigger>
               <TabsTrigger value="registry">Registry</TabsTrigger>
               <TabsTrigger value="timeline">Timeline</TabsTrigger>
@@ -217,6 +296,25 @@ export const DealDetail: React.FC<DealDetailProps> = ({
               </div>
             </TabsContent>
 
+            <TabsContent value="compliance">
+              <CompliancePanel
+                result={complianceResult}
+                isLoading={runCompliance.isPending || isLoadingResult}
+                onRefresh={handleRunCompliance}
+                onProceed={nextState ? () => handleStateClick(nextState) : undefined}
+                onOverride={handleOverride}
+                canOverride={canOverride}
+                amlFlags={(deal as any).aml_flags}
+                amlRiskLevel={(deal as any).aml_risk_level}
+                auditLog={{
+                  entriesCount: 1,
+                  createdAt: deal.created_at,
+                  lastAction: 'Created',
+                }}
+                proceedLabel={nextState ? `Proceed to ${nextState}` : 'Complete'}
+                isOverrideSubmitting={submitOverride.isPending}
+              />
+            </TabsContent>
             <TabsContent value="parties">
               <DealPartiesPanel parties={deal.parties} />
             </TabsContent>
