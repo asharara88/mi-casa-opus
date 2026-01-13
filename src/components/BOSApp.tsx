@@ -3,6 +3,7 @@ import { useAuth, AppRole } from '@/hooks/useAuth';
 import { ValidationContext } from '@/types/bos';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
+import { DemoBanner } from '@/components/demo/DemoBanner';
 import { DashboardView } from '@/components/dashboard/DashboardView';
 import { LeadsSection } from '@/components/leads/LeadsSection';
 import { DealsSection } from '@/components/deals/DealsSection';
@@ -166,6 +167,7 @@ export function BOSApp() {
       />
       
       <div className="flex-1 flex flex-col overflow-hidden">
+        <DemoBanner onNavigate={setActiveSection} />
         <Header title={sectionInfo.title} subtitle={sectionInfo.subtitle} />
         
         <main className="flex-1 overflow-auto p-6 scrollbar-thin">
