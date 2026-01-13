@@ -93,7 +93,7 @@ const GROUP_LABELS: Record<string, string> = {
 };
 
 export function Sidebar({ currentRole, activeSection, onSectionChange, userName, onSignOut }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false); // false = expanded by default
 
   const filteredItems = NAV_ITEMS.filter(item => 
     currentRole && item.roles.includes(currentRole)
