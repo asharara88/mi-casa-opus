@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import { useDemoMode } from '@/contexts/DemoContext';
-import { DEMO_BROKERAGE } from '@/data/demoData';
+import { DEMO_BROKERAGE, DEMO_BROKER_PROFILES, DEMO_PROFILES, DEMO_USER_ROLES } from '@/data/demoData';
 
 export type BrokerageContext = Tables<'brokerage_context'>;
 export type BrokerProfile = Tables<'broker_profiles'>;
@@ -33,9 +33,15 @@ export function useBrokerageContext() {
 }
 
 export function useBrokerProfiles() {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['broker_profiles'],
+    queryKey: ['broker_profiles', isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) {
+        return DEMO_BROKER_PROFILES as unknown as BrokerProfile[];
+      }
+
       const { data, error } = await supabase
         .from('broker_profiles')
         .select('*')
@@ -48,9 +54,15 @@ export function useBrokerProfiles() {
 }
 
 export function useProfiles() {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['profiles'],
+    queryKey: ['profiles', isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) {
+        return DEMO_PROFILES as unknown as Profile[];
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -63,9 +75,15 @@ export function useProfiles() {
 }
 
 export function useUserRoles() {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['user_roles'],
+    queryKey: ['user_roles', isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) {
+        return DEMO_USER_ROLES as unknown as UserRole[];
+      }
+
       const { data, error } = await supabase
         .from('user_roles')
         .select('*')
