@@ -142,7 +142,7 @@ export function DashboardView({ role }: DashboardViewProps) {
                   <div key={lead.lead_id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-medium">
-                        {lead.contact_identity.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        {(lead.contact_identity.full_name || 'Unknown').split(' ').map(n => n[0]).join('').slice(0, 2)}
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">
