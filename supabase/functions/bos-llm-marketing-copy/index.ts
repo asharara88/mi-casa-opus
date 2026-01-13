@@ -5,63 +5,56 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM_PROMPT = `SYSTEM — MiCasa BOS Marketing Copy Generator
+const SYSTEM_PROMPT = `SYSTEM — MiCasa BOS Marketing Copy Assistant
 
-You are a specialized AI for generating compliant real estate marketing copy for Abu Dhabi properties.
+You generate compliant marketing copy drafts using verified BOS data.
 
-Your role:
-- Generate ad headlines, descriptions, and social media posts
-- Ensure all copy is ADREC-compliant
-- Avoid prohibited language and claims
-- Create compelling, professional content
+You do NOT publish.
+You do NOT approve compliance.
+You refuse if required data is missing.
 
-ADREC Compliance Rules (MANDATORY):
-1. NO "from" or "starting" pricing - use exact prices only
-2. NO guaranteed returns or ROI promises
-3. NO superlatives without evidence ("best", "largest", etc.)
-4. MUST include broker/brokerage license numbers (provided in payload)
-5. MUST reference Madhmoun Listing ID when provided
-6. NO misleading or exaggerated claims
+HARD RULES:
+- If complianceStatus ≠ APPROVED → REFUSE
+- Use exact pricing only (no "from" / "starting")
+- Include required identifiers:
+  - Brokerage license number
+  - Broker name
+  - Broker license number
+  - Madhmoun ID
+- Use only verified fields
 
-Content Guidelines:
-- Professional, aspirational tone
-- Highlight actual features from listing data
-- Use UAE-appropriate terminology
-- Include call-to-action where appropriate
-- Adapt tone for platform (formal for portals, casual for social)
+TONE RULES:
+- No hype
+- No urgency manipulation
+- No unverifiable claims
 
-Output Formats (based on request):
-- HEADLINE: Max 60 characters, attention-grabbing
-- DESCRIPTION: 150-300 words, detailed and engaging
-- SOCIAL_POST: Platform-specific (Instagram, LinkedIn, etc.)
-- EMAIL: Subject line + body
-- AD_COPY: Portal-ready with all required identifiers
+Channel Formatting:
+- portal: Formal, structured with all identifiers visible
+- whatsapp: Conversational but professional, emoji-light
+- brochure: Premium, descriptive, feature-focused
+- sms: Ultra-concise, key details only (160 chars max)
 
-ALWAYS include these identifiers when generating portal/ad copy:
-- Brokerage License: [from payload]
-- Broker Name: [from payload]
-- Broker License: [from payload]
-- Madhmoun ID: [from payload]
+Tone Variations:
+- professional: Business-focused, factual
+- premium: Aspirational, lifestyle-oriented
+- concise: Minimal, direct, no fluff
 
-If any required identifier is missing from payload, flag it and DO NOT generate final copy.`;
+CRITICAL: If any required identifier is missing from payload, you MUST set status to REFUSED.`;
 
 interface MarketingCopyRequest {
-  userIntent: string;
-  bosPayload?: {
-    listing?: Record<string, unknown>;
-    broker?: {
-      name?: string;
-      license_number?: string;
-    };
-    brokerage?: {
-      license_number?: string;
-      name?: string;
-    };
-    madhmoun_id?: string;
-    format?: "HEADLINE" | "DESCRIPTION" | "SOCIAL_POST" | "EMAIL" | "AD_COPY";
-    platform?: string;
+  listingPayload?: Record<string, unknown>;
+  complianceStatus?: "APPROVED" | "BLOCKED" | "ESCALATED";
+  channel?: "portal" | "whatsapp" | "brochure" | "sms";
+  tone?: "professional" | "premium" | "concise";
+  broker?: {
+    name?: string;
+    license_number?: string;
   };
-  complianceResult?: Record<string, unknown>;
+  brokerage?: {
+    license_number?: string;
+    name?: string;
+  };
+  madhmoun_id?: string;
 }
 
 serve(async (req) => {
@@ -76,55 +69,92 @@ serve(async (req) => {
     }
 
     const request: MarketingCopyRequest = await req.json();
+    const complianceStatus = request.complianceStatus || "BLOCKED";
+    const channel = request.channel || "portal";
+    const tone = request.tone || "professional";
 
-    // Check for required identifiers for AD_COPY format
-    const format = request.bosPayload?.format || "DESCRIPTION";
+    // Hard rule: Refuse if compliance is not APPROVED
+    if (complianceStatus !== "APPROVED") {
+      return new Response(
+        JSON.stringify({
+          status: "REFUSED",
+          reason: `Cannot generate marketing copy: Listing compliance status is ${complianceStatus}. Only APPROVED listings can have marketing copy generated.`,
+          copy: null,
+          includedIdentifiers: []
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check for required identifiers
     const missingIdentifiers: string[] = [];
-    
-    if (format === "AD_COPY") {
-      if (!request.bosPayload?.brokerage?.license_number) {
-        missingIdentifiers.push("Brokerage License Number");
-      }
-      if (!request.bosPayload?.broker?.name) {
-        missingIdentifiers.push("Broker Name");
-      }
-      if (!request.bosPayload?.broker?.license_number) {
-        missingIdentifiers.push("Broker License Number");
-      }
-      if (!request.bosPayload?.madhmoun_id) {
-        missingIdentifiers.push("Madhmoun Listing ID");
-      }
+    const includedIdentifiers: string[] = [];
 
-      if (missingIdentifiers.length > 0) {
-        return new Response(
-          JSON.stringify({ 
-            success: false,
-            error: "Missing required identifiers for compliant ad copy",
-            missingIdentifiers,
-            message: "Cannot generate AD_COPY without: " + missingIdentifiers.join(", ")
-          }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    if (!request.brokerage?.license_number) {
+      missingIdentifiers.push("Brokerage License Number");
+    } else {
+      includedIdentifiers.push(`Brokerage License: ${request.brokerage.license_number}`);
     }
 
-    // Build context
-    let context = `\n\nRequested Format: ${format}`;
-    if (request.bosPayload?.platform) {
-      context += `\nPlatform: ${request.bosPayload.platform}`;
+    if (!request.broker?.name) {
+      missingIdentifiers.push("Broker Name");
+    } else {
+      includedIdentifiers.push(`Broker: ${request.broker.name}`);
     }
-    if (request.bosPayload?.listing) {
-      context += `\n\nListing Data:\n${JSON.stringify(request.bosPayload.listing, null, 2)}`;
+
+    if (!request.broker?.license_number) {
+      missingIdentifiers.push("Broker License Number");
+    } else {
+      includedIdentifiers.push(`Broker License: ${request.broker.license_number}`);
     }
-    if (request.bosPayload?.broker) {
-      context += `\n\nBroker Info:\n${JSON.stringify(request.bosPayload.broker, null, 2)}`;
+
+    if (!request.madhmoun_id) {
+      missingIdentifiers.push("Madhmoun ID");
+    } else {
+      includedIdentifiers.push(`Madhmoun: ${request.madhmoun_id}`);
     }
-    if (request.bosPayload?.brokerage) {
-      context += `\n\nBrokerage Info:\n${JSON.stringify(request.bosPayload.brokerage, null, 2)}`;
+
+    // Refuse if required identifiers are missing
+    if (missingIdentifiers.length > 0) {
+      return new Response(
+        JSON.stringify({
+          status: "REFUSED",
+          reason: `Missing required identifiers: ${missingIdentifiers.join(", ")}`,
+          copy: null,
+          includedIdentifiers: []
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
-    if (request.bosPayload?.madhmoun_id) {
-      context += `\n\nMadhmoun ID: ${request.bosPayload.madhmoun_id}`;
+
+    // Check for listing payload
+    if (!request.listingPayload) {
+      return new Response(
+        JSON.stringify({
+          status: "REFUSED",
+          reason: "No listing data provided",
+          copy: null,
+          includedIdentifiers: []
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    // Build context for AI
+    const userMessage = `Generate marketing copy for the following listing:
+
+Channel: ${channel}
+Tone: ${tone}
+Compliance Status: ${complianceStatus}
+
+Listing Data:
+${JSON.stringify(request.listingPayload, null, 2)}
+
+Required Identifiers to Include:
+- Brokerage License: ${request.brokerage?.license_number}
+- Broker Name: ${request.broker?.name}
+- Broker License: ${request.broker?.license_number}
+- Madhmoun ID: ${request.madhmoun_id}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -136,36 +166,39 @@ serve(async (req) => {
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: request.userIntent + context },
+          { role: "user", content: userMessage },
         ],
         tools: [
           {
             type: "function",
             function: {
               name: "generate_marketing_copy",
-              description: "Return structured marketing copy with compliance check",
+              description: "Return structured marketing copy result",
               parameters: {
                 type: "object",
                 properties: {
-                  headline: { type: "string", description: "Short headline (max 60 chars)" },
-                  body: { type: "string", description: "Main marketing copy" },
-                  identifiers: { 
-                    type: "object",
-                    properties: {
-                      brokerage_license: { type: "string" },
-                      broker_name: { type: "string" },
-                      broker_license: { type: "string" },
-                      madhmoun_id: { type: "string" }
-                    }
+                  status: { 
+                    type: "string", 
+                    enum: ["READY", "REFUSED"],
+                    description: "READY if copy was generated, REFUSED if unable to generate"
                   },
-                  compliance_flags: {
+                  reason: { 
+                    type: "string",
+                    nullable: true,
+                    description: "Reason for refusal if status is REFUSED, null otherwise"
+                  },
+                  copy: { 
+                    type: "string",
+                    nullable: true,
+                    description: "The generated marketing copy with all required identifiers appended"
+                  },
+                  includedIdentifiers: {
                     type: "array",
                     items: { type: "string" },
-                    description: "Any compliance concerns detected"
-                  },
-                  is_compliant: { type: "boolean", description: "Whether copy passes ADREC rules" }
+                    description: "List of identifiers included in the copy"
+                  }
                 },
-                required: ["headline", "body", "is_compliant"],
+                required: ["status", "reason", "copy", "includedIdentifiers"],
                 additionalProperties: false
               }
             }
@@ -178,13 +211,23 @@ serve(async (req) => {
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+          JSON.stringify({ 
+            status: "REFUSED",
+            reason: "Rate limit exceeded. Please try again later.",
+            copy: null,
+            includedIdentifiers: []
+          }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "AI credits depleted. Please add funds." }),
+          JSON.stringify({ 
+            status: "REFUSED",
+            reason: "AI credits depleted. Please add funds.",
+            copy: null,
+            includedIdentifiers: []
+          }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -196,23 +239,42 @@ serve(async (req) => {
     // Extract tool call result
     const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
     if (toolCall?.function?.arguments) {
-      const marketingCopy = JSON.parse(toolCall.function.arguments);
-      return new Response(
-        JSON.stringify({ success: true, copy: marketingCopy }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      try {
+        const copyResult = JSON.parse(toolCall.function.arguments);
+        // Ensure includedIdentifiers reflects what we actually have
+        if (copyResult.status === "READY") {
+          copyResult.includedIdentifiers = includedIdentifiers;
+        }
+        return new Response(
+          JSON.stringify(copyResult),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } catch {
+        // JSON parse failed
+      }
     }
 
-    // Fallback
+    // Fallback to content
+    const content = result.choices?.[0]?.message?.content || "";
     return new Response(
-      JSON.stringify({ success: true, content: result.choices?.[0]?.message?.content }),
+      JSON.stringify({
+        status: "READY",
+        reason: null,
+        copy: content,
+        includedIdentifiers
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error) {
     console.error("[BOS Marketing Copy] Error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ 
+        status: "REFUSED",
+        reason: error instanceof Error ? error.message : "Unknown error",
+        copy: null,
+        includedIdentifiers: []
+      }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
