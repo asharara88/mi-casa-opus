@@ -31,7 +31,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Building2, Shield, FileText, DollarSign, Sparkles, Settings, 
   AlertTriangle, Users, PenTool, Eye, ClipboardCheck, Download,
-  FileStack, Calendar, UserCheck, Wallet, Briefcase
+  FileStack, Calendar, UserCheck, Wallet, Briefcase, Handshake, LayoutDashboard
 } from 'lucide-react';
 
 // Section metadata
@@ -221,6 +221,11 @@ export function BOSApp() {
 // Local Section Components
 
 function AIInsightsSection() {
+  const { isDemoMode } = useDemoMode();
+  
+  // Import demo data dynamically
+  const demoInsights = isDemoMode ? require('@/data/demoData').DEMO_AI_INSIGHTS : [];
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-3">
@@ -230,23 +235,119 @@ function AIInsightsSection() {
           <p className="text-sm text-muted-foreground">Read-only analytics and predictions</p>
         </div>
       </div>
-      <div className="card-gold p-6">
-        <div className="flex items-start gap-4">
-          <AlertTriangle className="w-6 h-6 text-amber-400 flex-shrink-0" />
+      
+      {/* Disclaimer Banner */}
+      <div className="card-gold p-4">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-foreground mb-2">AI Features - Read Only & Non-Authoritative</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              AI insights in BOS are strictly read-only. AI cannot make decisions about 
-              compliance, calculate commissions, or modify deal states.
+            <h3 className="font-semibold text-foreground text-sm">Non-Authoritative AI</h3>
+            <p className="text-xs text-muted-foreground">
+              AI insights are suggestions only. They cannot make compliance decisions, calculate commissions, or modify deal states.
             </p>
-            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-              <li>Lead scoring and prioritization suggestions</li>
-              <li>Deal health predictions</li>
-              <li>Next-best-action recommendations</li>
-              <li>Document completeness analysis</li>
-            </ul>
           </div>
         </div>
+      </div>
+
+      {isDemoMode && demoInsights.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {demoInsights.map((insight: any) => (
+            <AIInsightCard key={insight.id} insight={insight} />
+          ))}
+        </div>
+      ) : (
+        <div className="card-surface p-8 text-center">
+          <Sparkles className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">No AI insights available. Enable demo mode to see sample insights.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AIInsightCard({ insight }: { insight: any }) {
+  const getScoreColor = (score: number) => {
+    if (score >= 85) return 'text-emerald bg-emerald/10 border-emerald/30';
+    if (score >= 70) return 'text-amber-500 bg-amber-500/10 border-amber-500/30';
+    return 'text-rose-500 bg-rose-500/10 border-rose-500/30';
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'lead_score': return <Users className="w-4 h-4" />;
+      case 'deal_health': return <Handshake className="w-4 h-4" />;
+      case 'pipeline_analysis': return <LayoutDashboard className="w-4 h-4" />;
+      default: return <Sparkles className="w-4 h-4" />;
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'lead_score': return 'Lead Score';
+      case 'deal_health': return 'Deal Health';
+      case 'pipeline_analysis': return 'Pipeline Analysis';
+      default: return 'Insight';
+    }
+  };
+
+  return (
+    <div className="card-surface p-4 space-y-4">
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded bg-primary/10 text-primary">
+            {getTypeIcon(insight.insight_type)}
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">{getTypeLabel(insight.insight_type)}</p>
+            <p className="font-medium text-sm text-foreground">{insight.entity_name}</p>
+          </div>
+        </div>
+        <div className={`px-3 py-1 rounded-full text-lg font-bold border ${getScoreColor(insight.score)}`}>
+          {insight.score}
+        </div>
+      </div>
+
+      <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+        <p className="text-xs font-medium text-primary mb-1">Next Best Action</p>
+        <p className="text-sm text-foreground">{insight.next_best_action}</p>
+      </div>
+
+      {insight.rationale?.factors && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">Score Breakdown</p>
+          <div className="space-y-1.5">
+            {insight.rationale.factors.map((factor: any, idx: number) => (
+              <div key={idx} className="flex items-center gap-2 text-xs">
+                <div className="flex-1">
+                  <div className="flex justify-between mb-0.5">
+                    <span className="text-muted-foreground">{factor.factor}</span>
+                    <span className="text-foreground font-medium">{factor.score}</span>
+                  </div>
+                  <div className="h-1 bg-secondary rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full ${factor.score >= 85 ? 'bg-emerald' : factor.score >= 70 ? 'bg-amber-500' : 'bg-rose-500'}`}
+                      style={{ width: `${factor.score}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {insight.rationale.confidence && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Confidence: {Math.round(insight.rationale.confidence * 100)}%
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between pt-2 border-t border-border">
+        <span className="text-xs text-muted-foreground">
+          {new Date(insight.created_at).toLocaleTimeString()}
+        </span>
+        <span className="text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/30">
+          Non-Authoritative
+        </span>
       </div>
     </div>
   );
