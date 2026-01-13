@@ -234,6 +234,7 @@ export function DealsSection() {
         onTransition={(deal, state) => {
           handleDealTransition(deal, state);
         }}
+        dealDbId={selectedDealId || undefined}
       />
     );
   }
