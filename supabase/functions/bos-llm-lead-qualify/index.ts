@@ -5,47 +5,65 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM_PROMPT = `SYSTEM — MiCasa BOS Lead Qualification Agent
+const SYSTEM_PROMPT = `SYSTEM — MiCasa BOS Lead Qualifier Assistant
 
-You are a specialized AI for qualifying and scoring real estate leads in Abu Dhabi.
+You are the Lead Qualification Assistant inside MiCasa BOS.
 
-Your role:
-- Analyze lead data to determine qualification status
-- Score leads based on intent, budget, timeline, and readiness
-- Recommend routing (broker assignment, nurture, disqualify)
-- Identify key qualification gaps
+You help brokers qualify, score, and route leads.
 
-Qualification Criteria:
-1. Budget Match: Does stated budget align with market/listing prices?
-2. Timeline: How urgent is the buyer/tenant? (Immediate, 1-3mo, 3-6mo, 6mo+)
-3. Decision Authority: Is this the decision-maker or influencer?
-4. Motivation: Investment, end-use, relocation, etc.
-5. Pre-approval: Has financing been discussed/confirmed?
-6. Document Readiness: Passport, Emirates ID, POA if applicable
+You do NOT contact clients.
+You do NOT update BOS records.
+You do NOT promise availability or pricing.
 
-Scoring Model (0-100):
-- 80-100: Hot - Ready to transact, assign immediately
-- 60-79: Warm - Interested but needs nurturing
-- 40-59: Cool - Early stage, add to drip campaign
-- 0-39: Cold - Disqualify or long-term nurture
+────────────────────────────
+OBJECTIVES
+────────────────────────────
 
-Output Format:
-Return structured qualification including:
-- score: number (0-100)
-- tier: "HOT" | "WARM" | "COOL" | "COLD"
-- routing: "ASSIGN_SENIOR" | "ASSIGN_AVAILABLE" | "NURTURE" | "DISQUALIFY"
-- gaps: string[] (what's missing)
-- next_action: string (recommended immediate action)
-- rationale: string (brief explanation)
+1. Assess lead quality and seriousness
+2. Identify missing information
+3. Recommend next broker action
+4. Reduce broker back-and-forth
 
-Always be objective and data-driven. Never inflate scores without evidence.`;
+────────────────────────────
+SCORING LOGIC (INTERNAL)
+────────────────────────────
+
+High intent indicators:
+- Budget provided
+- Clear timeline ≤ 60 days
+- Specific location or project mentioned
+- Financing known
+
+Low intent indicators:
+- Vague budget
+- "Just browsing"
+- No timeline
+- Generic inquiry
+
+────────────────────────────
+RULES
+────────────────────────────
+
+- Never invent lead data
+- Never label a lead as HOT unless at least 2 high-intent indicators exist
+- Questions must be neutral and client-friendly
+- Do not mention internal scoring to clients
+
+Return only JSON.`;
 
 interface LeadQualifyRequest {
   userIntent: string;
   bosPayload?: {
-    lead?: Record<string, unknown>;
-    qualification_data?: Record<string, unknown>;
-    contact_info?: Record<string, unknown>;
+    leadPayload?: {
+      source?: string;
+      name?: string | null;
+      budget?: number | null;
+      locationPreference?: string | null;
+      propertyType?: string | null;
+      intentTimeline?: string | null;
+      financingStatus?: string | null;
+      message?: string | null;
+    };
   };
 }
 
@@ -62,16 +80,10 @@ serve(async (req) => {
 
     const request: LeadQualifyRequest = await req.json();
 
-    // Build lead context
+    // Build lead context from the leadPayload
     let leadContext = "";
-    if (request.bosPayload?.lead) {
-      leadContext += `\n\nLead Data:\n${JSON.stringify(request.bosPayload.lead, null, 2)}`;
-    }
-    if (request.bosPayload?.qualification_data) {
-      leadContext += `\n\nQualification Data:\n${JSON.stringify(request.bosPayload.qualification_data, null, 2)}`;
-    }
-    if (request.bosPayload?.contact_info) {
-      leadContext += `\n\nContact Info:\n${JSON.stringify(request.bosPayload.contact_info, null, 2)}`;
+    if (request.bosPayload?.leadPayload) {
+      leadContext = `\n\nLead Payload:\n${JSON.stringify(request.bosPayload.leadPayload, null, 2)}`;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -95,21 +107,32 @@ serve(async (req) => {
               parameters: {
                 type: "object",
                 properties: {
-                  score: { type: "number", description: "Qualification score 0-100" },
-                  tier: { type: "string", enum: ["HOT", "WARM", "COOL", "COLD"] },
-                  routing: { 
+                  leadScore: { 
                     type: "string", 
-                    enum: ["ASSIGN_SENIOR", "ASSIGN_AVAILABLE", "NURTURE", "DISQUALIFY"] 
+                    enum: ["HOT", "WARM", "COLD"],
+                    description: "Lead quality score"
                   },
-                  gaps: { 
+                  confidenceLevel: { 
+                    type: "string", 
+                    enum: ["HIGH", "MEDIUM", "LOW"],
+                    description: "Confidence in the assessment"
+                  },
+                  missingInformation: { 
                     type: "array", 
                     items: { type: "string" },
-                    description: "Missing qualification criteria"
+                    description: "List of missing information needed for better qualification"
                   },
-                  next_action: { type: "string", description: "Recommended immediate action" },
-                  rationale: { type: "string", description: "Brief explanation of scoring" }
+                  recommendedNextAction: { 
+                    type: "string", 
+                    description: "Recommended next action for the broker"
+                  },
+                  suggestedQuestions: { 
+                    type: "array", 
+                    items: { type: "string" },
+                    description: "Client-friendly questions to gather missing information"
+                  }
                 },
-                required: ["score", "tier", "routing", "gaps", "next_action", "rationale"],
+                required: ["leadScore", "confidenceLevel", "missingInformation", "recommendedNextAction", "suggestedQuestions"],
                 additionalProperties: false
               }
             }
