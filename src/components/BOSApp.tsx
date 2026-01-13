@@ -149,7 +149,7 @@ export function BOSApp() {
         return <UsersSection />;
       
       case 'ai-insights':
-        return <AIInsightsSection />;
+        return <AIInsightsSection onNavigate={setActiveSection} />;
       
       case 'my-day':
         return <MyDaySection />;
@@ -220,7 +220,7 @@ export function BOSApp() {
 
 // Local Section Components
 
-function AIInsightsSection() {
+function AIInsightsSection({ onNavigate }: { onNavigate: (section: string, entityId?: string) => void }) {
   const { isDemoMode } = useDemoMode();
   
   // Import demo data dynamically
@@ -252,7 +252,7 @@ function AIInsightsSection() {
       {isDemoMode && demoInsights.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {demoInsights.map((insight: any) => (
-            <AIInsightCard key={insight.id} insight={insight} />
+            <AIInsightCard key={insight.id} insight={insight} onNavigate={onNavigate} />
           ))}
         </div>
       ) : (
@@ -265,7 +265,7 @@ function AIInsightsSection() {
   );
 }
 
-function AIInsightCard({ insight }: { insight: any }) {
+function AIInsightCard({ insight, onNavigate }: { insight: any; onNavigate: (section: string, entityId?: string) => void }) {
   const getScoreColor = (score: number) => {
     if (score >= 85) return 'text-emerald bg-emerald/10 border-emerald/30';
     if (score >= 70) return 'text-amber-500 bg-amber-500/10 border-amber-500/30';
@@ -290,8 +290,21 @@ function AIInsightCard({ insight }: { insight: any }) {
     }
   };
 
+  const isClickable = insight.entity_type === 'lead' || insight.entity_type === 'deal';
+
+  const handleClick = () => {
+    if (insight.entity_type === 'lead') {
+      onNavigate('leads', insight.entity_id);
+    } else if (insight.entity_type === 'deal') {
+      onNavigate('deals', insight.entity_id);
+    }
+  };
+
   return (
-    <div className="card-surface p-4 space-y-4">
+    <div 
+      className={`card-surface p-4 space-y-4 transition-all ${isClickable ? 'cursor-pointer hover:border-primary/50 hover:shadow-md' : ''}`}
+      onClick={isClickable ? handleClick : undefined}
+    >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded bg-primary/10 text-primary">
@@ -345,9 +358,14 @@ function AIInsightCard({ insight }: { insight: any }) {
         <span className="text-xs text-muted-foreground">
           {new Date(insight.created_at).toLocaleTimeString()}
         </span>
-        <span className="text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/30">
-          Non-Authoritative
-        </span>
+        <div className="flex items-center gap-2">
+          {isClickable && (
+            <span className="text-xs text-primary">Click to view →</span>
+          )}
+          <span className="text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/30">
+            Non-Authoritative
+          </span>
+        </div>
       </div>
     </div>
   );
