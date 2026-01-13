@@ -15,7 +15,7 @@ export default {
   	extend: {
   		fontFamily: {
   			sans: [
-  				'Space Grotesk',
+  				'Inter',
   				'ui-sans-serif',
   				'system-ui',
   				'-apple-system',
@@ -104,19 +104,19 @@ export default {
   				DEFAULT: 'hsl(var(--coral))',
   				muted: 'hsl(var(--coral-muted))'
   			},
-			cyan: 'hsl(var(--cyan))',
-			purple: 'hsl(var(--purple))',
-			warning: {
-				DEFAULT: 'hsl(var(--warning))',
-				foreground: 'hsl(var(--warning-foreground))'
-			},
-			state: {
-				new: 'hsl(var(--state-new))',
-				active: 'hsl(var(--state-active))',
-				pending: 'hsl(var(--state-pending))',
-				blocked: 'hsl(var(--state-blocked))',
-				closed: 'hsl(var(--state-closed))'
-			}
+  			cyan: 'hsl(var(--cyan))',
+  			purple: 'hsl(var(--purple))',
+  			warning: {
+  				DEFAULT: 'hsl(var(--warning))',
+  				foreground: 'hsl(var(--warning-foreground))'
+  			},
+  			state: {
+  				new: 'hsl(var(--state-new))',
+  				active: 'hsl(var(--state-active))',
+  				pending: 'hsl(var(--state-pending))',
+  				blocked: 'hsl(var(--state-blocked))',
+  				closed: 'hsl(var(--state-closed))'
+  			}
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
