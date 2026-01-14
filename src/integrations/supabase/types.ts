@@ -1035,6 +1035,69 @@ export type Database = {
         }
         Relationships: []
       }
+      prospects: {
+        Row: {
+          city: string | null
+          contact_attempts: number | null
+          created_at: string
+          crm_confidence_level: string | null
+          crm_created_date: string | null
+          crm_customer_id: string | null
+          crm_stage: string | null
+          email: string | null
+          first_name: string | null
+          full_name: string
+          id: string
+          last_contacted_at: string | null
+          last_name: string | null
+          notes: string | null
+          outreach_status: string | null
+          phone: string | null
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          contact_attempts?: number | null
+          created_at?: string
+          crm_confidence_level?: string | null
+          crm_created_date?: string | null
+          crm_customer_id?: string | null
+          crm_stage?: string | null
+          email?: string | null
+          first_name?: string | null
+          full_name: string
+          id?: string
+          last_contacted_at?: string | null
+          last_name?: string | null
+          notes?: string | null
+          outreach_status?: string | null
+          phone?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          contact_attempts?: number | null
+          created_at?: string
+          crm_confidence_level?: string | null
+          crm_created_date?: string | null
+          crm_customer_id?: string | null
+          crm_stage?: string | null
+          email?: string | null
+          first_name?: string | null
+          full_name?: string
+          id?: string
+          last_contacted_at?: string | null
+          last_name?: string | null
+          notes?: string | null
+          outreach_status?: string | null
+          phone?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       signature_envelopes: {
         Row: {
           authority_checks: Json | null

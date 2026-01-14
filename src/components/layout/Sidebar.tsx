@@ -23,6 +23,7 @@ import {
   Calendar,
   UserCheck,
   Wallet,
+  UserPlus,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -48,6 +49,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'leads', label: 'Leads', icon: Users, roles: ['Operator'], group: 'operations' },
   { id: 'deals', label: 'Deals', icon: Handshake, roles: ['Operator'], group: 'operations' },
   { id: 'listings', label: 'Listings', icon: Building2, roles: ['Operator'], group: 'operations' },
+  { id: 'prospects', label: 'Prospects', icon: UserPlus, roles: ['Operator'], group: 'operations' },
   { id: 'documents', label: 'Documents', icon: FileText, roles: ['Operator'], group: 'documents' },
   { id: 'signatures', label: 'Signatures', icon: PenTool, roles: ['Operator'], group: 'documents' },
   { id: 'evidence', label: 'Evidence', icon: Eye, roles: ['Operator'], group: 'documents' },

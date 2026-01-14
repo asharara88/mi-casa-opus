@@ -19,6 +19,7 @@ import { ExportsSection } from '@/components/exports/ExportsSection';
 import { UsersSection } from '@/components/users/UsersSection';
 import { ListingsSection } from '@/components/listings/ListingsSection';
 import { TemplatesSection } from '@/components/templates/TemplatesSection';
+import { ProspectsSection } from '@/components/prospects/ProspectsSection';
 import { useBrokerageContext } from '@/hooks/useBrokerage';
 import { useLeads } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
@@ -41,6 +42,7 @@ const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   leads: { title: 'Lead Pipeline', subtitle: 'Manage and qualify incoming leads' },
   deals: { title: 'Deal Pipeline', subtitle: 'Track deals through the transaction lifecycle' },
   listings: { title: 'Listings', subtitle: 'Property inventory management' },
+  prospects: { title: 'Prospects', subtitle: 'Cold outreach and engagement tracking' },
   documents: { title: 'Document Center', subtitle: 'Templates and executed documents' },
   signatures: { title: 'Signature Envelopes', subtitle: 'Track document execution status' },
   evidence: { title: 'Evidence Center', subtitle: 'Captured evidence and attachments' },
@@ -156,6 +158,9 @@ export function BOSApp() {
       
       case 'listings':
         return <ListingsSection />;
+      
+      case 'prospects':
+        return <ProspectsSection />;
       
       case 'settings':
         return <SettingsSection brokerage={brokerage} isLoading={isLoadingBrokerage} />;
