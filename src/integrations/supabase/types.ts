@@ -489,24 +489,53 @@ export type Database = {
           compliance_status:
             | Database["public"]["Enums"]["compliance_status"]
             | null
+          construction_milestone: string | null
           created_at: string
           deal_economics: Json | null
           deal_id: string
           deal_state: Database["public"]["Enums"]["deal_state"]
           deal_type: Database["public"]["Enums"]["deal_type"]
+          developer_id: string | null
+          developer_project_id: string | null
+          developer_project_name: string | null
+          eoi_amount: number | null
+          eoi_paid_at: string | null
+          handover_date: string | null
           id: string
           linked_lead_id: string | null
           listing_id: string | null
           lost_at: string | null
           lost_reason: Database["public"]["Enums"]["lost_reason"] | null
           lost_reason_notes: string | null
+          mortgage_pre_approval_at: string | null
+          mortgage_provider: string | null
+          mortgage_status: string | null
           next_action: Database["public"]["Enums"]["next_action_type"] | null
           next_action_due: string | null
           next_action_owner: string | null
+          noc_obtained_at: string | null
+          noc_reference: string | null
+          noc_status: string | null
           notes: string | null
+          offplan_dead_reason:
+            | Database["public"]["Enums"]["offplan_dead_reason"]
+            | null
+          offplan_state:
+            | Database["public"]["Enums"]["offplan_deal_state"]
+            | null
+          payment_plan_type: string | null
+          pipeline: Database["public"]["Enums"]["deal_pipeline"] | null
           property_id: string | null
           registry_actions: Json | null
+          secondary_dead_reason:
+            | Database["public"]["Enums"]["secondary_dead_reason"]
+            | null
+          secondary_state:
+            | Database["public"]["Enums"]["secondary_deal_state"]
+            | null
           side: Database["public"]["Enums"]["deal_side"]
+          transfer_date: string | null
+          transfer_number: string | null
           updated_at: string
         }
         Insert: {
@@ -515,24 +544,53 @@ export type Database = {
           compliance_status?:
             | Database["public"]["Enums"]["compliance_status"]
             | null
+          construction_milestone?: string | null
           created_at?: string
           deal_economics?: Json | null
           deal_id: string
           deal_state?: Database["public"]["Enums"]["deal_state"]
           deal_type: Database["public"]["Enums"]["deal_type"]
+          developer_id?: string | null
+          developer_project_id?: string | null
+          developer_project_name?: string | null
+          eoi_amount?: number | null
+          eoi_paid_at?: string | null
+          handover_date?: string | null
           id?: string
           linked_lead_id?: string | null
           listing_id?: string | null
           lost_at?: string | null
           lost_reason?: Database["public"]["Enums"]["lost_reason"] | null
           lost_reason_notes?: string | null
+          mortgage_pre_approval_at?: string | null
+          mortgage_provider?: string | null
+          mortgage_status?: string | null
           next_action?: Database["public"]["Enums"]["next_action_type"] | null
           next_action_due?: string | null
           next_action_owner?: string | null
+          noc_obtained_at?: string | null
+          noc_reference?: string | null
+          noc_status?: string | null
           notes?: string | null
+          offplan_dead_reason?:
+            | Database["public"]["Enums"]["offplan_dead_reason"]
+            | null
+          offplan_state?:
+            | Database["public"]["Enums"]["offplan_deal_state"]
+            | null
+          payment_plan_type?: string | null
+          pipeline?: Database["public"]["Enums"]["deal_pipeline"] | null
           property_id?: string | null
           registry_actions?: Json | null
+          secondary_dead_reason?:
+            | Database["public"]["Enums"]["secondary_dead_reason"]
+            | null
+          secondary_state?:
+            | Database["public"]["Enums"]["secondary_deal_state"]
+            | null
           side: Database["public"]["Enums"]["deal_side"]
+          transfer_date?: string | null
+          transfer_number?: string | null
           updated_at?: string
         }
         Update: {
@@ -541,24 +599,53 @@ export type Database = {
           compliance_status?:
             | Database["public"]["Enums"]["compliance_status"]
             | null
+          construction_milestone?: string | null
           created_at?: string
           deal_economics?: Json | null
           deal_id?: string
           deal_state?: Database["public"]["Enums"]["deal_state"]
           deal_type?: Database["public"]["Enums"]["deal_type"]
+          developer_id?: string | null
+          developer_project_id?: string | null
+          developer_project_name?: string | null
+          eoi_amount?: number | null
+          eoi_paid_at?: string | null
+          handover_date?: string | null
           id?: string
           linked_lead_id?: string | null
           listing_id?: string | null
           lost_at?: string | null
           lost_reason?: Database["public"]["Enums"]["lost_reason"] | null
           lost_reason_notes?: string | null
+          mortgage_pre_approval_at?: string | null
+          mortgage_provider?: string | null
+          mortgage_status?: string | null
           next_action?: Database["public"]["Enums"]["next_action_type"] | null
           next_action_due?: string | null
           next_action_owner?: string | null
+          noc_obtained_at?: string | null
+          noc_reference?: string | null
+          noc_status?: string | null
           notes?: string | null
+          offplan_dead_reason?:
+            | Database["public"]["Enums"]["offplan_dead_reason"]
+            | null
+          offplan_state?:
+            | Database["public"]["Enums"]["offplan_deal_state"]
+            | null
+          payment_plan_type?: string | null
+          pipeline?: Database["public"]["Enums"]["deal_pipeline"] | null
           property_id?: string | null
           registry_actions?: Json | null
+          secondary_dead_reason?:
+            | Database["public"]["Enums"]["secondary_dead_reason"]
+            | null
+          secondary_state?:
+            | Database["public"]["Enums"]["secondary_deal_state"]
+            | null
           side?: Database["public"]["Enums"]["deal_side"]
+          transfer_date?: string | null
+          transfer_number?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -577,6 +664,134 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      developer_projects: {
+        Row: {
+          amenities: Json | null
+          available_units: number | null
+          brochure_url: string | null
+          commission_percent: number | null
+          community: string | null
+          created_at: string | null
+          developer_id: string
+          expected_handover: string | null
+          floor_plans_url: string | null
+          id: string
+          is_active: boolean | null
+          launch_date: string | null
+          location: string | null
+          name: string
+          payment_plan_details: Json | null
+          price_from: number | null
+          price_to: number | null
+          project_id: string
+          project_type: string | null
+          status: string | null
+          total_units: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          amenities?: Json | null
+          available_units?: number | null
+          brochure_url?: string | null
+          commission_percent?: number | null
+          community?: string | null
+          created_at?: string | null
+          developer_id: string
+          expected_handover?: string | null
+          floor_plans_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          launch_date?: string | null
+          location?: string | null
+          name: string
+          payment_plan_details?: Json | null
+          price_from?: number | null
+          price_to?: number | null
+          project_id: string
+          project_type?: string | null
+          status?: string | null
+          total_units?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          amenities?: Json | null
+          available_units?: number | null
+          brochure_url?: string | null
+          commission_percent?: number | null
+          community?: string | null
+          created_at?: string | null
+          developer_id?: string
+          expected_handover?: string | null
+          floor_plans_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          launch_date?: string | null
+          location?: string | null
+          name?: string
+          payment_plan_details?: Json | null
+          price_from?: number | null
+          price_to?: number | null
+          project_id?: string
+          project_type?: string | null
+          status?: string | null
+          total_units?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "developer_projects_developer_id_fkey"
+            columns: ["developer_id"]
+            isOneToOne: false
+            referencedRelation: "developers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      developers: {
+        Row: {
+          address: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          developer_id: string
+          id: string
+          is_active: boolean | null
+          legal_name: string | null
+          logo_url: string | null
+          name: string
+          rera_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          developer_id: string
+          id?: string
+          is_active?: boolean | null
+          legal_name?: string | null
+          logo_url?: string | null
+          name: string
+          rera_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          developer_id?: string
+          id?: string
+          is_active?: boolean | null
+          legal_name?: string | null
+          logo_url?: string | null
+          name?: string
+          rera_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       document_instances: {
         Row: {
@@ -1165,7 +1380,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      pipeline_kpis: {
+        Row: {
+          active_deals: number | null
+          avg_days_to_close: number | null
+          lost_deals: number | null
+          pipeline: Database["public"]["Enums"]["deal_pipeline"] | null
+          total_deals: number | null
+          win_rate: number | null
+          won_deals: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_user_role: {
@@ -1194,6 +1420,7 @@ export type Database = {
       compliance_context_type: "listing" | "transaction" | "marketing"
       compliance_rule_severity: "BLOCK" | "ESCALATE"
       compliance_status: "APPROVED" | "BLOCKED" | "ESCALATED"
+      deal_pipeline: "OffPlan" | "Secondary"
       deal_side: "Buy" | "Sell" | "Lease" | "Let"
       deal_state:
         | "Created"
@@ -1266,6 +1493,23 @@ export type Database = {
         | "SendOffer"
         | "CollectDocs"
         | "Other"
+      offplan_dead_reason:
+        | "BudgetMismatch"
+        | "KYCFailed"
+        | "ClientWithdrew"
+        | "PaymentDefault"
+        | "ProjectCancelled"
+        | "Other"
+      offplan_deal_state:
+        | "LeadQualified"
+        | "EOISubmitted"
+        | "EOIPaid"
+        | "SPASigned"
+        | "PaymentPlan"
+        | "Construction"
+        | "Handover"
+        | "ClosedWon"
+        | "ClosedLost"
       party_role:
         | "Buyer"
         | "Seller"
@@ -1279,6 +1523,27 @@ export type Database = {
         | "Approved"
         | "Executed"
         | "Voided"
+      secondary_dead_reason:
+        | "NoSuitableProperty"
+        | "BudgetMismatch"
+        | "MortgageRejected"
+        | "ClientWithdrew"
+        | "SellerWithdrew"
+        | "NOCRejected"
+        | "LegalIssue"
+        | "Other"
+      secondary_deal_state:
+        | "RequirementsCaptured"
+        | "ViewingScheduled"
+        | "ViewingCompleted"
+        | "OfferSubmitted"
+        | "OfferAccepted"
+        | "MOUSigned"
+        | "NOCObtained"
+        | "TransferBooked"
+        | "TransferComplete"
+        | "ClosedWon"
+        | "ClosedLost"
       signature_status: "Pending" | "Signed" | "Declined" | "Expired"
       template_status: "Draft" | "Published" | "Deprecated"
     }
@@ -1422,6 +1687,7 @@ export const Constants = {
       compliance_context_type: ["listing", "transaction", "marketing"],
       compliance_rule_severity: ["BLOCK", "ESCALATE"],
       compliance_status: ["APPROVED", "BLOCKED", "ESCALATED"],
+      deal_pipeline: ["OffPlan", "Secondary"],
       deal_side: ["Buy", "Sell", "Lease", "Let"],
       deal_state: [
         "Created",
@@ -1501,6 +1767,25 @@ export const Constants = {
         "CollectDocs",
         "Other",
       ],
+      offplan_dead_reason: [
+        "BudgetMismatch",
+        "KYCFailed",
+        "ClientWithdrew",
+        "PaymentDefault",
+        "ProjectCancelled",
+        "Other",
+      ],
+      offplan_deal_state: [
+        "LeadQualified",
+        "EOISubmitted",
+        "EOIPaid",
+        "SPASigned",
+        "PaymentPlan",
+        "Construction",
+        "Handover",
+        "ClosedWon",
+        "ClosedLost",
+      ],
       party_role: [
         "Buyer",
         "Seller",
@@ -1515,6 +1800,29 @@ export const Constants = {
         "Approved",
         "Executed",
         "Voided",
+      ],
+      secondary_dead_reason: [
+        "NoSuitableProperty",
+        "BudgetMismatch",
+        "MortgageRejected",
+        "ClientWithdrew",
+        "SellerWithdrew",
+        "NOCRejected",
+        "LegalIssue",
+        "Other",
+      ],
+      secondary_deal_state: [
+        "RequirementsCaptured",
+        "ViewingScheduled",
+        "ViewingCompleted",
+        "OfferSubmitted",
+        "OfferAccepted",
+        "MOUSigned",
+        "NOCObtained",
+        "TransferBooked",
+        "TransferComplete",
+        "ClosedWon",
+        "ClosedLost",
       ],
       signature_status: ["Pending", "Signed", "Declined", "Expired"],
       template_status: ["Draft", "Published", "Deprecated"],
