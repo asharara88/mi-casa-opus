@@ -117,8 +117,8 @@ export function OffPlanDealCard({
       {/* Next Action */}
       {deal.next_action && (
         <NextActionBadge
-          action={deal.next_action}
-          dueDate={deal.next_action_due}
+          nextAction={deal.next_action as any}
+          nextActionDue={deal.next_action_due}
         />
       )}
 
