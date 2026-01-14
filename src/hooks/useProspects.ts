@@ -78,24 +78,42 @@ export function useProspectStats() {
   return useQuery({
     queryKey: ['prospect-stats'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Use count queries to avoid 1000 row limit
+      const { count: total, error: totalError } = await supabase
         .from('prospects')
-        .select('outreach_status, crm_confidence_level');
+        .select('*', { count: 'exact', head: true });
       
-      if (error) throw error;
+      if (totalError) throw totalError;
+
+      // Get counts by outreach_status
+      const statusValues = ['not_contacted', 'contacted', 'qualified', 'not_interested', 'converted'];
+      const byStatus: Record<string, number> = {};
       
-      const total = data.length;
-      const byStatus = data.reduce((acc, p) => {
-        acc[p.outreach_status || 'not_contacted'] = (acc[p.outreach_status || 'not_contacted'] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      for (const status of statusValues) {
+        const { count, error } = await supabase
+          .from('prospects')
+          .select('*', { count: 'exact', head: true })
+          .eq('outreach_status', status);
+        if (!error && count !== null) {
+          byStatus[status] = count;
+        }
+      }
+
+      // Get counts by confidence level
+      const confidenceLevels = ['High', 'Medium', 'Low'];
+      const byConfidence: Record<string, number> = {};
       
-      const byConfidence = data.reduce((acc, p) => {
-        acc[p.crm_confidence_level || 'Unknown'] = (acc[p.crm_confidence_level || 'Unknown'] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      for (const level of confidenceLevels) {
+        const { count, error } = await supabase
+          .from('prospects')
+          .select('*', { count: 'exact', head: true })
+          .eq('crm_confidence_level', level);
+        if (!error && count !== null) {
+          byConfidence[level] = count;
+        }
+      }
       
-      return { total, byStatus, byConfidence };
+      return { total: total || 0, byStatus, byConfidence };
     },
   });
 }
