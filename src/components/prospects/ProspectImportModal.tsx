@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { useBulkInsertProspects, ProspectInsert } from '@/hooks/useProspects';
+import { useImportProspectsCSV } from '@/hooks/useProspects';
 import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface Props {
@@ -13,68 +13,17 @@ interface Props {
 
 export function ProspectImportModal({ open, onOpenChange }: Props) {
   const [file, setFile] = useState<File | null>(null);
-  const [parsedData, setParsedData] = useState<ProspectInsert[]>([]);
+  const [csvContent, setCsvContent] = useState<string>('');
+  const [rowCount, setRowCount] = useState(0);
   const [parseError, setParseError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const bulkInsert = useBulkInsertProspects();
+  const importCSV = useImportProspectsCSV();
 
-  const parseCSV = (text: string): ProspectInsert[] => {
+  const countCSVRows = (text: string): number => {
     const lines = text.trim().split('\n');
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
-    
-    const prospects: ProspectInsert[] = [];
-    
-    for (let i = 1; i < lines.length; i++) {
-      const values = parseCSVLine(lines[i]);
-      if (values.length !== headers.length) continue;
-      
-      const row: Record<string, string> = {};
-      headers.forEach((h, idx) => {
-        row[h] = values[idx]?.trim().replace(/"/g, '') || '';
-      });
-      
-      // Map CSV columns to our schema
-      const prospect: ProspectInsert = {
-        first_name: row['first_name'] || null,
-        last_name: row['last_name'] || null,
-        full_name: row['full_name'] || `${row['first_name'] || ''} ${row['last_name'] || ''}`.trim() || 'Unknown',
-        phone: row['phone'] || null,
-        email: row['email'] || null,
-        source: row['source'] || null,
-        city: row['city'] || null,
-        crm_customer_id: row['crm_customer_id'] || null,
-        crm_created_date: row['crm_created_date'] || null,
-        crm_stage: row['crm_stage'] || 'Prospect',
-        crm_confidence_level: row['crm_confidence_level'] || null,
-        outreach_status: 'not_contacted',
-      };
-      
-      prospects.push(prospect);
-    }
-    
-    return prospects;
-  };
-
-  const parseCSVLine = (line: string): string[] => {
-    const result: string[] = [];
-    let current = '';
-    let inQuotes = false;
-    
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === ',' && !inQuotes) {
-        result.push(current);
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-    result.push(current);
-    return result;
+    return Math.max(0, lines.length - 1); // Subtract header row
   };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -88,11 +37,17 @@ export function ProspectImportModal({ open, onOpenChange }: Props) {
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string;
-        const data = parseCSV(text);
-        setParsedData(data);
+        const count = countCSVRows(text);
+        setRowCount(count);
+        setCsvContent(text);
+        
+        if (count === 0) {
+          setParseError('No data rows found in CSV file.');
+        }
       } catch (err) {
-        setParseError('Failed to parse CSV file. Please check the format.');
-        setParsedData([]);
+        setParseError('Failed to read CSV file. Please check the format.');
+        setCsvContent('');
+        setRowCount(0);
       }
     };
     reader.readAsText(csvFile);
@@ -105,30 +60,29 @@ export function ProspectImportModal({ open, onOpenChange }: Props) {
   });
 
   const handleImport = async () => {
-    if (parsedData.length === 0) return;
+    if (!csvContent || rowCount === 0) return;
     
     setImporting(true);
     setProgress(0);
     
     try {
-      // Simulate progress for UX
+      // Simulate progress while edge function processes
       const progressInterval = setInterval(() => {
-        setProgress(p => Math.min(p + 10, 90));
-      }, 200);
+        setProgress(p => Math.min(p + 5, 90));
+      }, 500);
       
-      await bulkInsert.mutateAsync(parsedData);
+      await importCSV.mutateAsync(csvContent);
       
       clearInterval(progressInterval);
       setProgress(100);
       
       setTimeout(() => {
         onOpenChange(false);
-        setFile(null);
-        setParsedData([]);
-        setProgress(0);
+        reset();
       }, 1000);
     } catch (error) {
       // Error handled by mutation
+      setProgress(0);
     } finally {
       setImporting(false);
     }
@@ -136,7 +90,8 @@ export function ProspectImportModal({ open, onOpenChange }: Props) {
 
   const reset = () => {
     setFile(null);
-    setParsedData([]);
+    setCsvContent('');
+    setRowCount(0);
     setParseError(null);
     setProgress(0);
   };
@@ -190,7 +145,7 @@ export function ProspectImportModal({ open, onOpenChange }: Props) {
               ) : (
                 <div className="flex items-center gap-2 text-emerald-500 text-sm">
                   <CheckCircle2 className="h-4 w-4" />
-                  Found {parsedData.length.toLocaleString()} prospects ready to import
+                  Found {rowCount.toLocaleString()} prospects ready to import
                 </div>
               )}
 
@@ -198,7 +153,7 @@ export function ProspectImportModal({ open, onOpenChange }: Props) {
                 <div className="space-y-2">
                   <Progress value={progress} className="h-2" />
                   <p className="text-xs text-muted-foreground text-center">
-                    {progress < 100 ? 'Importing prospects...' : 'Import complete!'}
+                    {progress < 100 ? 'Importing prospects via server...' : 'Import complete!'}
                   </p>
                 </div>
               )}
@@ -211,9 +166,9 @@ export function ProspectImportModal({ open, onOpenChange }: Props) {
             </Button>
             <Button 
               onClick={handleImport} 
-              disabled={parsedData.length === 0 || importing || !!parseError}
+              disabled={rowCount === 0 || importing || !!parseError}
             >
-              {importing ? 'Importing...' : `Import ${parsedData.length.toLocaleString()} Prospects`}
+              {importing ? 'Importing...' : `Import ${rowCount.toLocaleString()} Prospects`}
             </Button>
           </div>
         </div>
