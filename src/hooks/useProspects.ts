@@ -127,6 +127,39 @@ export function useUpdateProspect() {
   });
 }
 
+export function useImportProspectsCSV() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (csvContent: string) => {
+      const { data, error } = await supabase.functions.invoke('import-prospects-csv', {
+        body: { csvContent, batchSize: 500 },
+      });
+      
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      
+      return data as { success: boolean; total: number; inserted: number; errors: number; message: string };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['prospects'] });
+      queryClient.invalidateQueries({ queryKey: ['prospect-stats'] });
+      toast({ 
+        title: 'Import complete', 
+        description: result.message 
+      });
+    },
+    onError: (error) => {
+      toast({ 
+        title: 'Import failed', 
+        description: error.message, 
+        variant: 'destructive' 
+      });
+    },
+  });
+}
+
 export function useBulkInsertProspects() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
