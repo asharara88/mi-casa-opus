@@ -76,6 +76,7 @@ export function BOSApp() {
   const { isDemoBypass, exitDemoBypass } = useDemoMode();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // In demo bypass mode, use Operator role
   const effectiveRole: AppRole = isDemoBypass ? 'Operator' : (role || 'Operator');
@@ -187,13 +188,19 @@ export function BOSApp() {
         onSectionChange={setActiveSection}
         userName={effectiveUserName}
         onSignOut={handleSignOut}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
       
       <div className="flex-1 flex flex-col overflow-hidden">
         <DemoBanner onNavigate={setActiveSection} />
-        <Header title={sectionInfo.title} subtitle={sectionInfo.subtitle} />
+        <Header 
+          title={sectionInfo.title} 
+          subtitle={sectionInfo.subtitle}
+          onMenuClick={() => setSidebarOpen(true)}
+        />
         
-        <main className="flex-1 overflow-auto p-6 scrollbar-thin">
+        <main className="flex-1 overflow-auto p-4 md:p-6 scrollbar-thin">
           {renderSection()}
         </main>
 
