@@ -8,10 +8,10 @@ import {
   Handshake,
   FileText,
   DollarSign,
-  Shield,
   Settings,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   LogOut,
   Sparkles,
   PenTool,
@@ -24,7 +24,13 @@ import {
   UserCheck,
   Wallet,
   UserPlus,
+  X,
 } from 'lucide-react';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 interface SidebarProps {
   currentRole: AppRole | null;
@@ -32,6 +38,8 @@ interface SidebarProps {
   onSectionChange: (section: string) => void;
   userName: string;
   onSignOut?: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 interface NavItem {
@@ -84,18 +92,30 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'investor-docs', label: 'Documents', icon: FileText, roles: ['Investor'], group: 'main' },
 ];
 
-const GROUP_LABELS: Record<string, string> = {
-  main: '',
-  operations: 'Operations',
-  documents: 'Documents & Evidence',
-  finance: 'Finance',
-  compliance: 'Compliance',
-  system: 'System',
-  readonly: 'Read Only',
+const GROUP_LABELS: Record<string, { label: string; icon: React.ElementType }> = {
+  main: { label: 'Dashboard', icon: LayoutDashboard },
+  operations: { label: 'Operations', icon: Handshake },
+  documents: { label: 'Documents & Evidence', icon: FileText },
+  finance: { label: 'Finance', icon: DollarSign },
+  compliance: { label: 'Compliance', icon: ClipboardCheck },
+  system: { label: 'System', icon: Settings },
+  readonly: { label: 'Read Only', icon: Eye },
 };
 
-export function Sidebar({ currentRole, activeSection, onSectionChange, userName, onSignOut }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false); // false = expanded by default
+export function Sidebar({ 
+  currentRole, 
+  activeSection, 
+  onSectionChange, 
+  userName, 
+  onSignOut,
+  isOpen = true,
+  onClose 
+}: SidebarProps) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    // Initialize with main group open
+    return { main: true };
+  });
 
   const filteredItems = NAV_ITEMS.filter(item => 
     currentRole && item.roles.includes(currentRole)
@@ -105,12 +125,39 @@ export function Sidebar({ currentRole, activeSection, onSectionChange, userName,
   const groupedItems = filteredItems.reduce((acc, item) => {
     const group = item.group || 'main';
     if (!acc[group]) acc[group] = [];
-    // Avoid duplicates (e.g., 'deals' appears for multiple roles)
     if (!acc[group].find(i => i.id === item.id)) {
       acc[group].push(item);
     }
     return acc;
   }, {} as Record<string, NavItem[]>);
+
+  // Check if current section is in a group
+  const getActiveGroup = () => {
+    for (const [group, items] of Object.entries(groupedItems)) {
+      if (items.find(i => i.id === activeSection)) {
+        return group;
+      }
+    }
+    return 'main';
+  };
+
+  // Auto-open the group containing active section
+  const activeGroup = getActiveGroup();
+  if (!openGroups[activeGroup]) {
+    setOpenGroups(prev => ({ ...prev, [activeGroup]: true }));
+  }
+
+  const toggleGroup = (group: string) => {
+    setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
+  };
+
+  const handleSectionChange = (sectionId: string) => {
+    onSectionChange(sectionId);
+    // Close mobile sidebar when selecting
+    if (onClose && window.innerWidth < 1024) {
+      onClose();
+    }
+  };
 
   const getRoleBadge = (role: AppRole | null) => {
     switch (role) {
@@ -130,110 +177,197 @@ export function Sidebar({ currentRole, activeSection, onSectionChange, userName,
   const roleBadge = getRoleBadge(currentRole);
 
   return (
-    <aside
-      className={cn(
-        'flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300',
-        collapsed ? 'w-[72px]' : 'w-[260px]'
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={onClose}
+        />
       )}
-    >
-      {/* Logo & Brand */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border">
-        <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-          <Building2 className="w-5 h-5 text-primary-foreground" />
-        </div>
-        {!collapsed && (
-          <div className="flex flex-col animate-fade-in">
-            <span className="font-semibold text-foreground text-sm">Mi Casa</span>
-            <span className="text-xs text-muted-foreground">Real Estate</span>
-          </div>
+      
+      <aside
+        className={cn(
+          'flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 z-50',
+          // Desktop
+          'lg:relative lg:translate-x-0',
+          collapsed ? 'lg:w-[72px]' : 'lg:w-[260px]',
+          // Mobile - fixed position
+          'fixed top-0 left-0 w-[280px]',
+          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 py-4 px-3 overflow-y-auto scrollbar-thin">
-        {Object.entries(groupedItems).map(([group, items]) => (
-          <div key={group} className="mb-4">
-            {!collapsed && GROUP_LABELS[group] && (
-              <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {GROUP_LABELS[group]}
+      >
+        {/* Logo & Brand */}
+        <div className="flex items-center justify-between px-4 h-16 border-b border-sidebar-border">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+              <Building2 className="w-5 h-5 text-primary-foreground" />
+            </div>
+            {!collapsed && (
+              <div className="flex flex-col animate-fade-in">
+                <span className="font-semibold text-foreground text-sm">Mi Casa</span>
+                <span className="text-xs text-muted-foreground">Real Estate</span>
               </div>
             )}
-            <div className="space-y-1">
-              {items.map(item => {
-                const Icon = item.icon;
-                const isActive = activeSection === item.id;
-                
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => onSectionChange(item.id)}
-                    className={cn(
-                      'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
-                      isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                    )}
-                    title={collapsed ? item.label : undefined}
-                  >
-                    <Icon className={cn('w-5 h-5 flex-shrink-0', isActive && 'text-primary')} />
-                    {!collapsed && (
-                      <span className="animate-fade-in truncate">{item.label}</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
           </div>
-        ))}
-      </nav>
-
-      {/* User & Role */}
-      <div className="border-t border-sidebar-border p-3">
-        {!collapsed && (
-          <div className="mb-3 animate-fade-in">
-            <div className={cn('state-badge text-xs', roleBadge.className)}>
-              {roleBadge.label}
-            </div>
-          </div>
-        )}
-        
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-            <span className="text-sm font-medium text-foreground">
-              {userName?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'U'}
-            </span>
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0 animate-fade-in">
-              <p className="text-sm font-medium text-foreground truncate">{userName || 'User'}</p>
-              <button 
-                onClick={onSignOut}
-                className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1"
-              >
-                <LogOut className="w-3 h-3" />
-                Sign Out
-              </button>
-            </div>
-          )}
+          {/* Mobile close button */}
+          <button 
+            onClick={onClose}
+            className="lg:hidden p-2 rounded-lg hover:bg-secondary text-muted-foreground"
+            aria-label="Close menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-      </div>
 
-      {/* Collapse Toggle */}
-      <div className="border-t border-sidebar-border p-2">
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-        >
-          {collapsed ? (
-            <ChevronRight className="w-4 h-4" />
-          ) : (
-            <>
-              <ChevronLeft className="w-4 h-4" />
-              <span className="text-sm">Collapse</span>
-            </>
+        {/* Navigation */}
+        <nav className="flex-1 py-4 px-3 overflow-y-auto scrollbar-thin">
+          {Object.entries(groupedItems).map(([group, items]) => {
+            const groupInfo = GROUP_LABELS[group];
+            const isGroupOpen = openGroups[group] || false;
+            const hasActiveItem = items.some(i => i.id === activeSection);
+            const GroupIcon = groupInfo?.icon || LayoutDashboard;
+
+            // For "main" group, don't use collapsible
+            if (group === 'main') {
+              return (
+                <div key={group} className="mb-2">
+                  <div className="space-y-1">
+                    {items.map(item => {
+                      const Icon = item.icon;
+                      const isActive = activeSection === item.id;
+                      
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleSectionChange(item.id)}
+                          className={cn(
+                            'w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200',
+                            isActive
+                              ? 'bg-primary text-primary-foreground shadow-md'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                          )}
+                          title={collapsed ? item.label : undefined}
+                        >
+                          <Icon className="w-5 h-5 flex-shrink-0" />
+                          {!collapsed && (
+                            <span className="animate-fade-in truncate">{item.label}</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
+
+            // For other groups, use collapsible
+            return (
+              <Collapsible
+                key={group}
+                open={isGroupOpen}
+                onOpenChange={() => toggleGroup(group)}
+                className="mb-2"
+              >
+                <CollapsibleTrigger
+                  className={cn(
+                    'w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                    hasActiveItem 
+                      ? 'bg-primary/10 text-primary' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <GroupIcon className="w-4 h-4" />
+                    {!collapsed && <span>{groupInfo?.label || group}</span>}
+                  </div>
+                  {!collapsed && (
+                    <ChevronDown 
+                      className={cn(
+                        'w-4 h-4 transition-transform duration-200',
+                        isGroupOpen && 'rotate-180'
+                      )} 
+                    />
+                  )}
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pl-4 mt-1 space-y-1">
+                  {items.map(item => {
+                    const Icon = item.icon;
+                    const isActive = activeSection === item.id;
+                    
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleSectionChange(item.id)}
+                        className={cn(
+                          'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200',
+                          isActive
+                            ? 'bg-primary text-primary-foreground font-medium shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                        )}
+                        title={collapsed ? item.label : undefined}
+                      >
+                        <Icon className="w-4 h-4 flex-shrink-0" />
+                        {!collapsed && (
+                          <span className="animate-fade-in truncate">{item.label}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })}
+        </nav>
+
+        {/* User & Role */}
+        <div className="border-t border-sidebar-border p-3">
+          {!collapsed && (
+            <div className="mb-3 animate-fade-in">
+              <div className={cn('state-badge text-xs', roleBadge.className)}>
+                {roleBadge.label}
+              </div>
+            </div>
           )}
-        </button>
-      </div>
-    </aside>
+          
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-medium text-foreground">
+                {userName?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'U'}
+              </span>
+            </div>
+            {!collapsed && (
+              <div className="flex-1 min-w-0 animate-fade-in">
+                <p className="text-sm font-medium text-foreground truncate">{userName || 'User'}</p>
+                <button 
+                  onClick={onSignOut}
+                  className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1"
+                >
+                  <LogOut className="w-3 h-3" />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Collapse Toggle - Desktop only */}
+        <div className="hidden lg:block border-t border-sidebar-border p-2">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+          >
+            {collapsed ? (
+              <ChevronRight className="w-4 h-4" />
+            ) : (
+              <>
+                <ChevronLeft className="w-4 h-4" />
+                <span className="text-sm">Collapse</span>
+              </>
+            )}
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
