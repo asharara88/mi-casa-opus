@@ -50,25 +50,35 @@ interface NavItem {
   group?: string;
 }
 
-// Full navigation structure per BOS spec
+// Full navigation structure - consolidated for clarity
 const NAV_ITEMS: NavItem[] = [
   // Operator Navigation
   { id: 'dashboard', label: 'Control Room', icon: LayoutDashboard, roles: ['Operator'], group: 'main' },
-  { id: 'leads', label: 'Leads', icon: Users, roles: ['Operator'], group: 'operations' },
-  { id: 'deals', label: 'Deals', icon: Handshake, roles: ['Operator'], group: 'operations' },
-  { id: 'listings', label: 'Listings', icon: Building2, roles: ['Operator'], group: 'operations' },
-  { id: 'prospects', label: 'Prospects', icon: UserPlus, roles: ['Operator'], group: 'operations' },
+  
+  // Customers: Prospects → Leads → Deals (sales funnel order)
+  { id: 'prospects', label: 'Prospects', icon: UserPlus, roles: ['Operator'], group: 'customers' },
+  { id: 'leads', label: 'Leads', icon: Users, roles: ['Operator'], group: 'customers' },
+  { id: 'deals', label: 'Deals', icon: Handshake, roles: ['Operator'], group: 'customers' },
+  
+  // Properties
+  { id: 'listings', label: 'Listings', icon: Building2, roles: ['Operator'], group: 'properties' },
+  
+  // Documents & Evidence
   { id: 'documents', label: 'Documents', icon: FileText, roles: ['Operator'], group: 'documents' },
   { id: 'signatures', label: 'Signatures', icon: PenTool, roles: ['Operator'], group: 'documents' },
   { id: 'evidence', label: 'Evidence', icon: Eye, roles: ['Operator'], group: 'documents' },
+  
+  // Finance
   { id: 'commissions', label: 'Commissions', icon: DollarSign, roles: ['Operator'], group: 'finance' },
   { id: 'payouts', label: 'Payouts', icon: Wallet, roles: ['Operator'], group: 'finance' },
-  { id: 'approvals', label: 'Approvals', icon: ClipboardCheck, roles: ['Operator'], group: 'compliance' },
-  { id: 'exports', label: 'Exports', icon: Download, roles: ['Operator'], group: 'compliance' },
-  { id: 'templates', label: 'Rules & Templates', icon: FileStack, roles: ['Operator'], group: 'system' },
-  { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, roles: ['Operator'], group: 'system' },
-  { id: 'users', label: 'Users', icon: UserCheck, roles: ['Operator'], group: 'system' },
-  { id: 'settings', label: 'Settings', icon: Settings, roles: ['Operator'], group: 'system' },
+  
+  // Compliance & Admin
+  { id: 'approvals', label: 'Approvals', icon: ClipboardCheck, roles: ['Operator'], group: 'admin' },
+  { id: 'exports', label: 'Exports', icon: Download, roles: ['Operator'], group: 'admin' },
+  { id: 'templates', label: 'Rules & Templates', icon: FileStack, roles: ['Operator'], group: 'admin' },
+  { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, roles: ['Operator'], group: 'admin' },
+  { id: 'users', label: 'Users', icon: UserCheck, roles: ['Operator'], group: 'admin' },
+  { id: 'settings', label: 'Settings', icon: Settings, roles: ['Operator'], group: 'admin' },
 
   // LegalOwner Navigation
   { id: 'oversight', label: 'Oversight Dashboard', icon: LayoutDashboard, roles: ['LegalOwner'], group: 'main' },
@@ -79,27 +89,27 @@ const NAV_ITEMS: NavItem[] = [
 
   // Broker Navigation
   { id: 'my-day', label: 'My Day', icon: Calendar, roles: ['Broker'], group: 'main' },
-  { id: 'my-leads', label: 'My Leads', icon: Users, roles: ['Broker'], group: 'main' },
-  { id: 'my-deals', label: 'My Deals', icon: Handshake, roles: ['Broker'], group: 'main' },
-  { id: 'my-earnings', label: 'My Earnings', icon: DollarSign, roles: ['Broker'], group: 'main' },
-  { id: 'listings', label: 'Listings', icon: Building2, roles: ['Broker'], group: 'readonly' },
-  { id: 'documents', label: 'Documents', icon: FileText, roles: ['Broker'], group: 'readonly' },
+  { id: 'my-leads', label: 'My Leads', icon: Users, roles: ['Broker'], group: 'customers' },
+  { id: 'my-deals', label: 'My Deals', icon: Handshake, roles: ['Broker'], group: 'customers' },
+  { id: 'my-earnings', label: 'My Earnings', icon: DollarSign, roles: ['Broker'], group: 'finance' },
+  { id: 'listings', label: 'Listings', icon: Building2, roles: ['Broker'], group: 'properties' },
+  { id: 'documents', label: 'Documents', icon: FileText, roles: ['Broker'], group: 'documents' },
 
   // Investor Navigation
   { id: 'investor-profile', label: 'Profile', icon: UserCheck, roles: ['Investor'], group: 'main' },
-  { id: 'shortlists', label: 'Shortlists', icon: Building2, roles: ['Investor'], group: 'main' },
+  { id: 'shortlists', label: 'Shortlists', icon: Building2, roles: ['Investor'], group: 'properties' },
   { id: 'deal-room', label: 'Deals Room', icon: Briefcase, roles: ['Investor'], group: 'main' },
-  { id: 'investor-docs', label: 'Documents', icon: FileText, roles: ['Investor'], group: 'main' },
+  { id: 'investor-docs', label: 'Documents', icon: FileText, roles: ['Investor'], group: 'documents' },
 ];
 
 const GROUP_LABELS: Record<string, { label: string; icon: React.ElementType }> = {
   main: { label: 'Dashboard', icon: LayoutDashboard },
-  operations: { label: 'Operations', icon: Handshake },
-  documents: { label: 'Documents & Evidence', icon: FileText },
+  customers: { label: 'Customers', icon: Users },
+  properties: { label: 'Properties', icon: Building2 },
+  documents: { label: 'Documents', icon: FileText },
   finance: { label: 'Finance', icon: DollarSign },
-  compliance: { label: 'Compliance', icon: ClipboardCheck },
-  system: { label: 'System', icon: Settings },
-  readonly: { label: 'Read Only', icon: Eye },
+  admin: { label: 'Admin & Settings', icon: Settings },
+  readonly: { label: 'View Only', icon: Eye },
 };
 
 export function Sidebar({ 
