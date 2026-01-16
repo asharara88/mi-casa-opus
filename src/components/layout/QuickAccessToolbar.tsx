@@ -1,4 +1,4 @@
-import { Plus, UserPlus, Home, FileText, DollarSign, Search, Phone } from 'lucide-react';
+import { UserPlus, Home, Handshake, Users, DollarSign, ClipboardCheck, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AppRole } from '@/hooks/useAuth';
@@ -11,13 +11,15 @@ interface QuickAction {
   roles: AppRole[];
 }
 
+// Quick actions follow the customer journey: Prospects → Leads → Deals
 const QUICK_ACTIONS: QuickAction[] = [
   { id: 'dashboard', icon: <Home className="w-4 h-4" />, label: 'Dashboard', section: 'dashboard', roles: ['Operator', 'LegalOwner'] },
-  { id: 'new-lead', icon: <UserPlus className="w-4 h-4" />, label: 'New Lead', section: 'leads', roles: ['Operator', 'Broker'] },
-  { id: 'deals', icon: <FileText className="w-4 h-4" />, label: 'Deals', section: 'deals', roles: ['Operator', 'Broker'] },
-  { id: 'prospects', icon: <Phone className="w-4 h-4" />, label: 'Prospects', section: 'prospects', roles: ['Operator', 'Broker'] },
+  { id: 'prospects', icon: <UserPlus className="w-4 h-4" />, label: 'Prospects', section: 'prospects', roles: ['Operator'] },
+  { id: 'leads', icon: <Users className="w-4 h-4" />, label: 'Leads', section: 'leads', roles: ['Operator', 'Broker'] },
+  { id: 'deals', icon: <Handshake className="w-4 h-4" />, label: 'Deals', section: 'deals', roles: ['Operator', 'Broker'] },
+  { id: 'listings', icon: <Building2 className="w-4 h-4" />, label: 'Listings', section: 'listings', roles: ['Operator', 'Broker'] },
   { id: 'commissions', icon: <DollarSign className="w-4 h-4" />, label: 'Commissions', section: 'commissions', roles: ['Operator', 'LegalOwner', 'Broker'] },
-  { id: 'approvals', icon: <Search className="w-4 h-4" />, label: 'Approvals', section: 'approvals', roles: ['Operator', 'LegalOwner'] },
+  { id: 'approvals', icon: <ClipboardCheck className="w-4 h-4" />, label: 'Approvals', section: 'approvals', roles: ['Operator', 'LegalOwner'] },
 ];
 
 interface QuickAccessToolbarProps {
