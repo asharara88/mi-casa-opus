@@ -5,6 +5,7 @@ import { useDemoMode } from '@/contexts/DemoContext';
 import { ValidationContext } from '@/types/bos';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
+import { QuickAccessToolbar } from '@/components/layout/QuickAccessToolbar';
 import { DemoBanner } from '@/components/demo/DemoBanner';
 import { DashboardView } from '@/components/dashboard/DashboardView';
 import { LeadsSection } from '@/components/leads/LeadsSection';
@@ -198,6 +199,11 @@ export function BOSApp() {
           title={sectionInfo.title} 
           subtitle={sectionInfo.subtitle}
           onMenuClick={() => setSidebarOpen(true)}
+        />
+        <QuickAccessToolbar
+          currentRole={effectiveRole}
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
         />
         
         <main className="flex-1 overflow-auto p-4 md:p-6 scrollbar-thin">
