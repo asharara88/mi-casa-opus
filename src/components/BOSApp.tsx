@@ -6,6 +6,7 @@ import { ValidationContext } from '@/types/bos';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { QuickAccessToolbar } from '@/components/layout/QuickAccessToolbar';
+import { CustomerJourneyIndicator } from '@/components/layout/CustomerJourneyIndicator';
 import { DemoBanner } from '@/components/demo/DemoBanner';
 import { DashboardView } from '@/components/dashboard/DashboardView';
 import { LeadsSection } from '@/components/leads/LeadsSection';
@@ -202,6 +203,10 @@ export function BOSApp() {
         />
         <QuickAccessToolbar
           currentRole={effectiveRole}
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
+        <CustomerJourneyIndicator
           activeSection={activeSection}
           onSectionChange={setActiveSection}
         />
