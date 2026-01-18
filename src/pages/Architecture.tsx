@@ -1,13 +1,14 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, ArrowLeft, Layers, BarChart3 } from "lucide-react";
+import { Printer, ArrowLeft, Layers, BarChart3, FileText } from "lucide-react";
 import SystemArchitectureDiagram from "@/components/architecture/SystemArchitectureDiagram";
 import InvestorArchitectureDiagram from "@/components/architecture/InvestorArchitectureDiagram";
+import { ExecutiveSummary } from "@/components/architecture/ExecutiveSummary";
 import { Link } from "react-router-dom";
 
 const Architecture = () => {
   const diagramRef = useRef<HTMLDivElement>(null);
-  const [view, setView] = useState<"technical" | "investor">("investor");
+  const [view, setView] = useState<"technical" | "investor" | "executive">("investor");
 
   const handlePrint = () => {
     window.print();
@@ -33,6 +34,15 @@ const Architecture = () => {
           <div className="flex items-center gap-3">
             {/* View Toggle */}
             <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+              <Button
+                variant={view === "executive" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setView("executive")}
+                className="gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                Executive
+              </Button>
               <Button
                 variant={view === "investor" ? "default" : "ghost"}
                 size="sm"
@@ -62,7 +72,13 @@ const Architecture = () => {
 
       {/* Diagram Container */}
       <div ref={diagramRef} className="py-8 print:py-4">
-        {view === "investor" ? <InvestorArchitectureDiagram /> : <SystemArchitectureDiagram />}
+        {view === "executive" ? (
+          <ExecutiveSummary />
+        ) : view === "investor" ? (
+          <InvestorArchitectureDiagram />
+        ) : (
+          <SystemArchitectureDiagram />
+        )}
       </div>
 
       {/* Print styles */}
