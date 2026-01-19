@@ -16,8 +16,8 @@ const InvestorArchitectureDiagram = () => {
       {/* ROI Metrics Bar - Target Platform Outcomes */}
       <div className="grid grid-cols-4 gap-4 mb-12 print:mb-8">
         {[
-          { icon: Clock, label: "Registration Time", value: "1-3 wks", color: "text-emerald-600", note: "DLD benchmark" },
-          { icon: Shield, label: "RERA Violations", value: "Zero", color: "text-blue-600", note: "Compliance gate" },
+          { icon: Clock, label: "Registration Time", value: "1-3 wks", color: "text-emerald-600", note: "ADREC benchmark" },
+          { icon: Shield, label: "ADREC Violations", value: "Zero", color: "text-blue-600", note: "Compliance gate" },
           { icon: Users, label: "Agent Retention", value: ">80%", color: "text-purple-600", note: "vs 6mo avg tenure" },
           { icon: DollarSign, label: "Target CPL", value: "<AED 100", color: "text-amber-600", note: "vs AED 50-500" },
         ].map((metric, idx) => (
