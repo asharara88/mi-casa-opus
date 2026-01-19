@@ -37,12 +37,12 @@ export const ExecutiveSummary = () => {
         <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-6 mb-6 text-white print:break-inside-avoid">
           <h2 className="text-xl font-bold mb-3">The Opportunity</h2>
           <p className="text-slate-300 leading-relaxed">
-            With <span className="text-amber-400 font-semibold">2,411 licensed professionals</span> and 
-            AED 94B+ in transaction volume (9M 2025), Abu Dhabi's real estate market is growing rapidly (+43.3% YoY). 
-            MiCasa BOS is the first purpose-built operating system for ADREC compliance that unifies lead management, 
-            regulatory compliance, and transaction execution—turning operational friction into competitive advantage.
+            Abu Dhabi's real estate market shows <span className="text-amber-400 font-semibold">continued resilience entering 2026</span>, with 
+            <span className="text-amber-400 font-semibold"> 2,411 licensed professionals</span> and AED 94B+ in transaction volume (9M 2025). 
+            The broader UAE industry recorded AED 680B in transactions in 2025. Apartment rents grew 6-9% YoY as of January 2026, with vacancy rates at just 4-6%. 
+            MiCasa BOS is the first purpose-built operating system for ADREC compliance—turning operational friction into competitive advantage.
           </p>
-          <p className="text-[10px] text-slate-500 mt-2">Source: ADREC H1 2025 Report, Abu Dhabi Media Office Nov 2025</p>
+          <p className="text-[10px] text-slate-500 mt-2">Sources: ADREC H1 2025 Report, Abu Dhabi Media Office Nov 2025, January 2026 Market Analysis</p>
         </div>
 
         {/* Key Metrics Grid - Platform Target Outcomes */}
@@ -134,21 +134,26 @@ export const ExecutiveSummary = () => {
         </div>
 
         {/* Market & Traction - Verified Statistics */}
-        <div className="grid grid-cols-3 gap-4 mb-6 print:break-inside-avoid">
+        <div className="grid grid-cols-4 gap-4 mb-6 print:break-inside-avoid">
           <div className="bg-slate-50 rounded-xl p-5 text-center">
             <p className="text-3xl font-bold text-slate-900">$1.55B</p>
             <p className="text-sm text-slate-600 mt-1">UAE PropTech TAM by 2030</p>
             <p className="text-[10px] text-slate-400 mt-0.5">Source: TechSci Research 2024</p>
           </div>
           <div className="bg-slate-50 rounded-xl p-5 text-center">
-            <p className="text-3xl font-bold text-slate-900">2,411</p>
-            <p className="text-sm text-slate-600 mt-1">Licensed RE Professionals (AD)</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Source: ADREC 2025</p>
+            <p className="text-3xl font-bold text-slate-900">AED 680B</p>
+            <p className="text-sm text-slate-600 mt-1">UAE Total Volume (2025)</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Source: UAE RE Market Report</p>
           </div>
           <div className="bg-slate-50 rounded-xl p-5 text-center">
-            <p className="text-3xl font-bold text-slate-900">AED 94B</p>
-            <p className="text-sm text-slate-600 mt-1">Abu Dhabi 9M 2025 Volume</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Source: ADREC H1 2025 Report</p>
+            <p className="text-3xl font-bold text-slate-900">6-9%</p>
+            <p className="text-sm text-slate-600 mt-1">Apartment Rent Growth</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Jan 2026 YoY</p>
+          </div>
+          <div className="bg-slate-50 rounded-xl p-5 text-center">
+            <p className="text-3xl font-bold text-slate-900">4-6%</p>
+            <p className="text-sm text-slate-600 mt-1">Vacancy Rate</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Low = Strong Demand</p>
           </div>
         </div>
 

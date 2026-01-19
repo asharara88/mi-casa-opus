@@ -16,7 +16,7 @@ const InvestorArchitectureDiagram = () => {
       {/* ROI Metrics Bar - Target Platform Outcomes */}
       <div className="grid grid-cols-4 gap-4 mb-12 print:mb-8">
         {[
-          { icon: Clock, label: "Registration Time", value: "1-3 wks", color: "text-emerald-600", note: "ADREC benchmark" },
+          { icon: Clock, label: "Registration Time", value: "1-3 wks", color: "text-emerald-600", note: "2026 ADREC benchmark" },
           { icon: Shield, label: "ADREC Violations", value: "Zero", color: "text-blue-600", note: "Compliance gate" },
           { icon: Users, label: "Agent Retention", value: ">80%", color: "text-purple-600", note: "vs 6mo avg tenure" },
           { icon: DollarSign, label: "Target CPL", value: "<AED 100", color: "text-amber-600", note: "vs AED 50-500" },
@@ -212,7 +212,7 @@ const InvestorArchitectureDiagram = () => {
 
       {/* Footer */}
       <div className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-800 text-center text-xs text-gray-500 dark:text-gray-400 print:mt-8">
-        <p>MiCasa • Inventory-Agnostic Real Estate Infrastructure • Confidential</p>
+        <p>MiCasa • Abu Dhabi-First Real Estate Infrastructure • 2026 • Confidential</p>
       </div>
     </div>
   );
