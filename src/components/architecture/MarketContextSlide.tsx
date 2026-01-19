@@ -89,22 +89,26 @@ export const MarketContextSlide = () => {
               <div className="text-center p-3">
                 <p className="text-xl font-bold text-slate-900">AED 761B</p>
                 <p className="text-xs text-slate-500">2024 Transaction Volume</p>
+                <p className="text-[9px] text-slate-400">+20% YoY</p>
               </div>
               <div className="text-center p-3">
-                <p className="text-xl font-bold text-slate-900">~40,000</p>
-                <p className="text-xs text-slate-500">Active Brokers</p>
+                <p className="text-xl font-bold text-slate-900">29,577</p>
+                <p className="text-xs text-slate-500">Registered Brokers</p>
+                <p className="text-[9px] text-slate-400">H1 2025 official</p>
               </div>
               <div className="text-center p-3">
-                <p className="text-xl font-bold text-slate-900">7,900+</p>
-                <p className="text-xs text-slate-500">Brokerage Firms</p>
+                <p className="text-xl font-bold text-slate-900">1,223</p>
+                <p className="text-xs text-slate-500">Brokerage Offices</p>
+                <p className="text-[9px] text-slate-400">H1 2025 official</p>
               </div>
               <div className="text-center p-3">
                 <p className="text-xl font-bold text-slate-900">AED 3.2B</p>
-                <p className="text-xs text-slate-500">Broker Commissions H1</p>
+                <p className="text-xs text-slate-500">Commissions H1 2025</p>
+                <p className="text-[9px] text-slate-400">+99% vs H1 2024</p>
               </div>
             </div>
             <div className="px-5 pb-4 text-[10px] text-slate-400">
-              Sources: DLD Annual Report 2024, Dubai Media Office • Platform ready for RERA/DLD integration
+              Sources: DLD (Jan 2025), Dubai Media Office (Jul 2025) • Platform ready for RERA/DLD integration
             </div>
           </div>
         </div>
@@ -117,14 +121,14 @@ export const MarketContextSlide = () => {
           </h3>
           <div className="grid grid-cols-4 gap-4">
             <div className="bg-white/10 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-white">AED 680B</p>
-              <p className="text-slate-300 text-xs mt-1">UAE Total Volume (2025)</p>
-              <p className="text-[10px] text-slate-400">Continued market resilience</p>
+              <p className="text-2xl font-bold text-white">AED 857B</p>
+              <p className="text-slate-300 text-xs mt-1">UAE Combined (2024)</p>
+              <p className="text-[10px] text-slate-400">Dubai 761B + Abu Dhabi 96B</p>
             </div>
             <div className="bg-white/10 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-white">42,400+</p>
+              <p className="text-2xl font-bold text-white">~32,000</p>
               <p className="text-slate-300 text-xs mt-1">Licensed Professionals</p>
-              <p className="text-[10px] text-slate-400">Abu Dhabi 2.4K + Dubai ~40K</p>
+              <p className="text-[10px] text-slate-400">Abu Dhabi 2.4K + Dubai 29.6K</p>
             </div>
             <div className="bg-white/10 rounded-lg p-4 text-center">
               <p className="text-2xl font-bold text-white">$1.55B</p>
@@ -214,22 +218,22 @@ export const MarketContextSlide = () => {
               <ChallengeRow 
                 title="High Churn Rate"
                 stat="<6 months"
-                description="Average broker tenure falling from 12 months"
+                description="Average broker tenure (industry report)"
               />
               <ChallengeRow 
-                title="Income Inequality"
-                stat="Top 10%"
-                description="Earn majority of commissions; most struggle"
+                title="Rapid Influx"
+                stat="+37/day"
+                description="New brokers licensed in Dubai H1 2025"
               />
               <ChallengeRow 
                 title="Lead Costs"
                 stat="AED 50-500"
-                description="Cost per lead varies 10x by channel quality"
+                description="CPL range by channel (vendor benchmarks)"
               />
               <ChallengeRow 
                 title="Compliance Risk"
                 stat="AED 50K+"
-                description="Per violation fine across both emirates"
+                description="Dubai advertising violation fines (DLD)"
               />
             </div>
           </div>
@@ -248,7 +252,7 @@ export const MarketContextSlide = () => {
               </div>
               <p className="text-white font-semibold">Retention Crisis</p>
               <p className="text-slate-400 text-sm mt-1">
-                Brokerages with training & tools achieve 80-90% retention vs industry avg of &lt;50%
+                Brokerages with structured programs report 80-90% retention (industry data)
               </p>
             </div>
             <div className="text-center">
@@ -274,14 +278,14 @@ export const MarketContextSlide = () => {
 
         {/* Source Citations */}
         <div className="border-t border-slate-200 pt-4 print:break-inside-avoid">
-          <p className="text-xs text-slate-500 font-medium mb-2">Data Sources (All Verified):</p>
+          <p className="text-xs text-slate-500 font-medium mb-2">Data Sources (Verified):</p>
           <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-400">
-            <p>• Abu Dhabi Real Estate Centre (ADREC) H1 2025 Report</p>
-            <p>• Abu Dhabi Media Office Nov 2025</p>
-            <p>• Dubai Land Department (DLD) Annual Report 2024</p>
-            <p>• Dubai Media Office H1 2025 Update</p>
-            <p>• TechSci Research UAE PropTech Forecast 2024</p>
-            <p>• Executive Search Dubai Broker Report 2025</p>
+            <p>• Dubai Land Department (Jan 2025) — AED 761B, 226K transactions</p>
+            <p>• Dubai Media Office (Jul 2025) — 29,577 brokers, AED 3.2B commissions</p>
+            <p>• Abu Dhabi Media Office (Nov 2025) — AED 94B, 2,411 professionals</p>
+            <p>• TechSci Research (May 2025) — $1.55B PropTech TAM, 17.5% CAGR</p>
+            <p>• The National (Oct 2025) — Tenure, retention industry reports</p>
+            <p>• Note: Industry estimates marked separately from official data</p>
           </div>
         </div>
 
