@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Printer, TrendingUp, Users, DollarSign, Building2, BarChart3, AlertTriangle, Target, ArrowRight } from "lucide-react";
+import { Printer, TrendingUp, Users, DollarSign, Building2, BarChart3, AlertTriangle, Target, ArrowRight, Zap } from "lucide-react";
 
 export const MarketContextSlide = () => {
   const handlePrint = () => {
@@ -28,7 +28,7 @@ export const MarketContextSlide = () => {
           </div>
           <p className="text-lg text-slate-600 font-medium">Primary Market Focus • Dubai Future Expansion</p>
           <div className="mt-2 inline-block px-4 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium">
-            2024-2025 Verified Data
+            2025-2026 Verified Data
           </div>
         </div>
 
@@ -45,18 +45,31 @@ export const MarketContextSlide = () => {
             <div className="p-6 bg-emerald-50/30">
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <StatBox value="AED 94B" label="9M 2025 Transaction Volume" note="+43.3% YoY • 29.4K transactions" />
+                  <StatBox value="AED 94B+" label="9M 2025 Transaction Volume" note="+43.3% YoY • Strong momentum into 2026" />
                   <StatBox value="AED 61.8B" label="Sales & Purchases (9M 2025)" note="16,887 transactions" />
                   <StatBox value="2,411" label="Licensed RE Professionals" note="+47% licenses issued" />
                 </div>
                 <div className="space-y-4">
-                  <StatBox value="AED 32.2B" label="Mortgage Activity (9M 2025)" note="12,666 transactions" />
-                  <StatBox value="AED 21.9B" label="Non-Oil GDP Contribution (H1 2025)" note="Real estate sector" />
-                  <StatBox value="+47%" label="New Licenses Issued" note="Year-over-year growth" />
+                  <StatBox value="6-9%" label="Apartment Rent Growth (Jan 2026)" note="Year-over-year increase" />
+                  <StatBox value="3-6%" label="Villa Rent Growth (Jan 2026)" note="Sustained demand" />
+                  <StatBox value="4-6%" label="Vacancy Rate" note="Low vacancy indicates strong demand" />
                 </div>
               </div>
+              
+              {/* Prime Areas Section */}
+              <div className="mt-4 pt-4 border-t border-slate-200">
+                <p className="text-xs font-medium text-slate-600 mb-2">Prime Demand Areas (2026)</p>
+                <div className="flex gap-2 flex-wrap">
+                  {["Saadiyat Island", "Yas Island", "Al Reem Island", "Al Khalidiyah"].map((area, idx) => (
+                    <span key={idx} className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-medium">
+                      {area}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              
               <div className="text-[10px] text-slate-400 pt-4 mt-4 border-t border-slate-200">
-                Sources: ADREC H1 2025 Report, Abu Dhabi Media Office Nov 2025
+                Sources: ADREC H1 2025 Report, Abu Dhabi Media Office Nov 2025, January 2026 Market Analysis
               </div>
             </div>
           </div>
@@ -104,9 +117,9 @@ export const MarketContextSlide = () => {
           </h3>
           <div className="grid grid-cols-4 gap-4">
             <div className="bg-white/10 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-white">AED 855B+</p>
-              <p className="text-slate-300 text-xs mt-1">Combined Annual Volume</p>
-              <p className="text-[10px] text-slate-400">Abu Dhabi + Dubai 2024</p>
+              <p className="text-2xl font-bold text-white">AED 680B</p>
+              <p className="text-slate-300 text-xs mt-1">UAE Total Volume (2025)</p>
+              <p className="text-[10px] text-slate-400">Continued market resilience</p>
             </div>
             <div className="bg-white/10 rounded-lg p-4 text-center">
               <p className="text-2xl font-bold text-white">42,400+</p>
@@ -122,6 +135,44 @@ export const MarketContextSlide = () => {
               <p className="text-2xl font-bold text-emerald-400">Abu Dhabi First</p>
               <p className="text-slate-300 text-xs mt-1">Go-to-Market Strategy</p>
               <p className="text-[10px] text-slate-400">ADREC → RERA expansion</p>
+            </div>
+          </div>
+        </div>
+
+        {/* PropTech Trends - Technology Tailwinds */}
+        <div className="border border-purple-200 rounded-xl overflow-hidden mb-8 print:break-inside-avoid">
+          <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-5 py-3 text-white">
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              Technology Tailwinds (2026)
+            </h3>
+            <p className="text-purple-100 text-xs">Global PropTech trends validating MiCasa's approach</p>
+          </div>
+          <div className="p-5 bg-purple-50/20">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white rounded-lg p-4 border border-purple-100">
+                <p className="font-semibold text-slate-900 text-sm">Digital Transaction Platforms</p>
+                <p className="text-xs text-slate-500 mt-1">End-to-end online property deals with intelligent matching</p>
+                <p className="text-[10px] text-purple-600 mt-2">→ MiCasa: Unified deal workflows</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-purple-100">
+                <p className="font-semibold text-slate-900 text-sm">AI Operational Tools</p>
+                <p className="text-xs text-slate-500 mt-1">Lease abstraction, AVMs, CRM automation reducing manual work</p>
+                <p className="text-[10px] text-purple-600 mt-2">→ MiCasa: Built-in AI interpretation layer</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-purple-100">
+                <p className="font-semibold text-slate-900 text-sm">Immersive Visualization</p>
+                <p className="text-xs text-slate-500 mt-1">Lidar-based 3D tours and floor plans for remote viewing</p>
+                <p className="text-[10px] text-purple-600 mt-2">→ MiCasa: Future integration opportunity</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-purple-100">
+                <p className="font-semibold text-slate-900 text-sm">Integrated Ecosystems</p>
+                <p className="text-xs text-slate-500 mt-1">Property search, mortgage, transaction in unified platform</p>
+                <p className="text-[10px] text-purple-600 mt-2">→ MiCasa: Single system of record</p>
+              </div>
+            </div>
+            <div className="text-[10px] text-slate-400 pt-4 mt-4 border-t border-slate-200">
+              Sources: Industry PropTech Trend Reports 2025-2026, OneDome, Giraffe360, Anyone.com analysis
             </div>
           </div>
         </div>
