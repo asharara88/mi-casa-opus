@@ -131,19 +131,22 @@ export const ExecutiveSummary = () => {
           </div>
         </div>
 
-        {/* Market & Traction */}
+        {/* Market & Traction - Verified Statistics */}
         <div className="grid grid-cols-3 gap-4 mb-6 print:break-inside-avoid">
           <div className="bg-slate-50 rounded-xl p-5 text-center">
-            <p className="text-3xl font-bold text-slate-900">$8.2B</p>
-            <p className="text-sm text-slate-600 mt-1">UAE PropTech TAM</p>
+            <p className="text-3xl font-bold text-slate-900">$1.55B</p>
+            <p className="text-sm text-slate-600 mt-1">UAE PropTech TAM by 2030</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Source: TechSci Research 2024</p>
           </div>
           <div className="bg-slate-50 rounded-xl p-5 text-center">
-            <p className="text-3xl font-bold text-slate-900">2,500+</p>
-            <p className="text-sm text-slate-600 mt-1">Licensed Brokerages</p>
+            <p className="text-3xl font-bold text-slate-900">6,780+</p>
+            <p className="text-sm text-slate-600 mt-1">Licensed Brokerage Firms</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Source: DLD Q4 2024</p>
           </div>
           <div className="bg-slate-50 rounded-xl p-5 text-center">
-            <p className="text-3xl font-bold text-slate-900">AED 450B</p>
-            <p className="text-sm text-slate-600 mt-1">Annual Transaction Volume</p>
+            <p className="text-3xl font-bold text-slate-900">AED 761B</p>
+            <p className="text-sm text-slate-600 mt-1">2024 Transaction Volume</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Source: Dubai Land Department</p>
           </div>
         </div>
 
