@@ -59,7 +59,7 @@ export default function Login() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">Mi Casa Real Estate</h1>
-            <p className="text-sm text-muted-foreground">Brokerage Operating System</p>
+            <p className="text-sm text-foreground/70">Brokerage Operating System</p>
           </div>
         </div>
 
@@ -69,7 +69,7 @@ export default function Login() {
               Production-Grade <br />
               <span className="text-primary">Real Estate Operations</span>
             </h2>
-            <p className="text-muted-foreground max-w-md">
+            <p className="text-foreground/75 max-w-md">
               Manage leads, deals, documents, and commissions with complete audit trails 
               and regulatory compliance built-in.
             </p>
@@ -84,13 +84,13 @@ export default function Login() {
             ].map((feature) => (
               <div key={feature.label} className="p-4 rounded-lg bg-secondary/30 border border-border">
                 <p className="font-medium text-foreground text-sm">{feature.label}</p>
-                <p className="text-xs text-muted-foreground">{feature.desc}</p>
+                <p className="text-xs text-foreground/65">{feature.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm text-foreground/65">
           <Shield className="w-4 h-4 text-emerald" />
           <span>Abu Dhabi Licensed • DARI Compliant</span>
         </div>
@@ -109,7 +109,7 @@ export default function Login() {
 
           <div className="text-center lg:text-left">
             <h2 className="text-2xl font-bold text-foreground">Sign in</h2>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-foreground/70 mt-2">
               Enter your credentials to access the system
             </p>
           </div>
@@ -166,7 +166,7 @@ export default function Login() {
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or</span>
+              <span className="bg-background px-2 text-foreground/60">Or</span>
             </div>
           </div>
 
@@ -181,14 +181,14 @@ export default function Login() {
           </Button>
 
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account? </span>
+            <span className="text-foreground/70">Don't have an account? </span>
             <Link to="/register" className="text-primary hover:underline font-medium">
               Request Access
             </Link>
           </div>
 
           <div className="pt-4 border-t border-border">
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-xs text-foreground/60 text-center">
               By signing in, you agree to the system usage policies and consent 
               to activity logging for audit purposes.
             </p>

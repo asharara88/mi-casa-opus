@@ -216,7 +216,7 @@ export function Sidebar({
             {!collapsed && (
               <div className="flex flex-col animate-fade-in">
                 <span className="font-semibold text-foreground text-sm">Mi Casa</span>
-                <span className="text-xs text-muted-foreground">Real Estate</span>
+                <span className="text-xs text-foreground/70">Real Estate</span>
               </div>
             )}
           </div>

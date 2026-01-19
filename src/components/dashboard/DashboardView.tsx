@@ -88,7 +88,7 @@ export function DashboardView({ role }: DashboardViewProps) {
           {role === 'LegalOwner' && 'Compliance Overview'}
           {role === 'Broker' && 'My Dashboard'}
         </h2>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-foreground/70 mt-1">
           {new Date().toLocaleDateString('en-GB', { 
             weekday: 'long', 
             year: 'numeric', 
@@ -148,14 +148,14 @@ export function DashboardView({ role }: DashboardViewProps) {
                         <p className="text-sm font-medium text-foreground">
                           {lead.contact_identity.full_name}
                         </p>
-                        <p className="text-xs text-muted-foreground">{lead.source}</p>
+                        <p className="text-xs text-foreground/65">{lead.source}</p>
                       </div>
                     </div>
                     <StateBadge state={lead.lead_state} type="lead" size="sm" />
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-muted-foreground text-sm">
+                <div className="text-center py-8 text-foreground/60 text-sm">
                   No leads yet. Start adding leads to see them here.
                 </div>
               )}
@@ -182,7 +182,7 @@ export function DashboardView({ role }: DashboardViewProps) {
                           <p className="text-sm font-medium text-foreground font-mono">
                             {deal.deal_id}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-foreground/65">
                             {deal.deal_type} • {deal.side}
                           </p>
                         </div>
@@ -198,7 +198,7 @@ export function DashboardView({ role }: DashboardViewProps) {
                     );
                   })
               ) : (
-                <div className="text-center py-8 text-muted-foreground text-sm">
+                <div className="text-center py-8 text-foreground/60 text-sm">
                   No active deals. Create a deal from a qualified lead.
                 </div>
               )}
@@ -238,18 +238,18 @@ export function DashboardView({ role }: DashboardViewProps) {
               <h3 className="font-semibold text-foreground mb-4">System Health</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Event Chain</span>
+                  <span className="text-sm text-foreground/70">Event Chain</span>
                   <span className="flex items-center gap-1 text-sm text-emerald">
                     <CheckCircle className="w-4 h-4" />
                     Valid
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Total Events</span>
+                  <span className="text-sm text-foreground/70">Total Events</span>
                   <span className="text-sm font-mono text-foreground">{events.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Blocked Actions</span>
+                  <span className="text-sm text-foreground/70">Blocked Actions</span>
                   <span className="text-sm font-mono text-foreground">
                     {events.filter(e => e.decision === 'BLOCKED').length}
                   </span>
