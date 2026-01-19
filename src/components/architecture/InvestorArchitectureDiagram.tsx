@@ -13,18 +13,19 @@ const InvestorArchitectureDiagram = () => {
         </p>
       </div>
 
-      {/* ROI Metrics Bar */}
+      {/* ROI Metrics Bar - Target Platform Outcomes */}
       <div className="grid grid-cols-4 gap-4 mb-12 print:mb-8">
         {[
-          { icon: Clock, label: "Time to Close", value: "-40%", color: "text-emerald-600" },
-          { icon: Shield, label: "Compliance Rate", value: "99.7%", color: "text-blue-600" },
-          { icon: Users, label: "Agent Capacity", value: "+3x", color: "text-purple-600" },
-          { icon: DollarSign, label: "Cost per Lead", value: "-55%", color: "text-amber-600" },
+          { icon: Clock, label: "Registration Time", value: "1-3 wks", color: "text-emerald-600", note: "DLD benchmark" },
+          { icon: Shield, label: "RERA Violations", value: "Zero", color: "text-blue-600", note: "Compliance gate" },
+          { icon: Users, label: "Agent Retention", value: ">80%", color: "text-purple-600", note: "vs 6mo avg tenure" },
+          { icon: DollarSign, label: "Target CPL", value: "<AED 100", color: "text-amber-600", note: "vs AED 50-500" },
         ].map((metric, idx) => (
           <div key={idx} className="bg-gray-50 dark:bg-gray-900 rounded-xl p-5 text-center border border-gray-200 dark:border-gray-800">
             <metric.icon className={`w-6 h-6 mx-auto mb-2 ${metric.color}`} />
             <div className={`text-2xl font-bold ${metric.color}`}>{metric.value}</div>
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{metric.label}</div>
+            <div className="text-[10px] text-gray-400 dark:text-gray-500">{metric.note}</div>
           </div>
         ))}
       </div>
