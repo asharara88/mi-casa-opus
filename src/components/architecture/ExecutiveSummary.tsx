@@ -37,44 +37,46 @@ export const ExecutiveSummary = () => {
         <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-6 mb-6 text-white print:break-inside-avoid">
           <h2 className="text-xl font-bold mb-3">The Opportunity</h2>
           <p className="text-slate-300 leading-relaxed">
-            UAE real estate brokerages lose <span className="text-amber-400 font-semibold">30-40% of potential revenue</span> to 
-            compliance delays, manual processes, and fragmented systems. MiCasa BOS is the first purpose-built 
-            operating system that unifies lead management, regulatory compliance, and transaction execution—turning 
-            operational friction into competitive advantage.
+            With <span className="text-amber-400 font-semibold">~40,000 active brokers</span> competing for deals and 
+            average tenure under 6 months, Dubai's real estate market rewards operational efficiency. 
+            MiCasa BOS is the first purpose-built operating system that unifies lead management, regulatory 
+            compliance, and transaction execution—turning operational friction into competitive advantage.
           </p>
+          <p className="text-[10px] text-slate-500 mt-2">Source: Executive Search Dubai Broker Report 2025</p>
         </div>
 
-        {/* Key Metrics Grid */}
+        {/* Key Metrics Grid - Platform Target Outcomes */}
         <div className="grid grid-cols-4 gap-4 mb-6 print:break-inside-avoid">
           <MetricCard 
             icon={Clock}
-            value="45%"
-            label="Faster Close"
-            subtext="vs. industry avg"
+            value="1-3 wks"
+            label="Target Close"
+            subtext="registration to title"
             color="emerald"
           />
           <MetricCard 
             icon={Shield}
-            value="99.2%"
-            label="Compliance Rate"
-            subtext="RERA/DLD aligned"
+            value="Zero"
+            label="RERA Violations"
+            subtext="compliance gate"
             color="blue"
           />
           <MetricCard 
             icon={Users}
-            value="3x"
-            label="Agent Capacity"
-            subtext="deals per agent"
+            value=">80%"
+            label="Retention"
+            subtext="with training/tools"
             color="purple"
           />
           <MetricCard 
             icon={DollarSign}
-            value="60%"
-            label="Lower CPL"
-            subtext="cost per lead"
+            value="<AED 100"
+            label="Target CPL"
+            subtext="vs AED 50-500 avg"
             color="amber"
           />
         </div>
+        <p className="text-[10px] text-slate-400 -mt-4 mb-4 text-right">Industry benchmarks from DLD, RERA, Executive Search 2024-25</p>
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-2 gap-6 mb-6">
@@ -98,7 +100,7 @@ export const ExecutiveSummary = () => {
               />
               <CompetitorRow 
                 name="Manual Processes"
-                weakness="40% time lost to admin tasks"
+                weakness="62% of agents spend 1+ hr/day on admin"
                 position="We free agents to sell"
               />
             </div>
