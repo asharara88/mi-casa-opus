@@ -1,14 +1,15 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, ArrowLeft, Layers, BarChart3, FileText } from "lucide-react";
+import { Printer, ArrowLeft, Layers, BarChart3, FileText, TrendingUp } from "lucide-react";
 import SystemArchitectureDiagram from "@/components/architecture/SystemArchitectureDiagram";
 import InvestorArchitectureDiagram from "@/components/architecture/InvestorArchitectureDiagram";
 import { ExecutiveSummary } from "@/components/architecture/ExecutiveSummary";
+import { MarketContextSlide } from "@/components/architecture/MarketContextSlide";
 import { Link } from "react-router-dom";
 
 const Architecture = () => {
   const diagramRef = useRef<HTMLDivElement>(null);
-  const [view, setView] = useState<"technical" | "investor" | "executive">("investor");
+  const [view, setView] = useState<"technical" | "investor" | "executive" | "market">("investor");
 
   const handlePrint = () => {
     window.print();
@@ -44,6 +45,15 @@ const Architecture = () => {
                 Executive
               </Button>
               <Button
+                variant={view === "market" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setView("market")}
+                className="gap-2"
+              >
+                <TrendingUp className="w-4 h-4" />
+                Market
+              </Button>
+              <Button
                 variant={view === "investor" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setView("investor")}
@@ -74,6 +84,8 @@ const Architecture = () => {
       <div ref={diagramRef} className="py-8 print:py-4">
         {view === "executive" ? (
           <ExecutiveSummary />
+        ) : view === "market" ? (
+          <MarketContextSlide />
         ) : view === "investor" ? (
           <InvestorArchitectureDiagram />
         ) : (
