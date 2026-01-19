@@ -30,10 +30,10 @@ const ACTION_CONFIG: Record<string, { label: string; icon: React.ReactNode; desc
     icon: <Building2 className="h-4 w-4" />,
     description: 'Property ownership transfer at Land Department'
   },
-  Ejari: { 
-    label: 'Ejari Registration', 
+  Tawtheeq: { 
+    label: 'Tawtheeq Registration', 
     icon: <FileText className="h-4 w-4" />,
-    description: 'Tenancy contract registration (for rentals)'
+    description: 'Abu Dhabi tenancy contract registration'
   },
   OQOOD: { 
     label: 'OQOOD Registration', 

@@ -37,12 +37,12 @@ export const ExecutiveSummary = () => {
         <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-6 mb-6 text-white print:break-inside-avoid">
           <h2 className="text-xl font-bold mb-3">The Opportunity</h2>
           <p className="text-slate-300 leading-relaxed">
-            With <span className="text-amber-400 font-semibold">~40,000 active brokers</span> competing for deals and 
-            average tenure under 6 months, Dubai's real estate market rewards operational efficiency. 
-            MiCasa BOS is the first purpose-built operating system that unifies lead management, regulatory 
-            compliance, and transaction execution—turning operational friction into competitive advantage.
+            With <span className="text-amber-400 font-semibold">2,411 licensed professionals</span> and 
+            AED 94B+ in transaction volume (9M 2025), Abu Dhabi's real estate market is growing rapidly (+43.3% YoY). 
+            MiCasa BOS is the first purpose-built operating system for ADREC compliance that unifies lead management, 
+            regulatory compliance, and transaction execution—turning operational friction into competitive advantage.
           </p>
-          <p className="text-[10px] text-slate-500 mt-2">Source: Executive Search Dubai Broker Report 2025</p>
+          <p className="text-[10px] text-slate-500 mt-2">Source: ADREC H1 2025 Report, Abu Dhabi Media Office Nov 2025</p>
         </div>
 
         {/* Key Metrics Grid - Platform Target Outcomes */}
@@ -57,7 +57,7 @@ export const ExecutiveSummary = () => {
           <MetricCard 
             icon={Shield}
             value="Zero"
-            label="RERA Violations"
+            label="ADREC Violations"
             subtext="compliance gate"
             color="blue"
           />
@@ -76,7 +76,7 @@ export const ExecutiveSummary = () => {
             color="amber"
           />
         </div>
-        <p className="text-[10px] text-slate-400 -mt-4 mb-4 text-right">Industry benchmarks from DLD, RERA, Executive Search 2024-25</p>
+        <p className="text-[10px] text-slate-400 -mt-4 mb-4 text-right">Industry benchmarks from ADREC, DARI, Executive Search 2024-25</p>
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-2 gap-6 mb-6">
@@ -115,7 +115,7 @@ export const ExecutiveSummary = () => {
             <div className="space-y-3">
               <DifferentiatorRow 
                 title="Compliance-First Architecture"
-                description="RERA/DLD rules engine blocks violations before they happen"
+                description="ADREC/DARI rules engine blocks violations before they happen"
               />
               <DifferentiatorRow 
                 title="AI-Powered Lead Qualification"
@@ -141,14 +141,14 @@ export const ExecutiveSummary = () => {
             <p className="text-[10px] text-slate-400 mt-0.5">Source: TechSci Research 2024</p>
           </div>
           <div className="bg-slate-50 rounded-xl p-5 text-center">
-            <p className="text-3xl font-bold text-slate-900">6,780+</p>
-            <p className="text-sm text-slate-600 mt-1">Licensed Brokerage Firms</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Source: DLD Q4 2024</p>
+            <p className="text-3xl font-bold text-slate-900">2,411</p>
+            <p className="text-sm text-slate-600 mt-1">Licensed RE Professionals (AD)</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Source: ADREC 2025</p>
           </div>
           <div className="bg-slate-50 rounded-xl p-5 text-center">
-            <p className="text-3xl font-bold text-slate-900">AED 761B</p>
-            <p className="text-sm text-slate-600 mt-1">2024 Transaction Volume</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Source: Dubai Land Department</p>
+            <p className="text-3xl font-bold text-slate-900">AED 94B</p>
+            <p className="text-sm text-slate-600 mt-1">Abu Dhabi 9M 2025 Volume</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Source: ADREC H1 2025 Report</p>
           </div>
         </div>
 

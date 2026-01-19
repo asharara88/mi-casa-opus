@@ -85,7 +85,7 @@ const DEMO_APPROVALS: Approval[] = [
     status: 'Approved',
     reviewed_by: 'Legal Owner',
     reviewed_at: '2024-01-16T11:00:00Z',
-    notes: 'Updated SPA template with new RERA clauses',
+    notes: 'Updated SPA template with new ADREC clauses',
   },
   {
     id: '4',
