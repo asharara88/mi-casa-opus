@@ -76,7 +76,7 @@ export function DraggableDealCard({ deal, context, onClick, onTransition, onSetN
           updatedAt={deal.updated_at} 
           thresholds={DEAL_AGING_THRESHOLDS[deal.deal_state] || DEAL_AGING_THRESHOLDS.Created} 
         />
-        <span className="font-mono text-xs text-muted-foreground">
+        <span className="font-mono text-xs text-foreground/60">
           {deal.deal_id.slice(-6)}
         </span>
       </div>
@@ -112,7 +112,7 @@ export function DraggableDealCard({ deal, context, onClick, onTransition, onSetN
 
       {/* Parties */}
       {deal.parties.length > 0 && (
-        <div className="text-xs text-muted-foreground mb-2">
+        <div className="text-xs text-foreground/65 mb-2">
           {deal.parties[0].identity.full_name}
           {deal.parties.length > 1 && ` +${deal.parties.length - 1}`}
         </div>
@@ -157,12 +157,12 @@ export function DraggableDealCard({ deal, context, onClick, onTransition, onSetN
             <AlertCircle className="w-3 h-3" />
             <span>Transition Blocked</span>
           </div>
-          <ul className="text-xs text-muted-foreground space-y-0.5">
+          <ul className="text-xs text-foreground/65 space-y-0.5">
             {validation.block_reasons.slice(0, 2).map((reason, i) => (
               <li key={i} className="truncate">• {reason}</li>
             ))}
             {validation.block_reasons.length > 2 && (
-              <li>+{validation.block_reasons.length - 2} more issues</li>
+              <li className="text-foreground/60">+{validation.block_reasons.length - 2} more issues</li>
             )}
           </ul>
         </div>

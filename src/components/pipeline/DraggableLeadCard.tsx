@@ -69,7 +69,7 @@ export function DraggableLeadCard({ lead, onClick, onTransition, onSetNextAction
           updatedAt={lead.updated_at} 
           thresholds={LEAD_AGING_THRESHOLDS[lead.lead_state] || LEAD_AGING_THRESHOLDS.New} 
         />
-        <span className="text-xs font-mono text-muted-foreground">
+        <span className="text-xs font-mono text-foreground/60">
           {lead.lead_id.slice(-6)}
         </span>
       </div>
@@ -94,16 +94,16 @@ export function DraggableLeadCard({ lead, onClick, onTransition, onSetNextAction
         <p className="font-medium text-foreground text-sm">
           {lead.contact_identity.full_name}
         </p>
-        <p className="text-xs text-muted-foreground">{lead.source}</p>
+        <p className="text-xs text-foreground/65">{lead.source}</p>
       </div>
 
       {/* Contact Info */}
       <div className="space-y-1 mb-3">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-foreground/65">
           <Phone className="w-3 h-3" />
           <span>{lead.contact_identity.phone}</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-foreground/65">
           <Mail className="w-3 h-3" />
           <span className="truncate">{lead.contact_identity.email}</span>
         </div>
@@ -111,7 +111,7 @@ export function DraggableLeadCard({ lead, onClick, onTransition, onSetNextAction
 
       {/* Assigned Broker */}
       {lead.assigned_broker_id && (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+        <div className="flex items-center gap-2 text-xs text-foreground/65 mb-3">
           <User className="w-3 h-3" />
           <span>Assigned</span>
         </div>
@@ -124,12 +124,12 @@ export function DraggableLeadCard({ lead, onClick, onTransition, onSetNextAction
             <AlertCircle className="w-3 h-3" />
             <span>Blocked</span>
           </div>
-          <ul className="text-xs text-muted-foreground space-y-0.5 pl-4">
+          <ul className="text-xs text-foreground/65 space-y-0.5 pl-4">
             {validation.block_reasons.slice(0, 2).map((reason, i) => (
               <li key={i} className="truncate">• {reason}</li>
             ))}
             {validation.block_reasons.length > 2 && (
-              <li className="text-muted-foreground">+{validation.block_reasons.length - 2} more</li>
+              <li className="text-foreground/60">+{validation.block_reasons.length - 2} more</li>
             )}
           </ul>
         </div>
