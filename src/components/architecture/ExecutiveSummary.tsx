@@ -39,44 +39,45 @@ export const ExecutiveSummary = () => {
           <p className="text-slate-300 leading-relaxed">
             Abu Dhabi's real estate market shows <span className="text-amber-400 font-semibold">continued resilience entering 2026</span>, with 
             <span className="text-amber-400 font-semibold"> 2,411 licensed professionals</span> and AED 94B+ in transaction volume (9M 2025). 
-            The broader UAE industry recorded AED 680B in transactions in 2025. Apartment rents grew 6-9% YoY as of January 2026, with vacancy rates at just 4-6%. 
+            The broader UAE combined market recorded <span className="text-amber-400 font-semibold">AED 857B</span> in 2024 (Dubai 761B + Abu Dhabi 96B). 
+            Apartment rents grew 6-9% YoY as of January 2026, with vacancy rates at just 4-6%. 
             MiCasa BOS is the first purpose-built operating system for ADREC compliance—turning operational friction into competitive advantage.
           </p>
-          <p className="text-[10px] text-slate-500 mt-2">Sources: ADREC H1 2025 Report, Abu Dhabi Media Office Nov 2025, January 2026 Market Analysis</p>
+          <p className="text-[10px] text-slate-500 mt-2">Sources: DLD (Jan 2025), Dubai Media Office (Jul 2025), Abu Dhabi Media Office (Nov 2025)</p>
         </div>
 
         {/* Key Metrics Grid - Platform Target Outcomes */}
         <div className="grid grid-cols-4 gap-4 mb-6 print:break-inside-avoid">
           <MetricCard 
             icon={Clock}
-            value="1-3 wks"
+            value="<1 day"
             label="Target Close"
-            subtext="registration to title"
+            subtext="DLD: 20 min once ready"
             color="emerald"
           />
           <MetricCard 
             icon={Shield}
-            value="Zero"
-            label="ADREC Violations"
-            subtext="compliance gate"
+            value="Designed"
+            label="For Compliance"
+            subtext="ADREC/RERA gates"
             color="blue"
           />
           <MetricCard 
             icon={Users}
             value=">80%"
-            label="Retention"
-            subtext="with training/tools"
+            label="Retention Goal"
+            subtext="with tools (industry)"
             color="purple"
           />
           <MetricCard 
             icon={DollarSign}
             value="<AED 100"
             label="Target CPL"
-            subtext="vs AED 50-500 avg"
+            subtext="vs AED 50-500 range"
             color="amber"
           />
         </div>
-        <p className="text-[10px] text-slate-400 -mt-4 mb-4 text-right">Industry benchmarks from ADREC, DARI, Executive Search 2024-25</p>
+        <p className="text-[10px] text-slate-400 -mt-4 mb-4 text-right">Platform targets • DLD registration time verified (Jan 2026)</p>
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-2 gap-6 mb-6">
@@ -100,7 +101,7 @@ export const ExecutiveSummary = () => {
               />
               <CompetitorRow 
                 name="Manual Processes"
-                weakness="62% of agents spend 1+ hr/day on admin"
+                weakness="Compliance checks slow every transaction"
                 position="We free agents to sell"
               />
             </div>
@@ -138,12 +139,12 @@ export const ExecutiveSummary = () => {
           <div className="bg-slate-50 rounded-xl p-5 text-center">
             <p className="text-3xl font-bold text-slate-900">$1.55B</p>
             <p className="text-sm text-slate-600 mt-1">UAE PropTech TAM by 2030</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Source: TechSci Research 2024</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">TechSci Research (May 2025)</p>
           </div>
           <div className="bg-slate-50 rounded-xl p-5 text-center">
-            <p className="text-3xl font-bold text-slate-900">AED 680B</p>
-            <p className="text-sm text-slate-600 mt-1">UAE Total Volume (2025)</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Source: UAE RE Market Report</p>
+            <p className="text-3xl font-bold text-slate-900">AED 857B</p>
+            <p className="text-sm text-slate-600 mt-1">UAE Combined (2024)</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">DLD + AD Media Office</p>
           </div>
           <div className="bg-slate-50 rounded-xl p-5 text-center">
             <p className="text-3xl font-bold text-slate-900">6-9%</p>
