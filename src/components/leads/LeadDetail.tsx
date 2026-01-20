@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { AIChatPanel } from '@/components/ai/AIChatPanel';
 
 interface LeadDetailProps {
   lead: Lead;
@@ -403,6 +404,25 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
                   </div>
                 </CardContent>
               </Card>
+
+              {/* AI Chat Panel */}
+              <AIChatPanel
+                entityType="lead"
+                entityData={{
+                  lead_id: lead.lead_id,
+                  contact_name: lead.contact_identity.full_name,
+                  contact_email: lead.contact_identity.email,
+                  contact_phone: lead.contact_identity.phone,
+                  source: lead.source,
+                  lead_state: lead.lead_state,
+                  requirements: lead.requirements,
+                  consents: lead.consents,
+                  notes: lead.notes,
+                  created_at: lead.created_at,
+                  updated_at: lead.updated_at,
+                }}
+                collapsed={false}
+              />
             </>
           )}
         </div>

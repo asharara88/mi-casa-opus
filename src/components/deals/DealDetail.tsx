@@ -11,7 +11,8 @@ import {
   Clock,
   Building2,
   AlertCircle,
-  Shield
+  Shield,
+  Sparkles
 } from 'lucide-react';
 import { Deal, DealState, ValidationContext, DEAL_STATE_REQUIREMENTS } from '@/types/bos';
 import { DealStateRail } from './DealStateRail';
@@ -26,6 +27,7 @@ import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverrid
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { OverridePayload } from '@/types/compliance';
+import { AIChatPanel } from '@/components/ai/AIChatPanel';
 
 interface DealDetailProps {
   deal: Deal;
@@ -252,6 +254,10 @@ export const DealDetail: React.FC<DealDetailProps> = ({
                 <Shield className="h-4 w-4 mr-1" />
                 Compliance
               </TabsTrigger>
+              <TabsTrigger value="ai">
+                <Sparkles className="h-4 w-4 mr-1" />
+                AI
+              </TabsTrigger>
               <TabsTrigger value="parties">Parties</TabsTrigger>
               <TabsTrigger value="registry">Registry</TabsTrigger>
               <TabsTrigger value="timeline">Timeline</TabsTrigger>
@@ -315,6 +321,28 @@ export const DealDetail: React.FC<DealDetailProps> = ({
                 isOverrideSubmitting={submitOverride.isPending}
               />
             </TabsContent>
+
+            <TabsContent value="ai" className="space-y-4">
+              <AIChatPanel
+                entityType="deal"
+                entityData={{
+                  deal_id: deal.deal_id,
+                  deal_type: deal.deal_type,
+                  deal_state: deal.deal_state,
+                  side: deal.side,
+                  parties: deal.parties,
+                  registry_actions: deal.registry_actions,
+                  created_at: deal.created_at,
+                }}
+                complianceResult={complianceResult ? {
+                  status: complianceResult.complianceStatus,
+                  blockingReasons: complianceResult.blockingReasons,
+                  requiredActions: complianceResult.requiredActions,
+                } : undefined}
+                collapsed={false}
+              />
+            </TabsContent>
+
             <TabsContent value="parties">
               <DealPartiesPanel parties={deal.parties} />
             </TabsContent>

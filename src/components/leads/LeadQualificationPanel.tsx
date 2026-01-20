@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
 import { CheckCircle, AlertCircle } from 'lucide-react';
+import { AIQualifyButton } from '@/components/ai/AIQualifyButton';
 
 interface LeadQualificationPanelProps {
   lead: Lead;
@@ -247,6 +248,25 @@ export function LeadQualificationPanel({ lead, onSave, onCancel }: LeadQualifica
           </div>
         </div>
       )}
+
+      {/* AI Qualification */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">AI-Assisted Qualification</CardTitle>
+          <CardDescription>
+            Get AI recommendations for lead scoring and next actions
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AIQualifyButton 
+            lead={lead}
+            onApplyRecommendation={(rec) => {
+              // Could auto-set next action or show recommendation
+              console.log('AI Recommendation:', rec);
+            }}
+          />
+        </CardContent>
+      </Card>
 
       {/* Actions */}
       <div className="flex gap-3 justify-end">
