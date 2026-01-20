@@ -2,8 +2,14 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-type OperationalMode = "OPS" | "LEAD_QUALIFY" | "LISTING_FAQ" | "MARKETING_COPY";
+type OperationalMode = "OPS" | "LEAD_QUALIFY" | "LISTING_FAQ" | "MARKETING_COPY" | "PROPERTY_MATCH";
 type ContextType = "listing" | "lead" | "transaction" | "marketing";
+
+// Helper to extract HTTP status from Supabase invoke errors
+function getInvokeStatus(error: unknown): number | undefined {
+  const anyErr = error as { context?: { status?: number }; status?: number; cause?: { status?: number } };
+  return anyErr?.context?.status ?? anyErr?.status ?? anyErr?.cause?.status;
+}
 
 interface RouterRequest {
   modeHint?: OperationalMode | null;
@@ -13,7 +19,7 @@ interface RouterRequest {
   complianceResult?: Record<string, unknown>;
 }
 
-interface LeadQualification {
+export interface LeadQualification {
   score: number;
   tier: "HOT" | "WARM" | "COOL" | "COLD";
   routing: "ASSIGN_SENIOR" | "ASSIGN_AVAILABLE" | "NURTURE" | "DISQUALIFY";
@@ -22,7 +28,7 @@ interface LeadQualification {
   rationale: string;
 }
 
-interface MarketingCopy {
+export interface MarketingCopy {
   headline: string;
   body: string;
   identifiers?: {
@@ -66,7 +72,10 @@ export function useBosLlmRouter() {
       return data.selectedMode as OperationalMode;
     } catch (error) {
       console.error('[BOS LLM Router] Error:', error);
-      toast.error('Failed to route request');
+      const status = getInvokeStatus(error);
+      if (status === 429) toast.error('Rate limit exceeded. Please try again later.');
+      else if (status === 402) toast.error('AI credits depleted. Please add funds.');
+      else toast.error('Failed to route request');
       return 'OPS'; // Default fallback
     } finally {
       setIsRouting(false);
@@ -90,14 +99,31 @@ export function useBosLlmOps() {
     setResponse('');
 
     try {
+      // Get user session for authenticated calls
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (apiKey) headers['apikey'] = apiKey;
+      
+      // Prefer user JWT for authenticated calls
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      } else if (apiKey) {
+        // Fallback only if function is public (verify_jwt=false)
+        headers['Authorization'] = `Bearer ${apiKey}`;
+      }
+
       const resp = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bos-llm-ops`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
+          headers,
           body: JSON.stringify({ userIntent, bosPayload, complianceResult }),
         }
       );
@@ -188,7 +214,10 @@ export function useBosLlmLeadQualify() {
       return null;
     } catch (error) {
       console.error('[BOS Lead Qualify] Error:', error);
-      toast.error('Failed to qualify lead');
+      const status = getInvokeStatus(error);
+      if (status === 429) toast.error('Rate limit exceeded. Please try again later.');
+      else if (status === 402) toast.error('AI credits depleted. Please add funds.');
+      else toast.error('Failed to qualify lead');
       return null;
     } finally {
       setIsQualifying(false);
@@ -224,7 +253,10 @@ export function useBosLlmListingFaq() {
       return 'Unable to answer question.';
     } catch (error) {
       console.error('[BOS Listing FAQ] Error:', error);
-      toast.error('Failed to get answer');
+      const status = getInvokeStatus(error);
+      if (status === 429) toast.error('Rate limit exceeded. Please try again later.');
+      else if (status === 402) toast.error('AI credits depleted. Please add funds.');
+      else toast.error('Failed to get answer');
       return 'Error getting answer.';
     } finally {
       setIsAnswering(false);
@@ -267,7 +299,10 @@ export function useBosLlmMarketingCopy() {
       return null;
     } catch (error) {
       console.error('[BOS Marketing Copy] Error:', error);
-      toast.error('Failed to generate marketing copy');
+      const status = getInvokeStatus(error);
+      if (status === 429) toast.error('Rate limit exceeded. Please try again later.');
+      else if (status === 402) toast.error('AI credits depleted. Please add funds.');
+      else toast.error('Failed to generate marketing copy');
       return null;
     } finally {
       setIsGenerating(false);
@@ -316,7 +351,10 @@ export function useBosLlmPropertyMatch() {
       return null;
     } catch (error) {
       console.error('[BOS Property Match] Error:', error);
-      toast.error('Failed to match properties');
+      const status = getInvokeStatus(error);
+      if (status === 429) toast.error('Rate limit exceeded. Please try again later.');
+      else if (status === 402) toast.error('AI credits depleted. Please add funds.');
+      else toast.error('Failed to match properties');
       return null;
     } finally {
       setIsMatching(false);

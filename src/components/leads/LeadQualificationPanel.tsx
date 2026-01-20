@@ -1,13 +1,19 @@
+import { useMemo, useState } from 'react';
 import { Lead, LeadConsent } from '@/types/bos';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useState } from 'react';
-import { CheckCircle, AlertCircle } from 'lucide-react';
+
+import { CheckCircle, AlertCircle, Sparkles, Copy, MessageSquare } from 'lucide-react';
 import { AIQualifyButton } from '@/components/ai/AIQualifyButton';
+import { AiAssistantPanel } from '@/components/ai/AiAssistantPanel';
+import { LeadQualification } from '@/hooks/useBosLlm';
 
 interface LeadQualificationPanelProps {
   lead: Lead;
@@ -19,15 +25,23 @@ const PROPERTY_TYPES = ['Villa', 'Apartment', 'Townhouse', 'Penthouse', 'Studio'
 const LOCATIONS = ['Saadiyat Island', 'Yas Island', 'Al Reem Island', 'Al Raha', 'Khalifa City', 'Downtown Abu Dhabi'];
 
 export function LeadQualificationPanel({ lead, onSave, onCancel }: LeadQualificationPanelProps) {
-  const [requirements, setRequirements] = useState(lead.requirements || {
-    budget_min: undefined,
-    budget_max: undefined,
-    property_types: [],
-    locations: [],
-    bedrooms_min: undefined,
-  });
+  const [requirements, setRequirements] = useState(
+    lead.requirements || {
+      budget_min: undefined,
+      budget_max: undefined,
+      property_types: [],
+      locations: [],
+      bedrooms_min: undefined,
+    }
+  );
 
   const [consents, setConsents] = useState<LeadConsent[]>(lead.consents || []);
+  const [showAssistant, setShowAssistant] = useState(false);
+  const [lastApplied, setLastApplied] = useState<{
+    tier: string;
+    routing: string;
+    next_action: string;
+  } | null>(null);
 
   const hasDataProcessingConsent = consents.some(
     c => c.consent_type === 'DataProcessing' && c.granted
@@ -36,11 +50,25 @@ export function LeadQualificationPanel({ lead, onSave, onCancel }: LeadQualifica
     c => c.consent_type === 'Marketing' && c.granted
   );
 
+  // Build lead payload for AI context
+  const leadPayload = useMemo(() => ({
+    lead_id: lead.lead_id,
+    contact_name: lead.contact_identity.full_name,
+    contact_email: lead.contact_identity.email,
+    contact_phone: lead.contact_identity.phone,
+    source: lead.source,
+    lead_state: lead.lead_state,
+    requirements: lead.requirements,
+    consents: lead.consents,
+    notes: lead.notes,
+    created_at: lead.created_at,
+  }), [lead]);
+
   const updateConsent = (type: LeadConsent['consent_type'], granted: boolean) => {
     const existing = consents.find(c => c.consent_type === type);
     if (existing) {
-      setConsents(consents.map(c => 
-        c.consent_type === type 
+      setConsents(consents.map(c =>
+        c.consent_type === type
           ? { ...c, granted, granted_at: new Date().toISOString() }
           : c
       ));
@@ -54,23 +82,72 @@ export function LeadQualificationPanel({ lead, onSave, onCancel }: LeadQualifica
     }
   };
 
+  const canSave = hasDataProcessingConsent && requirements.budget_max && requirements.budget_max > 0;
+
   const handleSave = () => {
-    onSave({
-      requirements,
-      consents,
-    });
+    onSave({ requirements, consents });
   };
 
-  const canSave = hasDataProcessingConsent && requirements.budget_max && requirements.budget_max > 0;
+  // Non-blocking audit log for AI decisions
+  const logAiDecisionBestEffort = async (
+    decision: 'APPLIED' | 'DISMISSED',
+    qualification: LeadQualification
+  ) => {
+    try {
+      const { error } = await supabase.from('ai_insights').insert([{
+        entity_type: 'LEAD',
+        entity_id: lead.lead_id,
+        insight_type: 'LEAD_QUALIFY',
+        score: qualification.score,
+        rationale: {
+          decision,
+          qualification,
+          decided_at: new Date().toISOString(),
+        },
+        next_best_action: qualification.next_action,
+        is_authoritative: false,
+      }]);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error('[AI Audit] Non-blocking log failed:', err);
+      // Non-blocking: just log, don't interrupt user flow
+      toast('AI decision could not be logged (non-blocking).');
+    }
+  };
+
+  const onApplyRecommendation = async (
+    rec: { tier: string; routing: string; next_action: string },
+    full: LeadQualification
+  ) => {
+    // Explicit broker action. Still advisory: no auto-routing/state change.
+    setLastApplied(rec);
+    await logAiDecisionBestEffort('APPLIED', full);
+    toast.success('AI recommendation saved for review.');
+  };
+
+  const onDismissRecommendation = async (full: LeadQualification) => {
+    await logAiDecisionBestEffort('DISMISSED', full);
+    toast('Dismissed (no changes applied).');
+  };
+
+  const copyNextAction = async () => {
+    if (!lastApplied?.next_action) return;
+    try {
+      await navigator.clipboard.writeText(lastApplied.next_action);
+      toast.success('Next action copied to clipboard.');
+    } catch {
+      toast.error('Could not copy to clipboard.');
+    }
+  };
 
   return (
     <div className="space-y-6">
+      {/* Requirements Capture */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Requirements Capture</CardTitle>
-          <CardDescription>
-            Capture the lead's property requirements for qualification
-          </CardDescription>
+          <CardDescription>Capture the lead's property requirements for qualification</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Budget Range */}
@@ -82,10 +159,12 @@ export function LeadQualificationPanel({ lead, onSave, onCancel }: LeadQualifica
                 type="number"
                 placeholder="500,000"
                 value={requirements.budget_min || ''}
-                onChange={(e) => setRequirements({
-                  ...requirements,
-                  budget_min: e.target.value ? Number(e.target.value) : undefined
-                })}
+                onChange={e =>
+                  setRequirements({
+                    ...requirements,
+                    budget_min: e.target.value ? Number(e.target.value) : undefined,
+                  })
+                }
               />
             </div>
             <div className="space-y-2">
@@ -95,10 +174,12 @@ export function LeadQualificationPanel({ lead, onSave, onCancel }: LeadQualifica
                 type="number"
                 placeholder="2,000,000"
                 value={requirements.budget_max || ''}
-                onChange={(e) => setRequirements({
-                  ...requirements,
-                  budget_max: e.target.value ? Number(e.target.value) : undefined
-                })}
+                onChange={e =>
+                  setRequirements({
+                    ...requirements,
+                    budget_max: e.target.value ? Number(e.target.value) : undefined,
+                  })
+                }
               />
             </div>
           </div>
@@ -108,10 +189,12 @@ export function LeadQualificationPanel({ lead, onSave, onCancel }: LeadQualifica
             <Label>Minimum Bedrooms</Label>
             <Select
               value={requirements.bedrooms_min?.toString() || ''}
-              onValueChange={(value) => setRequirements({
-                ...requirements,
-                bedrooms_min: value ? Number(value) : undefined
-              })}
+              onValueChange={value =>
+                setRequirements({
+                  ...requirements,
+                  bedrooms_min: value ? Number(value) : undefined,
+                })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select bedrooms" />
@@ -252,19 +335,67 @@ export function LeadQualificationPanel({ lead, onSave, onCancel }: LeadQualifica
       {/* AI Qualification */}
       <Card className="bg-primary/5 border-primary/20">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">AI-Assisted Qualification</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            AI-Assisted Qualification
+          </CardTitle>
           <CardDescription>
-            Get AI recommendations for lead scoring and next actions
+            AI provides advisory recommendations; broker decides.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <AIQualifyButton
+            lead={lead}
+            onApplyRecommendation={onApplyRecommendation}
+            onDismissRecommendation={onDismissRecommendation}
+          />
+
+          {/* Last applied recommendation display */}
+          {lastApplied && (
+            <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Last applied AI recommendation</p>
+              <p className="text-sm">
+                <span className="font-medium">Tier:</span> {lastApplied.tier} ·{' '}
+                <span className="font-medium">Routing:</span> {lastApplied.routing}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Next action:</span> {lastApplied.next_action}
+              </p>
+              <Button variant="ghost" size="sm" onClick={copyNextAction} className="h-6 px-2 text-xs">
+                <Copy className="h-3 w-3 mr-1" />
+                Copy next action
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* AI Assistant Panel */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-primary" />
+            AI Assistant
+          </CardTitle>
+          <CardDescription>
+            Ask questions; routed to OPS / Lead Qualify. Advisory only.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <AIQualifyButton 
-            lead={lead}
-            onApplyRecommendation={(rec) => {
-              // Could auto-set next action or show recommendation
-              console.log('AI Recommendation:', rec);
-            }}
-          />
+          <Button
+            variant="outline"
+            onClick={() => setShowAssistant(v => !v)}
+            className="w-full mb-3"
+          >
+            {showAssistant ? 'Hide assistant' : 'Show assistant'}
+          </Button>
+
+          {showAssistant && (
+            <AiAssistantPanel
+              contextType="lead"
+              bosPayload={{ lead: leadPayload }}
+            />
+          )}
         </CardContent>
       </Card>
 
