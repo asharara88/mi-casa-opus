@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { useDeals, useDealParties, useDealBrokers } from '@/hooks/useDeals';
+import { useDeals, useDealParties, useDealBrokers, useCreateDeal } from '@/hooks/useDeals';
 import { useAuth } from '@/hooks/useAuth';
 import { DealPipeline } from './DealPipeline';
 import { DealDetail } from './DealDetail';
+import { AddDealModal } from './AddDealModal';
 import { transformDbDealToFrontend } from '@/lib/transforms';
 import { Deal, DealState, ValidationContext } from '@/types/bos';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUpdateDeal } from '@/hooks/useDeals';
 import { useCreateEventLog } from '@/hooks/useEventLog';
@@ -19,9 +22,11 @@ export function DealsSection() {
   const { profile, role } = useAuth();
   const { data: dbDeals, isLoading: isLoadingDeals } = useDeals();
   const updateDeal = useUpdateDeal();
+  const createDeal = useCreateDeal();
   const createEventLog = useCreateEventLog();
   
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
   
   // Lost reason modal state
   const [lostModalOpen, setLostModalOpen] = useState(false);
@@ -250,6 +255,10 @@ export function DealsSection() {
             {deals.length} total • {deals.filter(d => !['ClosedWon', 'ClosedLost'].includes(d.deal_state)).length} active
           </p>
         </div>
+        <Button onClick={() => setShowAddModal(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Add Deal
+        </Button>
       </div>
       <DealPipeline
         deals={deals}
@@ -278,6 +287,17 @@ export function DealsSection() {
         currentAction={pendingNextActionDeal ? (dbDeals?.find(d => d.id === pendingNextActionDeal.dbDealId)?.next_action) : undefined}
         currentDueDate={pendingNextActionDeal ? (dbDeals?.find(d => d.id === pendingNextActionDeal.dbDealId)?.next_action_due) : undefined}
         onConfirm={handleNextActionConfirm}
+      />
+
+      {/* Add Deal Modal */}
+      <AddDealModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        onSubmit={async (data) => {
+          await createDeal.mutateAsync(data);
+          setShowAddModal(false);
+        }}
+        isLoading={createDeal.isPending}
       />
     </div>
   );
