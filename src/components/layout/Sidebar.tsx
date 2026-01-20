@@ -215,15 +215,15 @@ export function Sidebar({
             </div>
             {!collapsed && (
               <div className="flex flex-col animate-fade-in">
-                <span className="font-semibold text-foreground text-sm">Mi Casa</span>
-                <span className="text-xs text-foreground/70">Real Estate</span>
+                <span className="font-semibold text-sidebar-foreground text-sm">Mi Casa</span>
+                <span className="text-xs text-sidebar-foreground/70">Real Estate</span>
               </div>
             )}
           </div>
           {/* Mobile close button */}
           <button 
             onClick={onClose}
-            className="lg:hidden p-2 rounded-lg hover:bg-secondary text-muted-foreground"
+            className="lg:hidden p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
@@ -255,7 +255,7 @@ export function Sidebar({
                             'w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200',
                             isActive
                               ? 'bg-primary text-primary-foreground shadow-md'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                              : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                           )}
                           title={collapsed ? item.label : undefined}
                         >
@@ -284,7 +284,7 @@ export function Sidebar({
                     'w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                     hasActiveItem 
                       ? 'bg-primary/10 text-primary' 
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                      : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                   )}
                 >
                   <div className="flex items-center gap-3">
@@ -313,7 +313,7 @@ export function Sidebar({
                           'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200',
                           isActive
                             ? 'bg-primary text-primary-foreground font-medium shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                            : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                         )}
                         title={collapsed ? item.label : undefined}
                       >
@@ -341,17 +341,17 @@ export function Sidebar({
           )}
           
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-medium text-foreground">
+            <div className="w-9 h-9 rounded-full bg-sidebar-accent flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-medium text-sidebar-foreground">
                 {userName?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'U'}
               </span>
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0 animate-fade-in">
-                <p className="text-sm font-medium text-foreground truncate">{userName || 'User'}</p>
+                <p className="text-sm font-medium text-sidebar-foreground truncate">{userName || 'User'}</p>
                 <button 
                   onClick={onSignOut}
-                  className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1"
+                  className="text-xs text-sidebar-foreground/70 hover:text-destructive flex items-center gap-1"
                 >
                   <LogOut className="w-3 h-3" />
                   Sign Out
@@ -365,7 +365,7 @@ export function Sidebar({
         <div className="hidden lg:block border-t border-sidebar-border p-2">
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
           >
             {collapsed ? (
               <ChevronRight className="w-4 h-4" />
