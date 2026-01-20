@@ -94,16 +94,18 @@ export function LeadQualificationPanel({ lead, onSave, onCancel }: LeadQualifica
     qualification: LeadQualification
   ) => {
     try {
+      // Cast to Json via JSON.parse/stringify to satisfy Supabase types
+      const rationalePayload = JSON.parse(JSON.stringify({
+        decision,
+        qualification,
+        decided_at: new Date().toISOString(),
+      }));
       const { error } = await supabase.from('ai_insights').insert([{
         entity_type: 'LEAD',
         entity_id: lead.lead_id,
         insight_type: 'LEAD_QUALIFY',
         score: qualification.score,
-        rationale: {
-          decision,
-          qualification,
-          decided_at: new Date().toISOString(),
-        },
+        rationale: rationalePayload,
         next_best_action: qualification.next_action,
         is_authoritative: false,
       }]);
