@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useLeads, useUpdateLead, Lead } from '@/hooks/useLeads';
+import { useLeads, useUpdateLead, useCreateLead, Lead } from '@/hooks/useLeads';
 import { LeadPipeline } from './LeadPipeline';
 import { LeadDetail } from './LeadDetail';
+import { AddLeadModal } from './AddLeadModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -41,11 +42,15 @@ function transformLead(dbLead: Lead) {
 export function LeadsSection() {
   const { data: dbLeads, isLoading, error } = useLeads();
   const updateLead = useUpdateLead();
+  const createLead = useCreateLead();
   
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'pipeline' | 'list'>('pipeline');
   const [searchQuery, setSearchQuery] = useState('');
   const [stateFilter, setStateFilter] = useState<LeadState | 'all'>('all');
+  
+  // Add lead modal state
+  const [showAddModal, setShowAddModal] = useState(false);
   
   // Lost reason modal state
   const [lostModalOpen, setLostModalOpen] = useState(false);
@@ -203,7 +208,7 @@ export function LeadsSection() {
             {leads.length} total leads • {leads.filter(l => l.lead_state === 'New').length} new
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setShowAddModal(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Add Lead
         </Button>
@@ -347,6 +352,17 @@ export function LeadsSection() {
         currentAction={pendingNextActionLead?.next_action}
         currentDueDate={pendingNextActionLead?.next_action_due}
         onConfirm={handleNextActionConfirm}
+      />
+
+      {/* Add Lead Modal */}
+      <AddLeadModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        onSubmit={async (data) => {
+          await createLead.mutateAsync(data);
+          setShowAddModal(false);
+        }}
+        isLoading={createLead.isPending}
       />
     </div>
   );
