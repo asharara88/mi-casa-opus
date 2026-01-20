@@ -17,7 +17,7 @@ const NAV_ITEMS = [
   { id: 'menu', label: 'More', icon: Menu },
 ] as const;
 
-export const MobileBottomNav = memo(function MobileBottomNav({ 
+function MobileBottomNavComponent({ 
   activeSection, 
   onSectionChange, 
   onMenuClick 
@@ -57,19 +57,16 @@ export const MobileBottomNav = memo(function MobileBottomNav({
               key={item.id}
               onClick={() => handleNavClick(item.id)}
               className={cn(
-                // Base styles - larger touch target
                 "flex flex-col items-center justify-center",
                 "min-w-[56px] min-h-[48px] px-2 py-2",
                 "rounded-xl transition-all duration-150 ease-out",
                 "touch-manipulation select-none",
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-                // Active state - prominent with background
                 isActive && [
                   "text-[hsl(var(--mobile-nav-foreground-active))]",
                   "bg-primary/10",
                   "scale-105"
                 ],
-                // Inactive state - clear but subdued
                 !isActive && [
                   "text-[hsl(var(--mobile-nav-foreground))]",
                   "hover:text-[hsl(var(--mobile-nav-foreground-active))]",
@@ -101,4 +98,6 @@ export const MobileBottomNav = memo(function MobileBottomNav({
       </div>
     </nav>
   );
-});
+}
+
+export const MobileBottomNav = memo(MobileBottomNavComponent);
