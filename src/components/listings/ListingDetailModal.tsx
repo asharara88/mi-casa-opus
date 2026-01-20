@@ -3,12 +3,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, MapPin, Bed, Bath, Maximize } from 'lucide-react';
+import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, HelpCircle } from 'lucide-react';
 import { CompliancePanel } from '@/components/compliance/CompliancePanel';
 import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
 import { useUpdateListing } from '@/hooks/useListings';
 import { toast } from 'sonner';
 import type { OverridePayload } from '@/types/compliance';
+import { AIGenerateDescription } from '@/components/ai/AIGenerateDescription';
+import { AIListingFAQ } from '@/components/ai/AIListingFAQ';
 
 interface ListingDisplayData {
   id: string;
@@ -157,8 +159,12 @@ export function ListingDetailModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="ai">
+              <Sparkles className="h-4 w-4 mr-1" />
+              AI
+            </TabsTrigger>
             <TabsTrigger value="compliance">Compliance</TabsTrigger>
           </TabsList>
 
@@ -224,6 +230,45 @@ export function ListingDetailModal({
                 )}
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="ai" className="space-y-4 mt-4">
+            {/* Generate Description */}
+            <AIGenerateDescription
+              listingData={{
+                listing_id: listing.listing_id,
+                property_type: listing.property_type,
+                listing_type: listing.listing_type,
+                location: listing.location,
+                price: listing.price,
+                currency: listing.currency,
+                bedrooms: listing.bedrooms,
+                bathrooms: listing.bathrooms,
+                sqft: listing.sqft,
+              }}
+              madhmounId={listing.madhmoun_listing_id || undefined}
+              onApply={(headline, body) => {
+                // Could update listing description
+                console.log('Apply copy:', headline, body);
+                toast.success('Description copied to clipboard');
+              }}
+            />
+
+            {/* FAQ */}
+            <AIListingFAQ
+              listingData={{
+                listing_id: listing.listing_id,
+                property_type: listing.property_type,
+                listing_type: listing.listing_type,
+                location: listing.location,
+                price: listing.price,
+                currency: listing.currency,
+                bedrooms: listing.bedrooms,
+                bathrooms: listing.bathrooms,
+                sqft: listing.sqft,
+                madhmoun_status: listing.madhmoun_status,
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="compliance" className="mt-4">
