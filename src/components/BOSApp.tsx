@@ -7,6 +7,8 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { QuickAccessToolbar } from '@/components/layout/QuickAccessToolbar';
 import { CustomerJourneyIndicator } from '@/components/layout/CustomerJourneyIndicator';
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
+import { MobileSearchSheet } from '@/components/layout/MobileSearchSheet';
 import { DemoBanner } from '@/components/demo/DemoBanner';
 import { DashboardView } from '@/components/dashboard/DashboardView';
 import { LeadsSection } from '@/components/leads/LeadsSection';
@@ -27,6 +29,7 @@ import { useLeads } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
 import { useCommissions } from '@/hooks/useCommissions';
 import { useEventLog } from '@/hooks/useEventLog';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { transformDbBrokerageToFrontend } from '@/lib/transforms';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -77,8 +80,10 @@ export function BOSApp() {
   const { profile, role, signOut } = useAuth();
   const { isDemoBypass, exitDemoBypass } = useDemoMode();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   
   // In demo bypass mode, use Operator role
   const effectiveRole: AppRole = isDemoBypass ? 'Operator' : (role || 'Operator');
@@ -200,6 +205,7 @@ export function BOSApp() {
           title={sectionInfo.title} 
           subtitle={sectionInfo.subtitle}
           onMenuClick={() => setSidebarOpen(true)}
+          onSearchClick={() => setSearchOpen(true)}
         />
         <QuickAccessToolbar
           currentRole={effectiveRole}
@@ -211,12 +217,12 @@ export function BOSApp() {
           onSectionChange={setActiveSection}
         />
         
-        <main className="flex-1 overflow-auto p-4 md:p-6 scrollbar-thin">
+        <main className="flex-1 overflow-auto p-4 md:p-6 pb-20 lg:pb-6 scrollbar-thin">
           {renderSection()}
         </main>
 
-        {/* Footer */}
-        <footer className="px-6 py-3 border-t border-border bg-card/30 flex items-center justify-between text-xs text-muted-foreground">
+        {/* Footer - Hidden on mobile */}
+        <footer className="hidden lg:flex px-6 py-3 border-t border-border bg-card/30 items-center justify-between text-xs text-foreground/60">
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
             {isLoadingBrokerage ? (
@@ -224,7 +230,7 @@ export function BOSApp() {
             ) : (
               <>
                 <span>{brokerage?.trade_name || 'Brokerage'}</span>
-                <span className="text-muted-foreground/50">•</span>
+                <span className="text-foreground/30">•</span>
                 <span>License: {brokerage?.license_context?.[0]?.license_no || 'N/A'}</span>
               </>
             )}
@@ -232,11 +238,28 @@ export function BOSApp() {
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-emerald" />
             <span>Event Chain: Valid</span>
-            <span className="text-muted-foreground/50">•</span>
+            <span className="text-foreground/30">•</span>
             <span className="font-mono">{dbEvents?.length || 0} events logged</span>
           </div>
         </footer>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        onMenuClick={() => setSidebarOpen(true)}
+      />
+
+      {/* Mobile Search Sheet */}
+      <MobileSearchSheet
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onNavigate={(section) => {
+          setActiveSection(section);
+          setSearchOpen(false);
+        }}
+      />
     </div>
   );
 }

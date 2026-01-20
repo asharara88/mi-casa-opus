@@ -10,9 +10,10 @@ interface HeaderProps {
   title: string;
   subtitle?: string;
   onMenuClick?: () => void;
+  onSearchClick?: () => void;
 }
 
-export function Header({ title, subtitle, onMenuClick }: HeaderProps) {
+export function Header({ title, subtitle, onMenuClick, onSearchClick }: HeaderProps) {
   const { role } = useAuth();
   const { isDemoMode } = useDemoMode();
   const canAccessDemo = role === 'Operator' || role === 'LegalOwner';
@@ -24,7 +25,7 @@ export function Header({ title, subtitle, onMenuClick }: HeaderProps) {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="lg:hidden"
+          className="lg:hidden min-h-[44px] min-w-[44px]"
           onClick={onMenuClick}
           aria-label="Open menu"
         >
@@ -34,7 +35,7 @@ export function Header({ title, subtitle, onMenuClick }: HeaderProps) {
         <div>
           <h1 className="text-lg font-semibold text-foreground">{title}</h1>
           {subtitle && (
-            <p className="text-sm text-muted-foreground hidden sm:block">{subtitle}</p>
+            <p className="text-sm text-foreground/65 hidden sm:block">{subtitle}</p>
           )}
         </div>
         {isDemoMode && (
@@ -48,7 +49,18 @@ export function Header({ title, subtitle, onMenuClick }: HeaderProps) {
         {/* Demo Toggle - Only for Operator/Admin */}
         {canAccessDemo && <DemoToggle />}
 
-        {/* Search - Hidden on mobile */}
+        {/* Mobile Search Button */}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="md:hidden min-h-[44px] min-w-[44px]"
+          onClick={onSearchClick}
+          aria-label="Search"
+        >
+          <Search className="w-5 h-5" />
+        </Button>
+
+        {/* Desktop Search */}
         <div className="relative w-48 md:w-64 hidden md:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -59,11 +71,11 @@ export function Header({ title, subtitle, onMenuClick }: HeaderProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-1 md:gap-2">
-          <Button variant="ghost" size="icon" className="relative">
+          <Button variant="ghost" size="icon" className="relative min-h-[44px] min-w-[44px]">
             <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />
           </Button>
-          <Button variant="ghost" size="icon" className="hidden sm:flex">
+          <Button variant="ghost" size="icon" className="hidden sm:flex min-h-[44px] min-w-[44px]">
             <HelpCircle className="w-5 h-5" />
           </Button>
         </div>
