@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useProspects, useProspectStats, useUpdateProspect } from '@/hooks/useProspects';
+import { useProspects, useProspectStats, useUpdateProspect, useCreateProspect } from '@/hooks/useProspects';
 import { ProspectImportModal } from './ProspectImportModal';
 import { ProspectDetailSheet } from './ProspectDetailSheet';
-import { Search, Upload, Users, Phone, Mail, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { AddProspectModal } from './AddProspectModal';
+import { Search, Upload, Users, Phone, Mail, CheckCircle, Clock, XCircle, Plus } from 'lucide-react';
 import type { Prospect } from '@/hooks/useProspects';
 
 const outreachStatuses = [
@@ -34,6 +35,7 @@ export function ProspectsSection() {
   const [outreachStatus, setOutreachStatus] = useState('all');
   const [confidenceLevel, setConfidenceLevel] = useState('all');
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
 
   const { data: prospects = [], isLoading } = useProspects({
@@ -44,6 +46,7 @@ export function ProspectsSection() {
 
   const { data: stats } = useProspectStats();
   const updateProspect = useUpdateProspect();
+  const createProspect = useCreateProspect();
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -171,7 +174,12 @@ export function ProspectsSection() {
             </SelectContent>
           </Select>
 
-          <Button onClick={() => setShowImportModal(true)} className="gap-2">
+          <Button onClick={() => setShowAddModal(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Prospect
+          </Button>
+
+          <Button onClick={() => setShowImportModal(true)} variant="outline" className="gap-2">
             <Upload className="h-4 w-4" />
             Import CSV
           </Button>
@@ -264,6 +272,16 @@ export function ProspectsSection() {
       </div>
 
       <ProspectImportModal open={showImportModal} onOpenChange={setShowImportModal} />
+      
+      <AddProspectModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        onSubmit={async (data) => {
+          await createProspect.mutateAsync(data);
+          setShowAddModal(false);
+        }}
+        isLoading={createProspect.isPending}
+      />
       
       <ProspectDetailSheet 
         prospect={selectedProspect} 

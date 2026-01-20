@@ -145,6 +145,32 @@ export function useUpdateProspect() {
   });
 }
 
+export function useCreateProspect() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (prospect: ProspectInsert) => {
+      const { data, error } = await supabase
+        .from('prospects')
+        .insert(prospect)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['prospects'] });
+      queryClient.invalidateQueries({ queryKey: ['prospect-stats'] });
+      toast({ title: 'Prospect created successfully' });
+    },
+    onError: (error) => {
+      toast({ title: 'Failed to create prospect', description: error.message, variant: 'destructive' });
+    },
+  });
+}
+
 export function useImportProspectsCSV() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
