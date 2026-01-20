@@ -1,1 +1,25 @@
 project_id = "zwdqpssjhpvvsvvwmgqf"
+
+[functions.bos-llm-router]
+verify_jwt = false
+
+[functions.bos-llm-ops]
+verify_jwt = false
+
+[functions.bos-llm-lead-qualify]
+verify_jwt = false
+
+[functions.bos-llm-listing-faq]
+verify_jwt = false
+
+[functions.bos-llm-marketing-copy]
+verify_jwt = false
+
+[functions.bos-llm-property-match]
+verify_jwt = false
+
+[functions.evaluate-compliance]
+verify_jwt = false
+
+[functions.import-prospects-csv]
+verify_jwt = false

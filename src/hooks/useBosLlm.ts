@@ -35,6 +35,22 @@ interface MarketingCopy {
   is_compliant: boolean;
 }
 
+export interface PropertyMatch {
+  listing_id: string;
+  match_score: number;
+  match_tier: "EXCELLENT" | "GOOD" | "PARTIAL" | "STRETCH";
+  match_reasons: string[];
+  concerns: string[];
+  negotiation_angle?: string;
+  broker_talking_points?: string[];
+}
+
+export interface PropertyMatchResult {
+  matches: PropertyMatch[];
+  summary: string;
+  recommendation: string;
+}
+
 // Route to the appropriate mode
 export function useBosLlmRouter() {
   const [isRouting, setIsRouting] = useState(false);
@@ -261,6 +277,55 @@ export function useBosLlmMarketingCopy() {
   return { generateCopy, isGenerating, copy };
 }
 
+// Property Matching mode
+export function useBosLlmPropertyMatch() {
+  const [isMatching, setIsMatching] = useState(false);
+  const [matchResult, setMatchResult] = useState<PropertyMatchResult | null>(null);
+
+  const matchProperties = useCallback(async (
+    leadRequirements: {
+      budget_min?: number;
+      budget_max?: number;
+      property_types?: string[];
+      locations?: string[];
+      bedrooms_min?: number;
+    },
+    availableListings: Array<{
+      id: string;
+      listing_id: string;
+      listing_type: string;
+      status: string;
+      listing_attributes?: Record<string, unknown>;
+      asking_terms?: Record<string, unknown>;
+    }>
+  ): Promise<PropertyMatchResult | null> => {
+    setIsMatching(true);
+    setMatchResult(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('bos-llm-property-match', {
+        body: { leadRequirements, availableListings },
+      });
+
+      if (error) throw error;
+
+      if (data.result) {
+        setMatchResult(data.result);
+        return data.result;
+      }
+      return null;
+    } catch (error) {
+      console.error('[BOS Property Match] Error:', error);
+      toast.error('Failed to match properties');
+      return null;
+    } finally {
+      setIsMatching(false);
+    }
+  }, []);
+
+  return { matchProperties, isMatching, matchResult };
+}
+
 // Combined hook that routes and executes
 export function useBosLlm() {
   const { routeRequest, isRouting } = useBosLlmRouter();
@@ -268,8 +333,9 @@ export function useBosLlm() {
   const { qualifyLead, isQualifying, qualification } = useBosLlmLeadQualify();
   const { askAboutListing, isAnswering, answer } = useBosLlmListingFaq();
   const { generateCopy, isGenerating, copy } = useBosLlmMarketingCopy();
+  const { matchProperties, isMatching, matchResult } = useBosLlmPropertyMatch();
 
-  const isLoading = isRouting || isOpsStreaming || isQualifying || isAnswering || isGenerating;
+  const isLoading = isRouting || isOpsStreaming || isQualifying || isAnswering || isGenerating || isMatching;
 
   return {
     routeRequest,
@@ -277,15 +343,18 @@ export function useBosLlm() {
     qualifyLead,
     askAboutListing,
     generateCopy,
+    matchProperties,
     isLoading,
     isRouting,
     isOpsStreaming,
     isQualifying,
     isAnswering,
     isGenerating,
+    isMatching,
     opsResponse,
     qualification,
     answer,
     copy,
+    matchResult,
   };
 }

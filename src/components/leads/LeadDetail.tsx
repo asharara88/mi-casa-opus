@@ -24,6 +24,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { AIChatPanel } from '@/components/ai/AIChatPanel';
+import { AIPropertyMatcher } from '@/components/ai/AIPropertyMatcher';
 
 interface LeadDetailProps {
   lead: Lead;
@@ -341,6 +342,21 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
                     </div>
                   </CardContent>
                 </Card>
+              )}
+
+              {/* AI Property Matching */}
+              {lead.requirements && (lead.lead_state === 'Qualified' || lead.lead_state === 'Contacted') && (
+                <AIPropertyMatcher 
+                  lead={lead}
+                  onViewListing={(listingId) => {
+                    console.log('View listing:', listingId);
+                    // TODO: Open listing detail modal
+                  }}
+                  onStartDeal={(listingId) => {
+                    console.log('Start deal with listing:', listingId);
+                    // TODO: Trigger deal creation flow
+                  }}
+                />
               )}
 
               {/* Notes */}
