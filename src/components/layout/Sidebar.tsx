@@ -13,17 +13,6 @@ import {
   ChevronRight,
   ChevronDown,
   LogOut,
-  Sparkles,
-  PenTool,
-  Eye,
-  ClipboardCheck,
-  Download,
-  FileStack,
-  Briefcase,
-  Calendar,
-  UserCheck,
-  Wallet,
-  UserPlus,
   X,
 } from 'lucide-react';
 import {
@@ -47,69 +36,56 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   roles: AppRole[];
-  group?: string;
+  group: string;
 }
 
-// Full navigation structure - consolidated for clarity
+// Simplified navigation: 4 groups maximum
+// Dashboard | Customers | Operations | Settings
 const NAV_ITEMS: NavItem[] = [
-  // Operator Navigation
-  { id: 'dashboard', label: 'Control Room', icon: LayoutDashboard, roles: ['Operator'], group: 'main' },
+  // === OPERATOR ===
+  // Dashboard
+  { id: 'dashboard', label: 'Control Room', icon: LayoutDashboard, roles: ['Operator'], group: 'dashboard' },
   
-  // Customers: Prospects → Leads → Deals (sales funnel order)
-  { id: 'prospects', label: 'Prospects', icon: UserPlus, roles: ['Operator'], group: 'customers' },
+  // Customers (unified funnel: Prospects → Leads → Deals)
+  { id: 'prospects', label: 'Prospects', icon: Users, roles: ['Operator'], group: 'customers' },
   { id: 'leads', label: 'Leads', icon: Users, roles: ['Operator'], group: 'customers' },
   { id: 'deals', label: 'Deals', icon: Handshake, roles: ['Operator'], group: 'customers' },
   
-  // Properties
-  { id: 'listings', label: 'Listings', icon: Building2, roles: ['Operator'], group: 'properties' },
+  // Operations (Listings, Documents, Commissions)
+  { id: 'listings', label: 'Listings', icon: Building2, roles: ['Operator'], group: 'operations' },
+  { id: 'documents', label: 'Documents', icon: FileText, roles: ['Operator'], group: 'operations' },
+  { id: 'commissions', label: 'Commissions', icon: DollarSign, roles: ['Operator'], group: 'operations' },
   
-  // Documents & Evidence
-  { id: 'documents', label: 'Documents', icon: FileText, roles: ['Operator'], group: 'documents' },
-  { id: 'signatures', label: 'Signatures', icon: PenTool, roles: ['Operator'], group: 'documents' },
-  { id: 'evidence', label: 'Evidence', icon: Eye, roles: ['Operator'], group: 'documents' },
-  
-  // Finance
-  { id: 'commissions', label: 'Commissions', icon: DollarSign, roles: ['Operator'], group: 'finance' },
-  { id: 'payouts', label: 'Payouts', icon: Wallet, roles: ['Operator'], group: 'finance' },
-  
-  // Compliance & Admin
-  { id: 'approvals', label: 'Approvals', icon: ClipboardCheck, roles: ['Operator'], group: 'admin' },
-  { id: 'exports', label: 'Exports', icon: Download, roles: ['Operator'], group: 'admin' },
-  { id: 'templates', label: 'Rules & Templates', icon: FileStack, roles: ['Operator'], group: 'admin' },
-  { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, roles: ['Operator'], group: 'admin' },
-  { id: 'users', label: 'Users', icon: UserCheck, roles: ['Operator'], group: 'admin' },
-  { id: 'settings', label: 'Settings', icon: Settings, roles: ['Operator'], group: 'admin' },
+  // Settings (Users, Templates, System)
+  { id: 'users', label: 'Users', icon: Users, roles: ['Operator'], group: 'settings' },
+  { id: 'templates', label: 'Rules & Templates', icon: FileText, roles: ['Operator'], group: 'settings' },
+  { id: 'settings', label: 'System Settings', icon: Settings, roles: ['Operator'], group: 'settings' },
 
-  // LegalOwner Navigation
-  { id: 'oversight', label: 'Oversight Dashboard', icon: LayoutDashboard, roles: ['LegalOwner'], group: 'main' },
-  { id: 'approvals', label: 'Approvals', icon: ClipboardCheck, roles: ['LegalOwner'], group: 'main' },
-  { id: 'deals', label: 'Deals', icon: Handshake, roles: ['LegalOwner'], group: 'readonly' },
-  { id: 'exports', label: 'Exports', icon: Download, roles: ['LegalOwner'], group: 'readonly' },
-  { id: 'documents', label: 'Documents', icon: FileText, roles: ['LegalOwner'], group: 'readonly' },
+  // === LEGAL OWNER ===
+  { id: 'oversight', label: 'Oversight', icon: LayoutDashboard, roles: ['LegalOwner'], group: 'dashboard' },
+  { id: 'approvals', label: 'Approvals', icon: FileText, roles: ['LegalOwner'], group: 'operations' },
+  { id: 'deals', label: 'Deals (View)', icon: Handshake, roles: ['LegalOwner'], group: 'operations' },
+  { id: 'documents', label: 'Documents', icon: FileText, roles: ['LegalOwner'], group: 'operations' },
 
-  // Broker Navigation
-  { id: 'my-day', label: 'My Day', icon: Calendar, roles: ['Broker'], group: 'main' },
+  // === BROKER ===
+  { id: 'my-day', label: 'My Day', icon: LayoutDashboard, roles: ['Broker'], group: 'dashboard' },
   { id: 'my-leads', label: 'My Leads', icon: Users, roles: ['Broker'], group: 'customers' },
   { id: 'my-deals', label: 'My Deals', icon: Handshake, roles: ['Broker'], group: 'customers' },
-  { id: 'my-earnings', label: 'My Earnings', icon: DollarSign, roles: ['Broker'], group: 'finance' },
-  { id: 'listings', label: 'Listings', icon: Building2, roles: ['Broker'], group: 'properties' },
-  { id: 'documents', label: 'Documents', icon: FileText, roles: ['Broker'], group: 'documents' },
+  { id: 'listings', label: 'Listings', icon: Building2, roles: ['Broker'], group: 'operations' },
+  { id: 'my-earnings', label: 'My Earnings', icon: DollarSign, roles: ['Broker'], group: 'operations' },
 
-  // Investor Navigation
-  { id: 'investor-profile', label: 'Profile', icon: UserCheck, roles: ['Investor'], group: 'main' },
-  { id: 'shortlists', label: 'Shortlists', icon: Building2, roles: ['Investor'], group: 'properties' },
-  { id: 'deal-room', label: 'Deals Room', icon: Briefcase, roles: ['Investor'], group: 'main' },
-  { id: 'investor-docs', label: 'Documents', icon: FileText, roles: ['Investor'], group: 'documents' },
+  // === INVESTOR ===
+  { id: 'investor-profile', label: 'Profile', icon: Users, roles: ['Investor'], group: 'dashboard' },
+  { id: 'shortlists', label: 'Shortlists', icon: Building2, roles: ['Investor'], group: 'operations' },
+  { id: 'deal-room', label: 'Deals Room', icon: Handshake, roles: ['Investor'], group: 'operations' },
+  { id: 'investor-docs', label: 'Documents', icon: FileText, roles: ['Investor'], group: 'operations' },
 ];
 
-const GROUP_LABELS: Record<string, { label: string; icon: React.ElementType }> = {
-  main: { label: 'Dashboard', icon: LayoutDashboard },
+const GROUP_CONFIG: Record<string, { label: string; icon: React.ElementType }> = {
+  dashboard: { label: 'Dashboard', icon: LayoutDashboard },
   customers: { label: 'Customers', icon: Users },
-  properties: { label: 'Properties', icon: Building2 },
-  documents: { label: 'Documents', icon: FileText },
-  finance: { label: 'Finance', icon: DollarSign },
-  admin: { label: 'Admin & Settings', icon: Settings },
-  readonly: { label: 'View Only', icon: Eye },
+  operations: { label: 'Operations', icon: Building2 },
+  settings: { label: 'Settings', icon: Settings },
 };
 
 export function Sidebar({ 
@@ -122,18 +98,15 @@ export function Sidebar({
   onClose 
 }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
-    // Initialize with main group open
-    return { main: true };
-  });
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ dashboard: true });
 
   const filteredItems = NAV_ITEMS.filter(item => 
     currentRole && item.roles.includes(currentRole)
   );
 
-  // Group items
+  // Group items - dedupe by id
   const groupedItems = filteredItems.reduce((acc, item) => {
-    const group = item.group || 'main';
+    const group = item.group;
     if (!acc[group]) acc[group] = [];
     if (!acc[group].find(i => i.id === item.id)) {
       acc[group].push(item);
@@ -141,17 +114,14 @@ export function Sidebar({
     return acc;
   }, {} as Record<string, NavItem[]>);
 
-  // Check if current section is in a group
+  // Get active group
   const getActiveGroup = () => {
     for (const [group, items] of Object.entries(groupedItems)) {
-      if (items.find(i => i.id === activeSection)) {
-        return group;
-      }
+      if (items.find(i => i.id === activeSection)) return group;
     }
-    return 'main';
+    return 'dashboard';
   };
 
-  // Auto-open the group containing active section
   const activeGroup = getActiveGroup();
   if (!openGroups[activeGroup]) {
     setOpenGroups(prev => ({ ...prev, [activeGroup]: true }));
@@ -163,7 +133,6 @@ export function Sidebar({
 
   const handleSectionChange = (sectionId: string) => {
     onSectionChange(sectionId);
-    // Close mobile sidebar when selecting
     if (onClose && window.innerWidth < 1024) {
       onClose();
     }
@@ -186,6 +155,10 @@ export function Sidebar({
 
   const roleBadge = getRoleBadge(currentRole);
 
+  // Order groups consistently
+  const groupOrder = ['dashboard', 'customers', 'operations', 'settings'];
+  const orderedGroups = groupOrder.filter(g => groupedItems[g]?.length > 0);
+
   return (
     <>
       {/* Mobile overlay */}
@@ -199,10 +172,8 @@ export function Sidebar({
       <aside
         className={cn(
           'flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 z-50',
-          // Desktop
           'lg:relative lg:translate-x-0',
-          collapsed ? 'lg:w-[72px]' : 'lg:w-[260px]',
-          // Mobile - fixed position
+          collapsed ? 'lg:w-[72px]' : 'lg:w-[240px]',
           'fixed top-0 left-0 w-[280px]',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
@@ -220,7 +191,6 @@ export function Sidebar({
               </div>
             )}
           </div>
-          {/* Mobile close button */}
           <button 
             onClick={onClose}
             className="lg:hidden p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70"
@@ -232,16 +202,17 @@ export function Sidebar({
 
         {/* Navigation */}
         <nav className="flex-1 py-4 px-3 overflow-y-auto scrollbar-thin">
-          {Object.entries(groupedItems).map(([group, items]) => {
-            const groupInfo = GROUP_LABELS[group];
+          {orderedGroups.map((group) => {
+            const items = groupedItems[group];
+            const groupInfo = GROUP_CONFIG[group];
             const isGroupOpen = openGroups[group] || false;
             const hasActiveItem = items.some(i => i.id === activeSection);
             const GroupIcon = groupInfo?.icon || LayoutDashboard;
 
-            // For "main" group, don't use collapsible
-            if (group === 'main') {
+            // Dashboard group - no collapsible wrapper
+            if (group === 'dashboard') {
               return (
-                <div key={group} className="mb-2">
+                <div key={group} className="mb-3">
                   <div className="space-y-1">
                     {items.map(item => {
                       const Icon = item.icon;
@@ -260,9 +231,7 @@ export function Sidebar({
                           title={collapsed ? item.label : undefined}
                         >
                           <Icon className="w-5 h-5 flex-shrink-0" />
-                          {!collapsed && (
-                            <span className="animate-fade-in truncate">{item.label}</span>
-                          )}
+                          {!collapsed && <span className="truncate">{item.label}</span>}
                         </button>
                       );
                     })}
@@ -271,7 +240,7 @@ export function Sidebar({
               );
             }
 
-            // For other groups, use collapsible
+            // Other groups - collapsible
             return (
               <Collapsible
                 key={group}
@@ -292,12 +261,7 @@ export function Sidebar({
                     {!collapsed && <span>{groupInfo?.label || group}</span>}
                   </div>
                   {!collapsed && (
-                    <ChevronDown 
-                      className={cn(
-                        'w-4 h-4 transition-transform duration-200',
-                        isGroupOpen && 'rotate-180'
-                      )} 
-                    />
+                    <ChevronDown className={cn('w-4 h-4 transition-transform duration-200', isGroupOpen && 'rotate-180')} />
                   )}
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pl-4 mt-1 space-y-1">
@@ -318,9 +282,7 @@ export function Sidebar({
                         title={collapsed ? item.label : undefined}
                       >
                         <Icon className="w-4 h-4 flex-shrink-0" />
-                        {!collapsed && (
-                          <span className="animate-fade-in truncate">{item.label}</span>
-                        )}
+                        {!collapsed && <span className="truncate">{item.label}</span>}
                       </button>
                     );
                   })}
@@ -333,7 +295,7 @@ export function Sidebar({
         {/* User & Role */}
         <div className="border-t border-sidebar-border p-3">
           {!collapsed && (
-            <div className="mb-3 animate-fade-in">
+            <div className="mb-3">
               <div className={cn('state-badge text-xs', roleBadge.className)}>
                 {roleBadge.label}
               </div>
@@ -347,7 +309,7 @@ export function Sidebar({
               </span>
             </div>
             {!collapsed && (
-              <div className="flex-1 min-w-0 animate-fade-in">
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-sidebar-foreground truncate">{userName || 'User'}</p>
                 <button 
                   onClick={onSignOut}
