@@ -8,27 +8,21 @@ export const ExecutiveSummary = () => {
 
   return (
     <div className="min-h-screen bg-white print:bg-white">
-      {/* Print Button - Hidden in print */}
-      <div className="fixed top-4 right-4 z-50 print:hidden">
-        <Button onClick={handlePrint} className="gap-2 bg-slate-900 hover:bg-slate-800">
-          <Printer className="w-4 h-4" />
-          Save as PDF
-        </Button>
-      </div>
+      {/* Print Button - Hidden (handled by parent Architecture.tsx header) */}
 
       {/* Executive Summary Content */}
-      <div className="max-w-[1000px] mx-auto p-8 print:p-6 print:max-w-none">
+      <div className="max-w-[1000px] mx-auto p-4 md:p-8 print:p-6 print:max-w-none">
         
         {/* Header */}
-        <div className="text-center mb-8 print:mb-6">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">M</span>
+        <div className="text-center mb-6 md:mb-8 print:mb-6">
+          <div className="flex items-center justify-center gap-2 md:gap-3 mb-2">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-base md:text-lg">M</span>
             </div>
-            <h1 className="text-3xl font-bold text-slate-900">MiCasa BOS</h1>
+            <h1 className="text-xl md:text-3xl font-bold text-slate-900">MiCasa BOS</h1>
           </div>
-          <p className="text-lg text-slate-600 font-medium">Brokerage Operating System for UAE Real Estate</p>
-          <div className="mt-2 inline-block px-4 py-1 bg-amber-100 text-amber-800 rounded-full text-sm font-medium">
+          <p className="text-sm md:text-lg text-slate-600 font-medium">Brokerage Operating System for UAE Real Estate</p>
+          <div className="mt-2 inline-block px-3 md:px-4 py-1 bg-amber-100 text-amber-800 rounded-full text-xs md:text-sm font-medium">
             Executive Summary
           </div>
         </div>
@@ -47,7 +41,7 @@ export const ExecutiveSummary = () => {
         </div>
 
         {/* Key Metrics Grid - Platform Target Outcomes */}
-        <div className="grid grid-cols-4 gap-4 mb-6 print:break-inside-avoid">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 print:break-inside-avoid">
           <MetricCard 
             icon={Clock}
             value="<1 day"
@@ -80,7 +74,7 @@ export const ExecutiveSummary = () => {
         <p className="text-[10px] text-slate-400 -mt-4 mb-4 text-right">Platform targets • DLD registration time verified (Jan 2026)</p>
 
         {/* Two Column Layout */}
-        <div className="grid grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
           
           {/* Competitive Positioning */}
           <div className="border border-slate-200 rounded-xl p-5 print:break-inside-avoid">
@@ -135,49 +129,49 @@ export const ExecutiveSummary = () => {
         </div>
 
         {/* Market & Traction - Verified Statistics */}
-        <div className="grid grid-cols-4 gap-4 mb-6 print:break-inside-avoid">
-          <div className="bg-slate-50 rounded-xl p-5 text-center">
-            <p className="text-3xl font-bold text-slate-900">$1.55B</p>
-            <p className="text-sm text-slate-600 mt-1">UAE PropTech TAM by 2030</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 print:break-inside-avoid">
+          <div className="bg-slate-50 rounded-xl p-3 md:p-5 text-center">
+            <p className="text-xl md:text-3xl font-bold text-slate-900">$1.55B</p>
+            <p className="text-xs md:text-sm text-slate-600 mt-1">UAE PropTech TAM by 2030</p>
             <p className="text-[10px] text-slate-400 mt-0.5">TechSci Research (May 2025)</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-5 text-center">
-            <p className="text-3xl font-bold text-slate-900">AED 857B</p>
-            <p className="text-sm text-slate-600 mt-1">UAE Combined (2024)</p>
+          <div className="bg-slate-50 rounded-xl p-3 md:p-5 text-center">
+            <p className="text-xl md:text-3xl font-bold text-slate-900">AED 857B</p>
+            <p className="text-xs md:text-sm text-slate-600 mt-1">UAE Combined (2024)</p>
             <p className="text-[10px] text-slate-400 mt-0.5">DLD + AD Media Office</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-5 text-center">
-            <p className="text-3xl font-bold text-slate-900">6-9%</p>
-            <p className="text-sm text-slate-600 mt-1">Apartment Rent Growth</p>
+          <div className="bg-slate-50 rounded-xl p-3 md:p-5 text-center">
+            <p className="text-xl md:text-3xl font-bold text-slate-900">6-9%</p>
+            <p className="text-xs md:text-sm text-slate-600 mt-1">Apartment Rent Growth</p>
             <p className="text-[10px] text-slate-400 mt-0.5">Jan 2026 YoY</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-5 text-center">
-            <p className="text-3xl font-bold text-slate-900">4-6%</p>
-            <p className="text-sm text-slate-600 mt-1">Vacancy Rate</p>
+          <div className="bg-slate-50 rounded-xl p-3 md:p-5 text-center">
+            <p className="text-xl md:text-3xl font-bold text-slate-900">4-6%</p>
+            <p className="text-xs md:text-sm text-slate-600 mt-1">Vacancy Rate</p>
             <p className="text-[10px] text-slate-400 mt-0.5">Low = Strong Demand</p>
           </div>
         </div>
 
         {/* Business Model */}
-        <div className="border border-slate-200 rounded-xl p-5 mb-6 print:break-inside-avoid">
-          <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-amber-600" />
+        <div className="border border-slate-200 rounded-xl p-4 md:p-5 mb-6 print:break-inside-avoid">
+          <h3 className="text-base md:text-lg font-bold text-slate-900 mb-3 md:mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-amber-600" />
             Revenue Model
           </h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             <div className="text-center p-3 bg-amber-50 rounded-lg">
-              <p className="font-bold text-slate-900">SaaS License</p>
-              <p className="text-sm text-slate-600">Per-seat monthly subscription</p>
+              <p className="font-bold text-slate-900 text-sm md:text-base">SaaS License</p>
+              <p className="text-xs md:text-sm text-slate-600">Per-seat monthly subscription</p>
               <p className="text-xs text-amber-700 mt-1">~70% of revenue</p>
             </div>
             <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <p className="font-bold text-slate-900">Transaction Fees</p>
-              <p className="text-sm text-slate-600">Success-based deal fees</p>
+              <p className="font-bold text-slate-900 text-sm md:text-base">Transaction Fees</p>
+              <p className="text-xs md:text-sm text-slate-600">Success-based deal fees</p>
               <p className="text-xs text-blue-700 mt-1">~20% of revenue</p>
             </div>
             <div className="text-center p-3 bg-emerald-50 rounded-lg">
-              <p className="font-bold text-slate-900">Value-Add Services</p>
-              <p className="text-sm text-slate-600">AI insights, integrations</p>
+              <p className="font-bold text-slate-900 text-sm md:text-base">Value-Add Services</p>
+              <p className="text-xs md:text-sm text-slate-600">AI insights, integrations</p>
               <p className="text-xs text-emerald-700 mt-1">~10% of revenue</p>
             </div>
           </div>

@@ -148,31 +148,31 @@ const GateIndicator = ({ type }: { type: 'block' | 'pass' }) => (
 
 export const SystemArchitectureDiagram = () => {
   return (
-    <div className="w-full max-w-6xl mx-auto p-8 space-y-4 bg-white dark:bg-gray-950">
+    <div className="w-full max-w-6xl mx-auto p-4 md:p-8 space-y-4 bg-white dark:bg-gray-950">
       {/* Header */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">M</span>
+      <div className="text-center mb-6 md:mb-8">
+        <div className="flex items-center justify-center gap-2 md:gap-3 mb-2">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-base md:text-lg">M</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">MiCasa Platform Architecture</h1>
+          <h1 className="text-xl md:text-3xl font-bold tracking-tight">MiCasa Platform Architecture</h1>
         </div>
-        <p className="text-muted-foreground">Inventory-agnostic, conversation-first operating system for compliant Abu Dhabi real estate sales operations</p>
-        <div className="flex items-center justify-center gap-6 mt-4 text-xs">
+        <p className="text-muted-foreground text-xs md:text-base">Inventory-agnostic, conversation-first operating system for compliant Abu Dhabi real estate sales operations</p>
+        <div className="flex items-center justify-center gap-3 md:gap-6 mt-4 text-[10px] md:text-xs flex-wrap">
           <span className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-red-500" />
+            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-red-500" />
             Hard Gate (Blocks)
           </span>
           <span className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-amber-500" />
+            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-amber-500" />
             Rules Execute
           </span>
           <span className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-violet-500" />
+            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-violet-500" />
             AI Advises
           </span>
           <span className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-emerald-500" />
+            <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-emerald-500" />
             System of Record
           </span>
         </div>
