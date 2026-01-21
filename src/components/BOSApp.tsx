@@ -22,6 +22,7 @@ import { UsersSection } from '@/components/users/UsersSection';
 import { ListingsSection } from '@/components/listings/ListingsSection';
 import { TemplatesSection } from '@/components/templates/TemplatesSection';
 import { ProspectsSection } from '@/components/prospects/ProspectsSection';
+import { AIAgentChat } from '@/components/ai/AIAgentChat';
 import { useBrokerageContext } from '@/hooks/useBrokerage';
 import { useLeads } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
@@ -55,6 +56,7 @@ const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   exports: { title: 'Export Center', subtitle: 'Generate deal and broker dossiers' },
   templates: { title: 'Rules & Templates', subtitle: 'Document templates and business rules' },
   'ai-insights': { title: 'AI Insights', subtitle: 'Read-only intelligence (non-authoritative)' },
+  'ai-agent': { title: 'AI Agent', subtitle: 'Your BOS operations assistant' },
   users: { title: 'User Management', subtitle: 'Manage users and broker profiles' },
   settings: { title: 'System Settings', subtitle: 'Brokerage context and configuration' },
   
@@ -158,6 +160,9 @@ export function BOSApp() {
       
       case 'ai-insights':
         return <AIInsightsSection onNavigate={setActiveSection} />;
+      
+      case 'ai-agent':
+        return <AIAgentChat />;
       
       case 'my-day':
         return <MyDaySection />;
