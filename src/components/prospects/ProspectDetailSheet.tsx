@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Phone, Mail, MapPin, Calendar, User, Building, Hash, MessageSquare } from 'lucide-react';
+import { Phone, Mail, MapPin, Calendar, User, Building, Hash, MessageSquare, UserPlus, ChevronRight } from 'lucide-react';
 import type { Prospect } from '@/hooks/useProspects';
 import { format } from 'date-fns';
 
@@ -13,6 +13,7 @@ interface Props {
   prospect: Prospect | null;
   onClose: () => void;
   onUpdate: (updates: Partial<Prospect>) => void;
+  onConvertToLead?: (prospect: Prospect) => void;
 }
 
 const outreachStatuses = [
@@ -21,10 +22,11 @@ const outreachStatuses = [
   { value: 'follow_up', label: 'Follow Up' },
   { value: 'interested', label: 'Interested' },
   { value: 'not_interested', label: 'Not Interested' },
-  { value: 'converted', label: 'Converted' },
+  { value: 'qualified', label: 'Qualified' },
+  { value: 'converted', label: 'Converted to Lead' },
 ];
 
-export function ProspectDetailSheet({ prospect, onClose, onUpdate }: Props) {
+export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLead }: Props) {
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState('not_contacted');
 
@@ -67,6 +69,15 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate }: Props) {
     }
   };
 
+  const handleConvertToLead = () => {
+    if (prospect && onConvertToLead) {
+      onConvertToLead(prospect);
+      onUpdate({ outreach_status: 'converted' });
+    }
+  };
+
+  const canConvert = prospect?.outreach_status === 'qualified' || prospect?.outreach_status === 'interested';
+
   if (!prospect) return null;
 
   return (
@@ -92,6 +103,18 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate }: Props) {
               Email
             </Button>
           </div>
+
+          {/* Convert to Lead - Only show when qualified/interested */}
+          {canConvert && onConvertToLead && (
+            <Button 
+              className="w-full bg-gold hover:bg-gold/90 text-black font-medium"
+              onClick={handleConvertToLead}
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Convert to Lead
+              <ChevronRight className="w-4 h-4 ml-auto" />
+            </Button>
+          )}
 
           {/* Status */}
           <div className="space-y-2">

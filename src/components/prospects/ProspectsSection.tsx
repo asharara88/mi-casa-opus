@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,10 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useProspects, useProspectStats, useUpdateProspect, useCreateProspect } from '@/hooks/useProspects';
+import { useCreateLead } from '@/hooks/useLeads';
 import { ProspectImportModal } from './ProspectImportModal';
 import { ProspectDetailSheet } from './ProspectDetailSheet';
 import { AddProspectModal } from './AddProspectModal';
 import { Search, Upload, Users, Phone, Mail, CheckCircle, Clock, XCircle, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import type { Prospect } from '@/hooks/useProspects';
 
 const outreachStatuses = [
@@ -19,8 +22,9 @@ const outreachStatuses = [
   { value: 'contacted', label: 'Contacted' },
   { value: 'follow_up', label: 'Follow Up' },
   { value: 'interested', label: 'Interested' },
+  { value: 'qualified', label: 'Qualified' },
   { value: 'not_interested', label: 'Not Interested' },
-  { value: 'converted', label: 'Converted' },
+  { value: 'converted', label: 'Converted to Lead' },
 ];
 
 const confidenceLevels = [
@@ -47,6 +51,49 @@ export function ProspectsSection() {
   const { data: stats } = useProspectStats();
   const updateProspect = useUpdateProspect();
   const createProspect = useCreateProspect();
+  const createLead = useCreateLead();
+
+  // Generate Lead ID
+  const generateLeadId = () => {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `LD-${timestamp}-${random}`;
+  };
+
+  // Handle prospect to lead conversion
+  const handleConvertToLead = async (prospect: Prospect) => {
+    try {
+      await createLead.mutateAsync({
+        lead_id: generateLeadId(),
+        contact_name: prospect.full_name,
+        contact_email: prospect.email,
+        contact_phone: prospect.phone,
+        source: (prospect.source as any) || 'Other',
+        lead_state: 'New',
+        notes: `Converted from prospect ${prospect.crm_customer_id || prospect.id}. ${prospect.notes || ''}`.trim(),
+        qualification_data: {
+          confidence_level: prospect.crm_confidence_level,
+          city: prospect.city,
+          original_prospect_id: prospect.id,
+        },
+      });
+      
+      // Update prospect status to converted
+      await updateProspect.mutateAsync({ 
+        id: prospect.id, 
+        updates: { outreach_status: 'converted' } 
+      });
+      
+      setSelectedProspect(null);
+      toast.success('Prospect converted to lead', {
+        description: `${prospect.full_name} is now in your leads pipeline`,
+      });
+    } catch (error) {
+      toast.error('Failed to convert prospect', {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -291,6 +338,7 @@ export function ProspectsSection() {
             updateProspect.mutate({ id: selectedProspect.id, updates });
           }
         }}
+        onConvertToLead={handleConvertToLead}
       />
     </div>
   );

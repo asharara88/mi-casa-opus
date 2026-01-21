@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLeads, useUpdateLead, useCreateLead, Lead } from '@/hooks/useLeads';
+import { useCreateDeal } from '@/hooks/useDeals';
 import { LeadPipeline } from './LeadPipeline';
 import { LeadDetail } from './LeadDetail';
 import { AddLeadModal } from './AddLeadModal';
@@ -14,6 +15,8 @@ import { NextActionModal } from '@/components/modals/NextActionModal';
 
 type LeadState = Database['public']['Enums']['lead_state'];
 type NextActionType = Database['public']['Enums']['next_action_type'];
+type DealType = Database['public']['Enums']['deal_type'];
+type DealSide = Database['public']['Enums']['deal_side'];
 
 // Transform DB lead to component Lead format
 function transformLead(dbLead: Lead) {
@@ -43,6 +46,7 @@ export function LeadsSection() {
   const { data: dbLeads, isLoading, error } = useLeads();
   const updateLead = useUpdateLead();
   const createLead = useCreateLead();
+  const createDeal = useCreateDeal();
   
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'pipeline' | 'list'>('pipeline');
@@ -163,10 +167,45 @@ export function LeadsSection() {
     }
   };
 
-  const handleConvertToDeal = (lead: ReturnType<typeof transformLead>) => {
-    toast.success('Deal created from lead', {
-      description: `Lead ${lead.lead_id} converted to deal`,
-    });
+  // Generate Deal ID
+  const generateDealId = () => {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `DL-${timestamp}-${random}`;
+  };
+
+  const handleConvertToDeal = async (lead: ReturnType<typeof transformLead>) => {
+    try {
+      // Create the deal from the lead
+      await createDeal.mutateAsync({
+        deal_id: generateDealId(),
+        deal_type: 'Sale' as DealType,
+        deal_state: 'Created',
+        side: 'Buy' as DealSide,
+        pipeline: 'Secondary',
+        linked_lead_id: lead.id,
+        notes: `Converted from lead ${lead.lead_id}. ${lead.notes || ''}`.trim(),
+        deal_economics: {
+          lead_source: lead.source,
+          lead_requirements: lead.requirements,
+        },
+      });
+
+      // Update lead state to Converted
+      await updateLead.mutateAsync({
+        id: lead.id,
+        updates: { lead_state: 'Converted' as LeadState },
+      });
+
+      setSelectedLeadId(null);
+      toast.success('Lead converted to deal', {
+        description: `${lead.contact_identity.full_name} is now in your deals pipeline`,
+      });
+    } catch (error) {
+      toast.error('Failed to convert lead', {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
   };
 
   if (isLoading) {
