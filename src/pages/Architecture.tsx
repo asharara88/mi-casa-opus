@@ -18,63 +18,67 @@ const Architecture = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
       {/* Export Controls - Fixed at top (hidden when printing) */}
-      <div className="sticky top-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur border-b border-gray-200 dark:border-gray-800 px-6 py-3 print:hidden">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
+<div className="sticky top-0 z-50 bg-white/95 dark:bg-gray-950/95 backdrop-blur border-b border-gray-200 dark:border-gray-800 px-4 md:px-6 py-3 print:hidden">
+        <div className="max-w-6xl mx-auto flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-3 md:gap-4">
             <Link to="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
+              <Button variant="ghost" size="sm" className="px-2 md:px-3">
+                <ArrowLeft className="w-4 h-4 md:mr-2" />
+                <span className="hidden md:inline">Back</span>
               </Button>
             </Link>
             <div>
-              <h1 className="text-lg font-semibold">MiCasa Architecture</h1>
-              <p className="text-xs text-muted-foreground">Export for investor materials</p>
+              <h1 className="text-base md:text-lg font-semibold">MiCasa Architecture</h1>
+              <p className="text-xs text-muted-foreground hidden sm:block">Export for investor materials</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {/* View Toggle */}
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* View Toggle - Horizontal scroll on mobile */}
+            <div className="flex items-center overflow-x-auto scrollbar-thin bg-gray-100 dark:bg-gray-800 rounded-lg p-1 max-w-full">
               <Button
                 variant={view === "executive" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setView("executive")}
-                className="gap-2"
+                className="gap-1 md:gap-2 whitespace-nowrap text-xs md:text-sm px-2 md:px-3"
               >
-                <FileText className="w-4 h-4" />
-                Executive
+                <FileText className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span className="hidden xs:inline">Executive</span>
+                <span className="xs:hidden">Exec</span>
               </Button>
               <Button
                 variant={view === "market" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setView("market")}
-                className="gap-2"
+                className="gap-1 md:gap-2 whitespace-nowrap text-xs md:text-sm px-2 md:px-3"
               >
-                <TrendingUp className="w-4 h-4" />
-                Market
+                <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span className="hidden xs:inline">Market</span>
+                <span className="xs:hidden">Mkt</span>
               </Button>
               <Button
                 variant={view === "investor" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setView("investor")}
-                className="gap-2"
+                className="gap-1 md:gap-2 whitespace-nowrap text-xs md:text-sm px-2 md:px-3"
               >
-                <BarChart3 className="w-4 h-4" />
-                Investor
+                <BarChart3 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span className="hidden xs:inline">Investor</span>
+                <span className="xs:hidden">Inv</span>
               </Button>
               <Button
                 variant={view === "technical" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setView("technical")}
-                className="gap-2"
+                className="gap-1 md:gap-2 whitespace-nowrap text-xs md:text-sm px-2 md:px-3"
               >
-                <Layers className="w-4 h-4" />
-                Technical
+                <Layers className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span className="hidden xs:inline">Technical</span>
+                <span className="xs:hidden">Tech</span>
               </Button>
             </div>
-            <Button size="sm" onClick={handlePrint}>
-              <Printer className="w-4 h-4 mr-2" />
-              Print / Save as PDF
+            <Button size="sm" onClick={handlePrint} className="whitespace-nowrap px-2 md:px-3">
+              <Printer className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">Print / Save as PDF</span>
             </Button>
           </div>
         </div>
