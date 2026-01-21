@@ -2,6 +2,7 @@ import { UserRole } from '@/types/bos';
 import { MetricCard } from './MetricCard';
 import { StateBadge } from './StateBadge';
 import { ForecastWidget } from './ForecastWidget';
+import { SalesFunnelChart } from './SalesFunnelChart';
 import { EventLog } from '@/components/events/EventLog';
 import { useLeads } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
@@ -126,6 +127,18 @@ export function DashboardView({ role }: DashboardViewProps) {
         />
       </div>
 
+      {/* Sales Funnel */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SalesFunnelChart />
+        <ForecastWidget 
+          deals={(dbDeals || []).map(d => ({
+            deal_id: d.deal_id,
+            deal_state: d.deal_state,
+            deal_economics: d.deal_economics as Record<string, unknown> | null,
+          }))}
+        />
+      </div>
+
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Activity */}
@@ -206,16 +219,8 @@ export function DashboardView({ role }: DashboardViewProps) {
           </div>
         </div>
 
-        {/* Right Column - Forecast & Event Log */}
+        {/* Right Column - Event Log */}
         <div className="space-y-6">
-          {/* Forecast Widget */}
-          <ForecastWidget 
-            deals={(dbDeals || []).map(d => ({
-              deal_id: d.deal_id,
-              deal_state: d.deal_state,
-              deal_economics: d.deal_economics as Record<string, unknown> | null,
-            }))}
-          />
           <div className="card-surface p-4">
             <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <Clock className="w-4 h-4 text-primary" />
