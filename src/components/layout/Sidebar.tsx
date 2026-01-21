@@ -14,6 +14,7 @@ import {
   ChevronDown,
   LogOut,
   X,
+  Bot,
 } from 'lucide-react';
 import {
   Collapsible,
@@ -45,6 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   // === OPERATOR ===
   // Dashboard
   { id: 'dashboard', label: 'Control Room', icon: LayoutDashboard, roles: ['Operator'], group: 'dashboard' },
+  { id: 'ai-agent', label: 'AI Agent', icon: Bot, roles: ['Operator'], group: 'dashboard' },
   
   // Customers (unified funnel: Prospects → Leads → Deals)
   { id: 'prospects', label: 'Prospects', icon: Users, roles: ['Operator'], group: 'customers' },
