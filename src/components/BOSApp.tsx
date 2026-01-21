@@ -5,8 +5,6 @@ import { useDemoMode } from '@/contexts/DemoContext';
 import { ValidationContext } from '@/types/bos';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
-import { QuickAccessToolbar } from '@/components/layout/QuickAccessToolbar';
-import { CustomerJourneyIndicator } from '@/components/layout/CustomerJourneyIndicator';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { MobileSearchSheet } from '@/components/layout/MobileSearchSheet';
 import { DemoBanner } from '@/components/demo/DemoBanner';
@@ -207,15 +205,6 @@ export function BOSApp() {
           onMenuClick={() => setSidebarOpen(true)}
           onSearchClick={() => setSearchOpen(true)}
         />
-        <QuickAccessToolbar
-          currentRole={effectiveRole}
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-        />
-        <CustomerJourneyIndicator
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-        />
         
         <main className="flex-1 overflow-auto p-4 md:p-6 pb-20 lg:pb-6 scrollbar-thin">
           {renderSection()}
@@ -249,6 +238,12 @@ export function BOSApp() {
         activeSection={activeSection}
         onSectionChange={setActiveSection}
         onMenuClick={() => setSidebarOpen(true)}
+        onQuickAction={(action) => {
+          // Handle quick actions - navigate to appropriate section with add modal trigger
+          if (action === 'add-lead') setActiveSection('leads');
+          else if (action === 'add-prospect') setActiveSection('prospects');
+          // Future: could trigger modals directly via context/state
+        }}
       />
 
       {/* Mobile Search Sheet */}
