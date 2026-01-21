@@ -19,7 +19,8 @@ interface Message {
 const QUICK_PROMPTS = [
   'Pipeline status',
   'Today\'s priorities',
-  'Lead tips',
+  'Find prospect Zaid',
+  'Recent leads',
 ];
 
 export function FloatingAIChat() {
