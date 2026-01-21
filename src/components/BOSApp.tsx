@@ -122,7 +122,7 @@ export function BOSApp() {
     switch (activeSection) {
       case 'dashboard':
       case 'oversight':
-        return <DashboardView role={effectiveRole} />;
+        return <DashboardView role={effectiveRole} onNavigate={setActiveSection} />;
 
       case 'leads':
       case 'my-leads':

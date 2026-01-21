@@ -1,13 +1,15 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useProspects, useProspectStats } from '@/hooks/useProspects';
 import { useLeads } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingDown, Users, UserCheck, Handshake, Trophy, ArrowRight } from 'lucide-react';
+import { TrendingDown, Users, UserCheck, Handshake, Trophy, ArrowRight, ChevronRight } from 'lucide-react';
 import CountUp from 'react-countup';
+import { cn } from '@/lib/utils';
 
 interface FunnelStage {
   id: string;
+  section: string; // Maps to app section for navigation
   label: string;
   count: number;
   icon: React.ElementType;
@@ -15,12 +17,20 @@ interface FunnelStage {
   bgColor: string;
 }
 
-export function SalesFunnelChart() {
+interface SalesFunnelChartProps {
+  onNavigate?: (section: string) => void;
+}
+
+export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
   const { data: prospectStats, isLoading: isLoadingProspects } = useProspectStats();
   const { data: dbLeads, isLoading: isLoadingLeads } = useLeads();
   const { data: dbDeals, isLoading: isLoadingDeals } = useDeals();
 
   const isLoading = isLoadingProspects || isLoadingLeads || isLoadingDeals;
+
+  const handleStageClick = useCallback((section: string) => {
+    onNavigate?.(section);
+  }, [onNavigate]);
 
   const funnelData = useMemo<FunnelStage[]>(() => {
     const totalProspects = prospectStats?.total || 0;
@@ -39,6 +49,7 @@ export function SalesFunnelChart() {
     return [
       {
         id: 'prospects',
+        section: 'prospects',
         label: 'Prospects',
         count: totalProspects,
         icon: Users,
@@ -47,6 +58,7 @@ export function SalesFunnelChart() {
       },
       {
         id: 'leads',
+        section: 'leads',
         label: 'Leads',
         count: activeLeads + convertedLeads,
         icon: UserCheck,
@@ -55,6 +67,7 @@ export function SalesFunnelChart() {
       },
       {
         id: 'deals',
+        section: 'deals',
         label: 'Active Deals',
         count: activeDeals + closedWonDeals,
         icon: Handshake,
@@ -63,6 +76,7 @@ export function SalesFunnelChart() {
       },
       {
         id: 'closed',
+        section: 'deals', // Closed won still navigates to deals section
         label: 'Closed Won',
         count: closedWonDeals,
         icon: Trophy,
@@ -133,25 +147,35 @@ export function SalesFunnelChart() {
           
           return (
             <div key={stage.id}>
-              {/* Stage Bar */}
+              {/* Stage Bar - Clickable */}
               <div className="relative">
-                <div 
-                  className={`${stage.bgColor} rounded-lg transition-all duration-500 ease-out`}
+                <button 
+                  onClick={() => handleStageClick(stage.section)}
+                  className={cn(
+                    stage.bgColor,
+                    "rounded-lg transition-all duration-300 ease-out w-full text-left",
+                    "hover:scale-[1.02] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    onNavigate && "cursor-pointer"
+                  )}
                   style={{ 
                     width: `${Math.max(widthPercent, 20)}%`,
                     marginLeft: `${(100 - Math.max(widthPercent, 20)) / 2}%`,
                   }}
+                  aria-label={`View ${stage.label}`}
                 >
                   <div className="flex items-center justify-between px-3 py-3">
                     <div className="flex items-center gap-2">
                       <Icon className={`w-4 h-4 ${stage.color}`} />
                       <span className="text-sm font-medium text-foreground">{stage.label}</span>
                     </div>
-                    <span className={`text-lg font-bold ${stage.color}`}>
-                      <CountUp end={stage.count} duration={1} />
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-lg font-bold ${stage.color}`}>
+                        <CountUp end={stage.count} duration={1} />
+                      </span>
+                      {onNavigate && <ChevronRight className={`w-4 h-4 ${stage.color} opacity-60`} />}
+                    </div>
                   </div>
-                </div>
+                </button>
               </div>
 
               {/* Conversion Arrow */}

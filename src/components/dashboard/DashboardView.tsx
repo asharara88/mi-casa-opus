@@ -24,9 +24,10 @@ import {
 
 interface DashboardViewProps {
   role: UserRole;
+  onNavigate?: (section: string) => void;
 }
 
-export function DashboardView({ role }: DashboardViewProps) {
+export function DashboardView({ role, onNavigate }: DashboardViewProps) {
   const { data: dbLeads, isLoading: isLoadingLeads } = useLeads();
   const { data: dbDeals, isLoading: isLoadingDeals } = useDeals();
   const { data: dbCommissions, isLoading: isLoadingCommissions } = useCommissions();
@@ -129,7 +130,7 @@ export function DashboardView({ role }: DashboardViewProps) {
 
       {/* Sales Funnel */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SalesFunnelChart />
+        <SalesFunnelChart onNavigate={onNavigate} />
         <ForecastWidget 
           deals={(dbDeals || []).map(d => ({
             deal_id: d.deal_id,

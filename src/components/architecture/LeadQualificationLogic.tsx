@@ -96,7 +96,7 @@ export const LeadQualificationLogic = () => {
                 <tr>
                   <Cell>Prospect New</Cell>
                   <Cell>Raw inbound with valid contact method.</Cell>
-                  <Cell>source ∈ {"Website", "WhatsApp", "Referral", "Phone", "Portal"} AND phone/email exists.</Cell>
+                  <Cell>source ∈ {`{"Website", "WhatsApp", "Referral", "Phone", "Portal"}`} AND phone/email exists.</Cell>
                 </tr>
                 <tr>
                   <Cell>Prospect Verified</Cell>
