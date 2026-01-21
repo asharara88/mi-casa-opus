@@ -23,6 +23,7 @@ import { ListingsSection } from '@/components/listings/ListingsSection';
 import { TemplatesSection } from '@/components/templates/TemplatesSection';
 import { ProspectsSection } from '@/components/prospects/ProspectsSection';
 import { AIAgentChat } from '@/components/ai/AIAgentChat';
+import { FloatingAIChat } from '@/components/ai/FloatingAIChat';
 import { useBrokerageContext } from '@/hooks/useBrokerage';
 import { useLeads } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
@@ -260,6 +261,9 @@ export function BOSApp() {
           setSearchOpen(false);
         }}
       />
+
+      {/* Floating AI Chat Button */}
+      <FloatingAIChat />
     </div>
   );
 }
