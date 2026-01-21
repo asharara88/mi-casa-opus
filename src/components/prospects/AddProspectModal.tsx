@@ -43,6 +43,13 @@ const SOURCES = [
 
 const CONFIDENCE_LEVELS = ['High', 'Medium', 'Low'] as const;
 
+// Generate CRM customer ID: PR-{timestamp}-{random}
+function generateCrmCustomerId(): string {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `PR-${timestamp}-${random}`;
+}
+
 const addProspectSchema = z.object({
   full_name: z
     .string()
@@ -121,6 +128,8 @@ export function AddProspectModal({
       notes: data.notes || null,
       outreach_status: 'not_contacted',
       crm_stage: 'Prospect',
+      crm_customer_id: generateCrmCustomerId(),
+      crm_created_date: new Date().toISOString(),
     };
 
     await onSubmit(prospectData);
