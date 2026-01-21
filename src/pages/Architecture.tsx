@@ -1,15 +1,16 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, ArrowLeft, Layers, BarChart3, FileText, TrendingUp } from "lucide-react";
+import { Printer, ArrowLeft, Layers, BarChart3, FileText, TrendingUp, CheckCircle2 } from "lucide-react";
 import SystemArchitectureDiagram from "@/components/architecture/SystemArchitectureDiagram";
 import InvestorArchitectureDiagram from "@/components/architecture/InvestorArchitectureDiagram";
 import { ExecutiveSummary } from "@/components/architecture/ExecutiveSummary";
 import { MarketContextSlide } from "@/components/architecture/MarketContextSlide";
+import { LeadQualificationLogic } from "@/components/architecture/LeadQualificationLogic";
 import { Link } from "react-router-dom";
 
 const Architecture = () => {
   const diagramRef = useRef<HTMLDivElement>(null);
-  const [view, setView] = useState<"technical" | "investor" | "executive" | "market">("investor");
+  const [view, setView] = useState<"technical" | "investor" | "executive" | "market" | "qualification">("investor");
 
   const handlePrint = () => {
     window.print();
@@ -75,6 +76,16 @@ const Architecture = () => {
                 <span className="hidden xs:inline">Technical</span>
                 <span className="xs:hidden">Tech</span>
               </Button>
+              <Button
+                variant={view === "qualification" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setView("qualification")}
+                className="gap-1 md:gap-2 whitespace-nowrap text-xs md:text-sm px-2 md:px-3"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span className="hidden xs:inline">Qualification</span>
+                <span className="xs:hidden">Qual</span>
+              </Button>
             </div>
             <Button size="sm" onClick={handlePrint} className="whitespace-nowrap px-2 md:px-3">
               <Printer className="w-4 h-4 md:mr-2" />
@@ -92,6 +103,8 @@ const Architecture = () => {
           <MarketContextSlide />
         ) : view === "investor" ? (
           <InvestorArchitectureDiagram />
+        ) : view === "qualification" ? (
+          <LeadQualificationLogic />
         ) : (
           <SystemArchitectureDiagram />
         )}
