@@ -1252,66 +1252,131 @@ export type Database = {
       }
       prospects: {
         Row: {
+          brochure_downloaded: boolean | null
+          budget_max: number | null
+          budget_min: number | null
+          buyer_type: string | null
           city: string | null
           contact_attempts: number | null
+          country: string | null
           created_at: string
           crm_confidence_level: string | null
           crm_created_date: string | null
           crm_customer_id: string | null
           crm_stage: string | null
+          disqualification_reason: string | null
+          disqualified_at: string | null
           email: string | null
           first_name: string | null
+          fit_score: number | null
           full_name: string
           id: string
+          intent_score: number | null
+          is_cash_buyer: boolean | null
+          language: string | null
           last_contacted_at: string | null
           last_name: string | null
+          linked_lead_id: string | null
+          mortgage_preapproval: boolean | null
           notes: string | null
           outreach_status: string | null
           phone: string | null
+          price_list_requested: boolean | null
+          prospect_status: string | null
+          repeat_visit_7d: boolean | null
           source: string | null
+          timeframe: string | null
+          total_score: number | null
           updated_at: string
+          whatsapp_started: boolean | null
         }
         Insert: {
+          brochure_downloaded?: boolean | null
+          budget_max?: number | null
+          budget_min?: number | null
+          buyer_type?: string | null
           city?: string | null
           contact_attempts?: number | null
+          country?: string | null
           created_at?: string
           crm_confidence_level?: string | null
           crm_created_date?: string | null
           crm_customer_id?: string | null
           crm_stage?: string | null
+          disqualification_reason?: string | null
+          disqualified_at?: string | null
           email?: string | null
           first_name?: string | null
+          fit_score?: number | null
           full_name: string
           id?: string
+          intent_score?: number | null
+          is_cash_buyer?: boolean | null
+          language?: string | null
           last_contacted_at?: string | null
           last_name?: string | null
+          linked_lead_id?: string | null
+          mortgage_preapproval?: boolean | null
           notes?: string | null
           outreach_status?: string | null
           phone?: string | null
+          price_list_requested?: boolean | null
+          prospect_status?: string | null
+          repeat_visit_7d?: boolean | null
           source?: string | null
+          timeframe?: string | null
+          total_score?: number | null
           updated_at?: string
+          whatsapp_started?: boolean | null
         }
         Update: {
+          brochure_downloaded?: boolean | null
+          budget_max?: number | null
+          budget_min?: number | null
+          buyer_type?: string | null
           city?: string | null
           contact_attempts?: number | null
+          country?: string | null
           created_at?: string
           crm_confidence_level?: string | null
           crm_created_date?: string | null
           crm_customer_id?: string | null
           crm_stage?: string | null
+          disqualification_reason?: string | null
+          disqualified_at?: string | null
           email?: string | null
           first_name?: string | null
+          fit_score?: number | null
           full_name?: string
           id?: string
+          intent_score?: number | null
+          is_cash_buyer?: boolean | null
+          language?: string | null
           last_contacted_at?: string | null
           last_name?: string | null
+          linked_lead_id?: string | null
+          mortgage_preapproval?: boolean | null
           notes?: string | null
           outreach_status?: string | null
           phone?: string | null
+          price_list_requested?: boolean | null
+          prospect_status?: string | null
+          repeat_visit_7d?: boolean | null
           source?: string | null
+          timeframe?: string | null
+          total_score?: number | null
           updated_at?: string
+          whatsapp_started?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "prospects_linked_lead_id_fkey"
+            columns: ["linked_lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       signature_envelopes: {
         Row: {

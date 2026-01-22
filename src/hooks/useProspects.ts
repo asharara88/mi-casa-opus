@@ -21,6 +21,28 @@ export interface Prospect {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  // MiCasa algorithm fields
+  buyer_type?: 'EndUser' | 'Investor' | 'Broker' | null;
+  budget_min?: number | null;
+  budget_max?: number | null;
+  timeframe?: '0-3' | '3-6' | '6-12' | '12+' | null;
+  language?: string | null;
+  country?: string | null;
+  prospect_status?: 'NEW' | 'INCOMPLETE' | 'VERIFIED' | 'DISQUALIFIED' | null;
+  disqualification_reason?: 'SPAM' | 'DUPLICATE' | 'BROKER' | 'BELOW_BUDGET' | 'INELIGIBLE' | null;
+  disqualified_at?: string | null;
+  linked_lead_id?: string | null;
+  // Intent signals
+  is_cash_buyer?: boolean;
+  mortgage_preapproval?: boolean;
+  price_list_requested?: boolean;
+  whatsapp_started?: boolean;
+  brochure_downloaded?: boolean;
+  repeat_visit_7d?: boolean;
+  // Scoring
+  fit_score?: number;
+  intent_score?: number;
+  total_score?: number;
 }
 
 export interface ProspectInsert {
@@ -37,6 +59,20 @@ export interface ProspectInsert {
   crm_confidence_level?: string | null;
   outreach_status?: string;
   notes?: string | null;
+  // MiCasa algorithm fields
+  buyer_type?: 'EndUser' | 'Investor' | 'Broker' | null;
+  budget_min?: number | null;
+  budget_max?: number | null;
+  timeframe?: '0-3' | '3-6' | '6-12' | '12+' | null;
+  language?: string | null;
+  country?: string | null;
+  prospect_status?: string;
+  is_cash_buyer?: boolean;
+  mortgage_preapproval?: boolean;
+  price_list_requested?: boolean;
+  whatsapp_started?: boolean;
+  brochure_downloaded?: boolean;
+  repeat_visit_7d?: boolean;
 }
 
 export function useProspects(filters?: {
