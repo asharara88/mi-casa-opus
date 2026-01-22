@@ -19,12 +19,14 @@ import {
   AlertCircle,
   CheckCircle,
   History,
-  Edit2
+  Edit2,
+  Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { AIChatPanel } from '@/components/ai/AIChatPanel';
 import { AIPropertyMatcher } from '@/components/ai/AIPropertyMatcher';
+import { QuickConvertButton } from '@/components/funnel/QuickConvertButton';
 
 interface LeadDetailProps {
   lead: Lead;
@@ -120,7 +122,7 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
     }
   };
 
-  const handleConvert = () => {
+  const handleConvert = async () => {
     if (lead.lead_state === 'Qualified' && onConvertToDeal) {
       onConvertToDeal(lead);
     }
@@ -190,14 +192,18 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
                   );
                 })}
 
-                {lead.lead_state === 'Qualified' && (
-                  <Button 
-                    className="w-full bg-gold hover:bg-gold/90 text-black"
-                    onClick={handleConvert}
-                  >
-                    Convert to Deal
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
+                {lead.lead_state === 'Qualified' && onConvertToDeal && (
+                  <div className="p-3 rounded-lg bg-gold/10 border border-gold/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap className="w-4 h-4 text-gold" />
+                      <span className="text-sm font-medium text-foreground">Ready for Deal</span>
+                    </div>
+                    <QuickConvertButton
+                      type="lead-to-deal"
+                      onConvert={handleConvert}
+                      className="w-full"
+                    />
+                  </div>
                 )}
 
                 <Button 
