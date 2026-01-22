@@ -5,9 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Phone, Mail, MapPin, Calendar, User, Building, Hash, MessageSquare, UserPlus, ChevronRight } from 'lucide-react';
+import { Phone, Mail, MapPin, Calendar, User, Building, Hash, MessageSquare, UserPlus, ChevronRight, Zap } from 'lucide-react';
 import type { Prospect } from '@/hooks/useProspects';
 import { format } from 'date-fns';
+import { QuickConvertButton } from '@/components/funnel/QuickConvertButton';
+import { toast } from 'sonner';
 
 interface Props {
   prospect: Prospect | null;
@@ -53,12 +55,22 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
   const handleCall = () => {
     if (prospect?.phone) {
       window.open(`tel:${prospect.phone}`, '_self');
+      // Auto-advance to contacted if not already
+      if (prospect.outreach_status === 'not_contacted') {
+        handleStatusChange('contacted');
+        toast.success('Prospect auto-advanced to Contacted');
+      }
     }
   };
 
   const handleEmail = () => {
     if (prospect?.email) {
       window.open(`mailto:${prospect.email}`, '_blank');
+      // Auto-advance to contacted if not already
+      if (prospect.outreach_status === 'not_contacted') {
+        handleStatusChange('contacted');
+        toast.success('Prospect auto-advanced to Contacted');
+      }
     }
   };
 
@@ -66,10 +78,15 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
     if (prospect?.phone) {
       const cleanPhone = prospect.phone.replace(/\D/g, '');
       window.open(`https://wa.me/${cleanPhone}`, '_blank');
+      // Auto-advance to contacted if not already
+      if (prospect.outreach_status === 'not_contacted') {
+        handleStatusChange('contacted');
+        toast.success('Prospect auto-advanced to Contacted');
+      }
     }
   };
 
-  const handleConvertToLead = () => {
+  const handleConvertToLead = async () => {
     if (prospect && onConvertToLead) {
       onConvertToLead(prospect);
       onUpdate({ outreach_status: 'converted' });
@@ -104,16 +121,22 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
             </Button>
           </div>
 
-          {/* Convert to Lead - Only show when qualified/interested */}
+          {/* Convert to Lead - Enhanced with animation */}
           {canConvert && onConvertToLead && (
-            <Button 
-              className="w-full bg-gold hover:bg-gold/90 text-black font-medium"
-              onClick={handleConvertToLead}
-            >
-              <UserPlus className="w-4 h-4 mr-2" />
-              Convert to Lead
-              <ChevronRight className="w-4 h-4 ml-auto" />
-            </Button>
+            <div className="p-4 rounded-lg bg-gold/10 border border-gold/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-4 h-4 text-gold" />
+                <span className="text-sm font-medium text-foreground">Ready to Convert</span>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                This prospect is qualified. Convert to a lead to start the sales process.
+              </p>
+              <QuickConvertButton 
+                type="prospect-to-lead"
+                onConvert={handleConvertToLead}
+                className="w-full"
+              />
+            </div>
           )}
 
           {/* Status */}

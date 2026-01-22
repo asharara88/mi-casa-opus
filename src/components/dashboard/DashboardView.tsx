@@ -3,6 +3,7 @@ import { MetricCard } from './MetricCard';
 import { StateBadge } from './StateBadge';
 import { ForecastWidget } from './ForecastWidget';
 import { SalesFunnelChart } from './SalesFunnelChart';
+import { PipelineHealthWidget } from './PipelineHealthWidget';
 import { EventLog } from '@/components/events/EventLog';
 import { useLeads } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
@@ -128,17 +129,22 @@ export function DashboardView({ role, onNavigate }: DashboardViewProps) {
         />
       </div>
 
-      {/* Sales Funnel */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SalesFunnelChart onNavigate={onNavigate} />
-        <ForecastWidget 
-          deals={(dbDeals || []).map(d => ({
-            deal_id: d.deal_id,
-            deal_state: d.deal_state,
-            deal_economics: d.deal_economics as Record<string, unknown> | null,
-          }))}
-        />
+      {/* Sales Funnel & Pipeline Health */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <SalesFunnelChart onNavigate={onNavigate} />
+        </div>
+        <PipelineHealthWidget onNavigate={onNavigate} />
       </div>
+
+      {/* Forecast Widget */}
+      <ForecastWidget 
+        deals={(dbDeals || []).map(d => ({
+          deal_id: d.deal_id,
+          deal_state: d.deal_state,
+          deal_economics: d.deal_economics as Record<string, unknown> | null,
+        }))}
+      />
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
