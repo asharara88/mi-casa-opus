@@ -1,15 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Phone, Mail, MapPin, Calendar, User, Building, Hash, MessageSquare, UserPlus, ChevronRight, Zap } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { 
+  Phone, Mail, MapPin, Calendar, User, Building, Hash, MessageSquare, 
+  Zap, Target, TrendingUp, CheckCircle, XCircle, AlertCircle,
+  DollarSign, Clock, FileText, Download, RotateCw
+} from 'lucide-react';
 import type { Prospect } from '@/hooks/useProspects';
 import { format } from 'date-fns';
 import { QuickConvertButton } from '@/components/funnel/QuickConvertButton';
 import { toast } from 'sonner';
+import { 
+  calculateTotalScore, 
+  determineLeadStage, 
+  getScoreBreakdown,
+  type ProspectScoringData 
+} from '@/lib/scoring-engine';
+import { getGateStatus, type ProspectData } from '@/lib/qualification-gates';
+import { useFunnelProcessor } from '@/hooks/useFunnelProcessor';
 
 interface Props {
   prospect: Prospect | null;
@@ -28,23 +44,110 @@ const outreachStatuses = [
   { value: 'converted', label: 'Converted to Lead' },
 ];
 
+const buyerTypes = [
+  { value: 'EndUser', label: 'End User' },
+  { value: 'Investor', label: 'Investor' },
+  { value: 'Broker', label: 'Broker' },
+];
+
+const timeframes = [
+  { value: '0-3', label: '0-3 months' },
+  { value: '3-6', label: '3-6 months' },
+  { value: '6-12', label: '6-12 months' },
+  { value: '12+', label: '12+ months' },
+];
+
+// Use Prospect type directly since it now includes all MiCasa fields
+type ExtendedProspect = Prospect;
+
 export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLead }: Props) {
+  const extProspect = prospect as ExtendedProspect | null;
+  const { processProspect, updateProspectScores } = useFunnelProcessor();
+  
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState('not_contacted');
+  
+  // Qualification data state
+  const [buyerType, setBuyerType] = useState<string>('');
+  const [budgetMin, setBudgetMin] = useState<string>('');
+  const [budgetMax, setBudgetMax] = useState<string>('');
+  const [timeframe, setTimeframe] = useState<string>('');
+  
+  // Intent signals state
+  const [isCashBuyer, setIsCashBuyer] = useState(false);
+  const [mortgagePreapproval, setMortgagePreapproval] = useState(false);
+  const [priceListRequested, setPriceListRequested] = useState(false);
+  const [whatsappStarted, setWhatsappStarted] = useState(false);
+  const [brochureDownloaded, setBrochureDownloaded] = useState(false);
+  const [repeatVisit, setRepeatVisit] = useState(false);
+  
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    if (prospect) {
-      setNotes(prospect.notes || '');
-      setStatus(prospect.outreach_status);
+    if (extProspect) {
+      setNotes(extProspect.notes || '');
+      setStatus(extProspect.outreach_status);
+      setBuyerType(extProspect.buyer_type || '');
+      setBudgetMin(extProspect.budget_min?.toString() || '');
+      setBudgetMax(extProspect.budget_max?.toString() || '');
+      setTimeframe(extProspect.timeframe || '');
+      setIsCashBuyer(extProspect.is_cash_buyer || false);
+      setMortgagePreapproval(extProspect.mortgage_preapproval || false);
+      setPriceListRequested(extProspect.price_list_requested || false);
+      setWhatsappStarted(extProspect.whatsapp_started || false);
+      setBrochureDownloaded(extProspect.brochure_downloaded || false);
+      setRepeatVisit(extProspect.repeat_visit_7d || false);
     }
-  }, [prospect]);
+  }, [extProspect]);
+
+  // Calculate scores in real-time
+  const scoringData: ProspectScoringData = useMemo(() => ({
+    buyer_type: buyerType as 'EndUser' | 'Investor' | 'Broker' | null || null,
+    budget_min: budgetMin ? parseFloat(budgetMin) : null,
+    budget_max: budgetMax ? parseFloat(budgetMax) : null,
+    timeframe: timeframe as '0-3' | '3-6' | '6-12' | '12+' | null || null,
+    is_cash_buyer: isCashBuyer,
+    mortgage_preapproval: mortgagePreapproval,
+    price_list_requested: priceListRequested,
+    whatsapp_started: whatsappStarted,
+    brochure_downloaded: brochureDownloaded,
+    repeat_visit_7d: repeatVisit,
+  }), [buyerType, budgetMin, budgetMax, timeframe, isCashBuyer, mortgagePreapproval, priceListRequested, whatsappStarted, brochureDownloaded, repeatVisit]);
+
+  const { fitScore, intentScore, totalScore } = useMemo(
+    () => calculateTotalScore(scoringData), 
+    [scoringData]
+  );
+  
+  const leadStage = useMemo(
+    () => determineLeadStage(totalScore, timeframe || null),
+    [totalScore, timeframe]
+  );
+  
+  const scoreBreakdown = useMemo(
+    () => getScoreBreakdown(scoringData),
+    [scoringData]
+  );
+
+  const gateStatus = useMemo(() => {
+    if (!extProspect) return [];
+    return getGateStatus({
+      id: extProspect.id,
+      buyer_type: buyerType as any || null,
+      budget_min: budgetMin ? parseFloat(budgetMin) : null,
+      budget_max: budgetMax ? parseFloat(budgetMax) : null,
+      timeframe: timeframe as any || null,
+    });
+  }, [extProspect, buyerType, budgetMin, budgetMax, timeframe]);
+
+  const allGatesPassed = gateStatus.every(g => g.passed);
 
   const handleStatusChange = (newStatus: string) => {
     setStatus(newStatus);
     onUpdate({ 
       outreach_status: newStatus,
-      last_contacted_at: newStatus !== 'not_contacted' ? new Date().toISOString() : prospect?.last_contacted_at,
-      contact_attempts: newStatus !== 'not_contacted' ? (prospect?.contact_attempts || 0) + 1 : prospect?.contact_attempts
+      last_contacted_at: newStatus !== 'not_contacted' ? new Date().toISOString() : extProspect?.last_contacted_at,
+      contact_attempts: newStatus !== 'not_contacted' ? (extProspect?.contact_attempts || 0) + 1 : extProspect?.contact_attempts
     });
   };
 
@@ -52,11 +155,33 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
     onUpdate({ notes });
   };
 
+  const handleSaveQualification = async () => {
+    if (!extProspect) return;
+    
+    const updates: Partial<ExtendedProspect> = {
+      buyer_type: buyerType as any || null,
+      budget_min: budgetMin ? parseFloat(budgetMin) : null,
+      budget_max: budgetMax ? parseFloat(budgetMax) : null,
+      timeframe: timeframe as any || null,
+      is_cash_buyer: isCashBuyer,
+      mortgage_preapproval: mortgagePreapproval,
+      price_list_requested: priceListRequested,
+      whatsapp_started: whatsappStarted,
+      brochure_downloaded: brochureDownloaded,
+      repeat_visit_7d: repeatVisit,
+      fit_score: fitScore,
+      intent_score: intentScore,
+      total_score: totalScore,
+    };
+    
+    onUpdate(updates as any);
+    toast.success('Qualification data saved');
+  };
+
   const handleCall = () => {
-    if (prospect?.phone) {
-      window.open(`tel:${prospect.phone}`, '_self');
-      // Auto-advance to contacted if not already
-      if (prospect.outreach_status === 'not_contacted') {
+    if (extProspect?.phone) {
+      window.open(`tel:${extProspect.phone}`, '_self');
+      if (extProspect.outreach_status === 'not_contacted') {
         handleStatusChange('contacted');
         toast.success('Prospect auto-advanced to Contacted');
       }
@@ -64,10 +189,9 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
   };
 
   const handleEmail = () => {
-    if (prospect?.email) {
-      window.open(`mailto:${prospect.email}`, '_blank');
-      // Auto-advance to contacted if not already
-      if (prospect.outreach_status === 'not_contacted') {
+    if (extProspect?.email) {
+      window.open(`mailto:${extProspect.email}`, '_blank');
+      if (extProspect.outreach_status === 'not_contacted') {
         handleStatusChange('contacted');
         toast.success('Prospect auto-advanced to Contacted');
       }
@@ -75,11 +199,13 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
   };
 
   const handleWhatsApp = () => {
-    if (prospect?.phone) {
-      const cleanPhone = prospect.phone.replace(/\D/g, '');
+    if (extProspect?.phone) {
+      const cleanPhone = extProspect.phone.replace(/\D/g, '');
       window.open(`https://wa.me/${cleanPhone}`, '_blank');
-      // Auto-advance to contacted if not already
-      if (prospect.outreach_status === 'not_contacted') {
+      // Mark WhatsApp as started
+      setWhatsappStarted(true);
+      onUpdate({ whatsapp_started: true } as any);
+      if (extProspect.outreach_status === 'not_contacted') {
         handleStatusChange('contacted');
         toast.success('Prospect auto-advanced to Contacted');
       }
@@ -87,61 +213,315 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
   };
 
   const handleConvertToLead = async () => {
-    if (prospect && onConvertToLead) {
-      onConvertToLead(prospect);
-      onUpdate({ outreach_status: 'converted' });
+    if (!extProspect) return;
+    
+    setIsProcessing(true);
+    try {
+      const result = await processProspect({
+        id: extProspect.id,
+        full_name: extProspect.full_name,
+        phone: extProspect.phone,
+        email: extProspect.email,
+        buyer_type: buyerType as any || null,
+        budget_min: budgetMin ? parseFloat(budgetMin) : null,
+        budget_max: budgetMax ? parseFloat(budgetMax) : null,
+        timeframe: timeframe as any || null,
+        is_cash_buyer: isCashBuyer,
+        mortgage_preapproval: mortgagePreapproval,
+        price_list_requested: priceListRequested,
+        whatsapp_started: whatsappStarted,
+        brochure_downloaded: brochureDownloaded,
+        repeat_visit_7d: repeatVisit,
+        source: extProspect.source,
+      });
+      
+      if (result.success) {
+        if (result.action === 'deal_created') {
+          toast.success(`Lead & Deal created! Stage: ${result.leadStage}`);
+        } else if (result.action === 'converted') {
+          toast.success(`Lead created! Stage: ${result.leadStage}`);
+        } else if (result.action === 'disqualified') {
+          toast.error(result.message);
+        } else {
+          toast.info(result.message);
+        }
+        onClose();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error('Failed to process prospect');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const canConvert = prospect?.outreach_status === 'qualified' || prospect?.outreach_status === 'interested';
+  const isAlreadyConverted = extProspect?.linked_lead_id || extProspect?.outreach_status === 'converted';
+  const isDisqualified = extProspect?.prospect_status === 'DISQUALIFIED';
 
-  if (!prospect) return null;
+  if (!extProspect) return null;
 
   return (
-    <Sheet open={!!prospect} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
+    <Sheet open={!!extProspect} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent className="w-[400px] sm:w-[600px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="text-xl">{prospect.full_name}</SheetTitle>
+          <SheetTitle className="text-xl">{extProspect.full_name}</SheetTitle>
+          {extProspect.prospect_status && (
+            <Badge variant={
+              extProspect.prospect_status === 'VERIFIED' ? 'default' :
+              extProspect.prospect_status === 'DISQUALIFIED' ? 'destructive' :
+              'secondary'
+            }>
+              {extProspect.prospect_status}
+              {extProspect.disqualification_reason && ` - ${extProspect.disqualification_reason}`}
+            </Badge>
+          )}
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
+          {/* Scoring Dashboard */}
+          <div className="p-4 rounded-lg bg-muted/30 border">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                Qualification Score
+              </h4>
+            <Badge variant={
+              leadStage === 'HighIntent' ? 'default' :
+              leadStage === 'Qualified' ? 'default' :
+              leadStage === 'Interested' ? 'secondary' :
+              'outline'
+            } className={
+              leadStage === 'HighIntent' ? 'bg-primary' :
+              leadStage === 'Qualified' ? 'bg-accent' :
+              ''
+              }>
+                {leadStage}
+              </Badge>
+            </div>
+            
+            <div className="space-y-2 mb-4">
+              <div className="flex justify-between text-sm">
+                <span>Total Score</span>
+                <span className="font-bold">{totalScore}/100</span>
+              </div>
+              <Progress value={totalScore} className="h-2" />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-2 bg-background rounded">
+                <p className="text-xs text-muted-foreground">Fit Score</p>
+                <p className="text-lg font-bold">{fitScore}/50</p>
+              </div>
+              <div className="p-2 bg-background rounded">
+                <p className="text-xs text-muted-foreground">Intent Score</p>
+                <p className="text-lg font-bold">{intentScore}/50</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Gate Status */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Qualification Gates
+            </h4>
+            <div className="space-y-1">
+              {gateStatus.map((gate) => (
+                <div key={gate.gate} className="flex items-center justify-between p-2 rounded bg-muted/20">
+                  <span className="text-sm">{gate.label}</span>
+                  {gate.passed ? (
+                    <CheckCircle className="w-4 h-4 text-emerald-500" />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">{gate.message}</span>
+                      <XCircle className="w-4 h-4 text-destructive" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Quick Actions */}
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleCall} disabled={!prospect.phone} className="flex-1">
+            <Button variant="outline" size="sm" onClick={handleCall} disabled={!extProspect.phone} className="flex-1">
               <Phone className="h-4 w-4 mr-2" />
               Call
             </Button>
-            <Button variant="outline" size="sm" onClick={handleWhatsApp} disabled={!prospect.phone} className="flex-1">
+            <Button variant="outline" size="sm" onClick={handleWhatsApp} disabled={!extProspect.phone} className="flex-1">
               <MessageSquare className="h-4 w-4 mr-2" />
               WhatsApp
             </Button>
-            <Button variant="outline" size="sm" onClick={handleEmail} disabled={!prospect.email} className="flex-1">
+            <Button variant="outline" size="sm" onClick={handleEmail} disabled={!extProspect.email} className="flex-1">
               <Mail className="h-4 w-4 mr-2" />
               Email
             </Button>
           </div>
 
-          {/* Convert to Lead - Enhanced with animation */}
-          {canConvert && onConvertToLead && (
-            <div className="p-4 rounded-lg bg-gold/10 border border-gold/30">
+          {/* Convert to Lead */}
+          {!isAlreadyConverted && !isDisqualified && (
+            <div className={`p-4 rounded-lg border ${allGatesPassed ? 'bg-primary/10 border-primary/30' : 'bg-muted/30'}`}>
               <div className="flex items-center gap-2 mb-2">
-                <Zap className="w-4 h-4 text-gold" />
-                <span className="text-sm font-medium text-foreground">Ready to Convert</span>
+                <Zap className={`w-4 h-4 ${allGatesPassed ? 'text-primary' : 'text-muted-foreground'}`} />
+                <span className="text-sm font-medium">
+                  {allGatesPassed ? 'Ready to Convert' : 'Complete Qualification'}
+                </span>
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                This prospect is qualified. Convert to a lead to start the sales process.
+                {allGatesPassed 
+                  ? `This prospect qualifies as "${leadStage}". Convert to start the sales process.`
+                  : 'Fill in required qualification fields to enable conversion.'
+                }
               </p>
               <QuickConvertButton 
                 type="prospect-to-lead"
                 onConvert={handleConvertToLead}
+                disabled={!allGatesPassed || isProcessing}
                 className="w-full"
               />
             </div>
           )}
 
+          {isAlreadyConverted && (
+            <div className="p-4 rounded-lg bg-accent/10 border border-accent/30">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-accent-foreground" />
+                <span className="text-sm font-medium">Already Converted to Lead</span>
+              </div>
+            </div>
+          )}
+
+          <Separator />
+
+          {/* Qualification Data Capture */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Buyer Profile
+            </h4>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Buyer Type *</Label>
+                <Select value={buyerType} onValueChange={setBuyerType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {buyerTypes.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Timeframe *</Label>
+                <Select value={timeframe} onValueChange={setTimeframe}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select timeframe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timeframes.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Budget Min (AED)</Label>
+                <Input
+                  type="number"
+                  value={budgetMin}
+                  onChange={(e) => setBudgetMin(e.target.value)}
+                  placeholder="e.g. 800000"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Budget Max (AED) *</Label>
+                <Input
+                  type="number"
+                  value={budgetMax}
+                  onChange={(e) => setBudgetMax(e.target.value)}
+                  placeholder="e.g. 2000000"
+                />
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Intent Signals */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Intent Signals
+            </h4>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center justify-between p-2 rounded bg-muted/20">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-muted-foreground" />
+                  <Label htmlFor="cash-buyer" className="text-sm cursor-pointer">Cash Buyer (+10)</Label>
+                </div>
+                <Switch id="cash-buyer" checked={isCashBuyer} onCheckedChange={setIsCashBuyer} />
+              </div>
+              
+              <div className="flex items-center justify-between p-2 rounded bg-muted/20">
+                <div className="flex items-center gap-2">
+                  <Building className="w-4 h-4 text-muted-foreground" />
+                  <Label htmlFor="mortgage" className="text-sm cursor-pointer">Pre-Approved (+10)</Label>
+                </div>
+                <Switch id="mortgage" checked={mortgagePreapproval} onCheckedChange={setMortgagePreapproval} />
+              </div>
+              
+              <div className="flex items-center justify-between p-2 rounded bg-muted/20">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                  <Label htmlFor="price-list" className="text-sm cursor-pointer">Price List (+15)</Label>
+                </div>
+                <Switch id="price-list" checked={priceListRequested} onCheckedChange={setPriceListRequested} />
+              </div>
+              
+              <div className="flex items-center justify-between p-2 rounded bg-muted/20">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                  <Label htmlFor="whatsapp" className="text-sm cursor-pointer">WhatsApp (+15)</Label>
+                </div>
+                <Switch id="whatsapp" checked={whatsappStarted} onCheckedChange={setWhatsappStarted} />
+              </div>
+              
+              <div className="flex items-center justify-between p-2 rounded bg-muted/20">
+                <div className="flex items-center gap-2">
+                  <Download className="w-4 h-4 text-muted-foreground" />
+                  <Label htmlFor="brochure" className="text-sm cursor-pointer">Brochure (+10)</Label>
+                </div>
+                <Switch id="brochure" checked={brochureDownloaded} onCheckedChange={setBrochureDownloaded} />
+              </div>
+              
+              <div className="flex items-center justify-between p-2 rounded bg-muted/20">
+                <div className="flex items-center gap-2">
+                  <RotateCw className="w-4 h-4 text-muted-foreground" />
+                  <Label htmlFor="repeat" className="text-sm cursor-pointer">Repeat Visit (+10)</Label>
+                </div>
+                <Switch id="repeat" checked={repeatVisit} onCheckedChange={setRepeatVisit} />
+              </div>
+            </div>
+
+            <Button size="sm" onClick={handleSaveQualification} className="w-full">
+              Save Qualification Data
+            </Button>
+          </div>
+
+          <Separator />
+
           {/* Status */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground">Outreach Status</label>
+            <Label>Outreach Status</Label>
             <Select value={status} onValueChange={handleStatusChange}>
               <SelectTrigger>
                 <SelectValue />
@@ -160,24 +540,24 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-muted-foreground">Contact Information</h4>
             
-            {prospect.phone && (
+            {extProspect.phone && (
               <div className="flex items-center gap-3 text-sm">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span>{prospect.phone}</span>
+                <span>{extProspect.phone}</span>
               </div>
             )}
             
-            {prospect.email && (
+            {extProspect.email && (
               <div className="flex items-center gap-3 text-sm">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="break-all">{prospect.email}</span>
+                <span className="break-all">{extProspect.email}</span>
               </div>
             )}
             
-            {prospect.city && (
+            {extProspect.city && (
               <div className="flex items-center gap-3 text-sm">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span>{prospect.city}</span>
+                <span>{extProspect.city}</span>
               </div>
             )}
           </div>
@@ -190,36 +570,31 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
             
             <div className="flex items-center gap-3 text-sm">
               <Hash className="h-4 w-4 text-muted-foreground" />
-              <span>{prospect.crm_customer_id || 'N/A'}</span>
+              <span>{extProspect.crm_customer_id || 'N/A'}</span>
             </div>
             
             <div className="flex items-center gap-3 text-sm">
               <Building className="h-4 w-4 text-muted-foreground" />
-              <span>Source: {prospect.source || 'Unknown'}</span>
+              <span>Source: {extProspect.source || 'Unknown'}</span>
             </div>
             
-            <div className="flex items-center gap-3 text-sm">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span>Stage: {prospect.crm_stage || 'Prospect'}</span>
-            </div>
-            
-            {prospect.crm_created_date && (
+            {extProspect.crm_created_date && (
               <div className="flex items-center gap-3 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Created: {format(new Date(prospect.crm_created_date), 'PP')}</span>
+                <span>Created: {format(new Date(extProspect.crm_created_date), 'PP')}</span>
               </div>
             )}
             
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Confidence:</span>
               <Badge variant="outline" className={
-                prospect.crm_confidence_level === 'High' 
+                extProspect.crm_confidence_level === 'High' 
                   ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                  : prospect.crm_confidence_level === 'Medium'
+                  : extProspect.crm_confidence_level === 'Medium'
                   ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
                   : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
               }>
-                {prospect.crm_confidence_level || 'Unknown'}
+                {extProspect.crm_confidence_level || 'Unknown'}
               </Badge>
             </div>
           </div>
@@ -232,13 +607,13 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
             
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-muted/30 rounded-lg">
-                <p className="text-2xl font-bold">{prospect.contact_attempts}</p>
+                <p className="text-2xl font-bold">{extProspect.contact_attempts}</p>
                 <p className="text-xs text-muted-foreground">Contact Attempts</p>
               </div>
               <div className="p-3 bg-muted/30 rounded-lg">
                 <p className="text-sm font-medium">
-                  {prospect.last_contacted_at 
-                    ? format(new Date(prospect.last_contacted_at), 'PP')
+                  {extProspect.last_contacted_at 
+                    ? format(new Date(extProspect.last_contacted_at), 'PP')
                     : 'Never'
                   }
                 </p>
@@ -258,7 +633,7 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
               placeholder="Add notes about this prospect..."
               rows={4}
             />
-            <Button size="sm" onClick={handleSaveNotes} disabled={notes === (prospect.notes || '')}>
+            <Button size="sm" onClick={handleSaveNotes} disabled={notes === (extProspect.notes || '')}>
               Save Notes
             </Button>
           </div>
