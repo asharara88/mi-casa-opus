@@ -2,7 +2,7 @@ import { UserRole } from '@/types/bos';
 import { MetricCard } from './MetricCard';
 import { StateBadge } from './StateBadge';
 import { ForecastWidget } from './ForecastWidget';
-import { RechartsSalesFunnel } from './RechartsSalesFunnel';
+import { SalesFunnelChart } from './SalesFunnelChart';
 import { PipelineHealthWidget } from './PipelineHealthWidget';
 import { EventLog } from '@/components/events/EventLog';
 import { useLeads } from '@/hooks/useLeads';
@@ -132,7 +132,7 @@ export function DashboardView({ role, onNavigate }: DashboardViewProps) {
       {/* Sales Funnel & Pipeline Health */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <RechartsSalesFunnel onNavigate={onNavigate} />
+          <SalesFunnelChart onNavigate={onNavigate} />
         </div>
         <PipelineHealthWidget onNavigate={onNavigate} />
       </div>
