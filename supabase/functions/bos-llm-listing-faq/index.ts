@@ -1,38 +1,24 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { AI_MODELS } from "../_shared/models.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM_PROMPT = `SYSTEM — MiCasa BOS Listing FAQ Assistant
+// Optimized prompt for SLM - extractive, grounded
+const SYSTEM_PROMPT = `You answer questions about property listings using ONLY the provided data.
 
-You are the Listing FAQ Assistant inside MiCasa BOS.
+RULES:
+1. If the answer is in the listing data, quote it directly
+2. If the answer is NOT in the data, say "This information is not available in the listing details"
+3. Never invent prices, amenities, or features
+4. Keep answers under 50 words
+5. If complianceStatus ≠ APPROVED, add disclaimer: "Note: This listing is pending compliance review."
 
-You answer questions about a specific listing using ONLY verified BOS data.
+DATA SOURCE: The listing payload provided with each question.
 
-Your output is client-ready and can be copy-pasted to WhatsApp or email.
-
-You do NOT:
-- Guess missing details
-- Discuss internal notes
-- Override compliance status
-- Confirm availability unless explicitly stated in BOS
-
-RESPONSE RULES:
-- If data exists → answer clearly
-- If data is missing → say it's not yet confirmed
-- If complianceStatus ≠ APPROVED → add a soft disclaimer
-- Be concise, professional, and neutral
-
-EXAMPLES of allowed responses:
-- "The unit is approximately 145 sqm as per the latest verified records."
-
-NOT allowed:
-- "This should be available"
-- "Usually these go fast"
-
-CRITICAL: Only reference data from the listing payload. Do not hallucinate details.`;
+OUTPUT: Use the answer_listing_faq tool. No text outside the tool call.`;
 
 interface ListingFaqRequest {
   clientQuestion: string;
@@ -41,6 +27,8 @@ interface ListingFaqRequest {
 }
 
 serve(async (req) => {
+  const startTime = Date.now();
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -69,7 +57,7 @@ serve(async (req) => {
     const complianceStatus = request.complianceStatus || "APPROVED";
     const listingContext = JSON.stringify(request.listingPayload, null, 2);
 
-    const userMessage = `Client Question: ${request.clientQuestion}
+    const userMessage = `Question: ${request.clientQuestion}
 
 Compliance Status: ${complianceStatus}
 
@@ -83,7 +71,7 @@ ${listingContext}`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: AI_MODELS.CLASSIFICATION,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userMessage },
@@ -99,17 +87,17 @@ ${listingContext}`;
                 properties: {
                   answer: { 
                     type: "string",
-                    description: "Client-ready answer that can be copy-pasted to WhatsApp or email"
+                    description: "Client-ready answer (max 50 words)"
                   },
                   dataSource: { 
                     type: "array", 
                     items: { type: "string" },
-                    description: "List of BOS field paths used to generate the answer (e.g., 'listing.price', 'property.sqft')"
+                    description: "List of BOS field paths used (e.g., 'listing.price')"
                   },
                   disclaimer: { 
                     type: "string",
                     nullable: true,
-                    description: "Soft disclaimer if compliance status is not APPROVED, or null if no disclaimer needed"
+                    description: "Disclaimer if compliance status is not APPROVED, else null"
                   }
                 },
                 required: ["answer", "dataSource", "disclaimer"],
@@ -121,6 +109,9 @@ ${listingContext}`;
         tool_choice: { type: "function", function: { name: "answer_listing_faq" } }
       }),
     });
+
+    const latency = Date.now() - startTime;
+    console.log(`[BOS Listing FAQ] Model: ${AI_MODELS.CLASSIFICATION}, Latency: ${latency}ms`);
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -148,7 +139,8 @@ ${listingContext}`;
         return new Response(
           JSON.stringify({ 
             success: true, 
-            ...faqResult 
+            ...faqResult,
+            latencyMs: latency
           }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -164,7 +156,8 @@ ${listingContext}`;
         success: true, 
         answer: content,
         dataSource: [],
-        disclaimer: null
+        disclaimer: null,
+        latencyMs: latency
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

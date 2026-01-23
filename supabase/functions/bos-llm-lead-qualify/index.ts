@@ -1,55 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { AI_MODELS } from "../_shared/models.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM_PROMPT = `SYSTEM — MiCasa BOS Lead Qualifier Assistant
+// Optimized prompt for SLM - constrained, explicit rules
+const SYSTEM_PROMPT = `You are a lead classifier. Given lead data, return ONLY structured JSON via the qualify_lead tool.
 
-You are the Lead Qualification Assistant inside MiCasa BOS.
+CLASSIFICATION RULES (strict):
+- HOT: Budget provided + Timeline ≤60 days + (Specific location OR Financing confirmed)
+- WARM: 2 of the above criteria met
+- COLD: 1 or 0 criteria met
 
-You help brokers qualify, score, and route leads.
+CONFIDENCE:
+- HIGH: All key fields present (budget, timeline, location)
+- MEDIUM: 2 key fields present
+- LOW: 1 or fewer key fields present
 
-You do NOT contact clients.
-You do NOT update BOS records.
-You do NOT promise availability or pricing.
-
-────────────────────────────
-OBJECTIVES
-────────────────────────────
-
-1. Assess lead quality and seriousness
-2. Identify missing information
-3. Recommend next broker action
-4. Reduce broker back-and-forth
-
-────────────────────────────
-SCORING LOGIC (INTERNAL)
-────────────────────────────
-
-High intent indicators:
-- Budget provided
-- Clear timeline ≤ 60 days
-- Specific location or project mentioned
-- Financing known
-
-Low intent indicators:
-- Vague budget
-- "Just browsing"
-- No timeline
-- Generic inquiry
-
-────────────────────────────
-RULES
-────────────────────────────
-
-- Never invent lead data
-- Never label a lead as HOT unless at least 2 high-intent indicators exist
-- Questions must be neutral and client-friendly
-- Do not mention internal scoring to clients
-
-Return only JSON.`;
+OUTPUT: Use the qualify_lead tool. No explanatory text outside the tool call.`;
 
 interface LeadQualifyRequest {
   userIntent: string;
@@ -68,6 +38,8 @@ interface LeadQualifyRequest {
 }
 
 serve(async (req) => {
+  const startTime = Date.now();
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -83,7 +55,7 @@ serve(async (req) => {
     // Build lead context from the leadPayload
     let leadContext = "";
     if (request.bosPayload?.leadPayload) {
-      leadContext = `\n\nLead Payload:\n${JSON.stringify(request.bosPayload.leadPayload, null, 2)}`;
+      leadContext = `\n\nLead Data:\n${JSON.stringify(request.bosPayload.leadPayload, null, 2)}`;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -93,7 +65,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: AI_MODELS.CLASSIFICATION,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: request.userIntent + leadContext },
@@ -142,6 +114,9 @@ serve(async (req) => {
       }),
     });
 
+    const latency = Date.now() - startTime;
+    console.log(`[BOS Lead Qualify] Model: ${AI_MODELS.CLASSIFICATION}, Latency: ${latency}ms`);
+
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(
@@ -165,14 +140,14 @@ serve(async (req) => {
     if (toolCall?.function?.arguments) {
       const qualification = JSON.parse(toolCall.function.arguments);
       return new Response(
-        JSON.stringify({ success: true, qualification }),
+        JSON.stringify({ success: true, qualification, latencyMs: latency }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     // Fallback to content if no tool call
     return new Response(
-      JSON.stringify({ success: true, content: result.choices?.[0]?.message?.content }),
+      JSON.stringify({ success: true, content: result.choices?.[0]?.message?.content, latencyMs: latency }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 

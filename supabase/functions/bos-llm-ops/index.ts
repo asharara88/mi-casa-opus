@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { AI_MODELS } from "../_shared/models.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -222,6 +223,8 @@ async function fetchDatabaseContext(supabase: any, userIntent: string) {
 }
 
 serve(async (req) => {
+  const startTime = Date.now();
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -266,7 +269,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: AI_MODELS.REASONING,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: request.userIntent + contextMessage },
@@ -274,6 +277,9 @@ serve(async (req) => {
         stream: true,
       }),
     });
+
+    const latency = Date.now() - startTime;
+    console.log(`[BOS OPS] Model: ${AI_MODELS.REASONING}, Latency: ${latency}ms`);
 
     if (!response.ok) {
       if (response.status === 429) {

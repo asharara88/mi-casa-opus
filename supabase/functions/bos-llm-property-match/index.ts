@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { AI_MODELS } from "../_shared/models.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,50 +16,38 @@ You do NOT update BOS records.
 You do NOT promise availability or pricing.
 
 ────────────────────────────
-OBJECTIVES
-────────────────────────────
-
-1. Analyze lead requirements (budget, bedrooms, location, property type)
-2. Score listings against requirements
-3. Explain why each property matches or partially matches
-4. Highlight trade-offs and negotiation opportunities
-
-────────────────────────────
 SCORING CRITERIA
 ────────────────────────────
 
 Budget fit:
-- Within range = EXCELLENT match factor
-- Up to 10% over = GOOD match factor
-- 10-20% over = PARTIAL match factor
-- 20%+ over = STRETCH match factor
+- Within range = EXCELLENT (score 90-100)
+- Up to 10% over = GOOD (score 70-89)
+- 10-20% over = PARTIAL (score 50-69)
+- 20%+ over = STRETCH (score 30-49)
 
 Location match:
-- Exact location = EXCELLENT match factor
-- Adjacent/similar area = GOOD match factor
-- Different city area = PARTIAL match factor
+- Exact location = +25 points
+- Adjacent/similar area = +15 points
+- Different city area = +5 points
 
 Property type match:
-- Exact type = EXCELLENT match factor
-- Similar type (e.g., Apartment/Penthouse) = GOOD match factor
+- Exact type = +15 points
+- Similar type = +8 points
 
 Bedroom match:
-- Meets or exceeds requirement = EXCELLENT match factor
-- 1 bedroom less than required = PARTIAL match factor
+- Meets or exceeds = +10 points
+- 1 bedroom less = +5 points
 
 ────────────────────────────
 RULES
 ────────────────────────────
 
-- Never invent listing data - only use data provided
-- Never recommend withdrawn/sold listings
-- Always explain trade-offs honestly
-- Prioritize within-budget options first
-- Sort matches by overall score (highest first)
-- Provide actionable broker talking points
-- Maximum 5 matches to keep results focused
+- Only use data provided
+- Sort by match_score (highest first)
+- Maximum 5 matches
+- Keep explanations brief (2-3 bullet points max)
 
-Return structured data via the match_properties tool.`;
+OUTPUT: Use the match_properties tool.`;
 
 interface PropertyMatchRequest {
   leadRequirements: {
@@ -88,6 +77,8 @@ interface PropertyMatchRequest {
 }
 
 serve(async (req) => {
+  const startTime = Date.now();
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -138,14 +129,12 @@ Listing ${i + 1}:
 - Size: ${l.listing_attributes?.size_sqft?.toLocaleString() || 'N/A'} sqft
 `).join('\n');
 
-    const userPrompt = `Analyze these listings against the lead's requirements and return the best matches.
+    const userPrompt = `Match listings to lead requirements. Return top 5.
 
 ${requirementsContext}
 
 Available Listings:
-${listingsContext}
-
-Find the best matches, score them, and provide actionable insights for the broker.`;
+${listingsContext}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -154,7 +143,7 @@ Find the best matches, score them, and provide actionable insights for the broke
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: AI_MODELS.REASONING,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userPrompt },
@@ -191,21 +180,21 @@ Find the best matches, score them, and provide actionable insights for the broke
                         match_reasons: { 
                           type: "array", 
                           items: { type: "string" },
-                          description: "Why this property matches the requirements"
+                          description: "Why this property matches (2-3 points max)"
                         },
                         concerns: { 
                           type: "array", 
                           items: { type: "string" },
-                          description: "Potential concerns or trade-offs"
+                          description: "Potential concerns (1-2 points max)"
                         },
                         negotiation_angle: { 
                           type: "string",
-                          description: "Suggested negotiation approach"
+                          description: "Brief negotiation tip"
                         },
                         broker_talking_points: { 
                           type: "array", 
                           items: { type: "string" },
-                          description: "Key points for broker to discuss with client"
+                          description: "Key points for broker (2-3 max)"
                         }
                       },
                       required: ["listing_id", "match_score", "match_tier", "match_reasons", "concerns"],
@@ -214,11 +203,11 @@ Find the best matches, score them, and provide actionable insights for the broke
                   },
                   summary: { 
                     type: "string",
-                    description: "Brief summary of the matching results"
+                    description: "One sentence summary"
                   },
                   recommendation: { 
                     type: "string",
-                    description: "Recommended next action for the broker"
+                    description: "Next action for broker"
                   }
                 },
                 required: ["matches", "summary", "recommendation"],
@@ -230,6 +219,9 @@ Find the best matches, score them, and provide actionable insights for the broke
         tool_choice: { type: "function", function: { name: "match_properties" } },
       }),
     });
+
+    const latency = Date.now() - startTime;
+    console.log(`[BOS Property Match] Model: ${AI_MODELS.REASONING}, Latency: ${latency}ms`);
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -254,7 +246,7 @@ Find the best matches, score them, and provide actionable insights for the broke
     if (toolCall?.function?.arguments) {
       const matchResult = JSON.parse(toolCall.function.arguments);
       return new Response(
-        JSON.stringify({ success: true, result: matchResult }),
+        JSON.stringify({ success: true, result: matchResult, latencyMs: latency }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -264,7 +256,8 @@ Find the best matches, score them, and provide actionable insights for the broke
       JSON.stringify({ 
         success: false, 
         error: "No matching result returned",
-        content: result.choices?.[0]?.message?.content 
+        content: result.choices?.[0]?.message?.content,
+        latencyMs: latency
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
