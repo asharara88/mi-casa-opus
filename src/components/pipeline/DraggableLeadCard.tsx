@@ -6,9 +6,11 @@ import { Phone, Mail, User, ChevronRight, AlertCircle, GripVertical } from 'luci
 import { Button } from '@/components/ui/button';
 import { AgingBadge } from '@/components/pipeline/AgingBadge';
 import { NextActionBadge } from '@/components/pipeline/NextActionBadge';
+import { LeadScoreBadge } from '@/components/pipeline/LeadScoreBadge';
 import { LEAD_AGING_THRESHOLDS } from '@/hooks/useAgingAlerts';
 import { cn } from '@/lib/utils';
 import { Database } from '@/integrations/supabase/types';
+import { ProspectScoringData } from '@/lib/scoring-engine';
 
 type NextActionType = Database['public']['Enums']['next_action_type'];
 
@@ -17,6 +19,7 @@ interface DraggableLeadCardProps {
     id: string; 
     next_action?: NextActionType | null;
     next_action_due?: string | null;
+    requirements?: ProspectScoringData | null;
   };
   onClick: () => void;
   onTransition: (lead: Lead, targetState: LeadState) => void;
@@ -63,12 +66,15 @@ export function DraggableLeadCard({ lead, onClick, onTransition, onSetNextAction
         <GripVertical className="w-4 h-4 text-muted-foreground" />
       </div>
 
-      {/* Aging Badge & ID */}
-      <div className="flex items-center justify-between mb-2 pl-6">
-        <AgingBadge 
-          updatedAt={lead.updated_at} 
-          thresholds={LEAD_AGING_THRESHOLDS[lead.lead_state] || LEAD_AGING_THRESHOLDS.New} 
-        />
+      {/* Aging Badge, Score & ID */}
+      <div className="flex items-center justify-between mb-2 pl-6 gap-1">
+        <div className="flex items-center gap-1.5">
+          <AgingBadge 
+            updatedAt={lead.updated_at} 
+            thresholds={LEAD_AGING_THRESHOLDS[lead.lead_state] || LEAD_AGING_THRESHOLDS.New} 
+          />
+          <LeadScoreBadge qualificationData={lead.requirements} />
+        </div>
         <span className="text-xs font-mono text-foreground/60">
           {lead.lead_id.slice(-6)}
         </span>
