@@ -60,7 +60,7 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
       {
         id: 'leads',
         section: 'leads',
-        label: 'Verified Leads',
+        label: 'Active Leads',
         count: totalActiveLeads,
         icon: UserCheck,
         gradientId: 'funnel-gradient-leads',
