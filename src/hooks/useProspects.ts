@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useDemoMode } from '@/contexts/DemoContext';
+import { DEMO_PROSPECT_STATS } from '@/data/demoData';
 
 export interface Prospect {
   id: string;
@@ -111,9 +113,15 @@ export function useProspects(filters?: {
 }
 
 export function useProspectStats() {
+  const { isDemoMode } = useDemoMode();
+
   return useQuery({
-    queryKey: ['prospect-stats'],
+    queryKey: ['prospect-stats', isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) {
+        return DEMO_PROSPECT_STATS;
+      }
+
       // Use count queries to avoid 1000 row limit
       const { count: total, error: totalError } = await supabase
         .from('prospects')
