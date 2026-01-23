@@ -7,13 +7,20 @@ interface LeadStateRailProps {
   onStateClick?: (state: LeadState) => void;
 }
 
-const LEAD_STATES: LeadState[] = ['New', 'Contacted', 'Qualified', 'Converted'];
+// Pipeline stages - supports both legacy (New, Contacted) and new (Nurture, Interested, HighIntent)
+// UI shows new terminology, but maps legacy states appropriately
+const LEAD_STATES: LeadState[] = ['Nurture', 'Interested', 'Qualified', 'HighIntent', 'Converted'];
 
 const STATE_CONFIG: Record<LeadState, { label: string; color: string }> = {
-  New: { label: 'New', color: 'bg-blue-500' },
-  Contacted: { label: 'Contacted', color: 'bg-amber-500' },
+  // Legacy states (mapped to new display)
+  New: { label: 'Nurture', color: 'bg-slate-500' },
+  Contacted: { label: 'Interested', color: 'bg-blue-500' },
+  // New MiCasa states
+  Nurture: { label: 'Nurture', color: 'bg-slate-500' },
+  Interested: { label: 'Interested', color: 'bg-blue-500' },
   Qualified: { label: 'Qualified', color: 'bg-emerald-500' },
-  Disqualified: { label: 'Disqualified', color: 'bg-slate-500' },
+  HighIntent: { label: 'High Intent', color: 'bg-amber-500' },
+  Disqualified: { label: 'Disqualified', color: 'bg-destructive' },
   Converted: { label: 'Converted', color: 'bg-gold' },
 };
 

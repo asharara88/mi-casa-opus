@@ -105,8 +105,10 @@ export interface Listing {
 // ============================================
 // 5️⃣ LEAD
 // ============================================
-export type LeadState = 'New' | 'Contacted' | 'Qualified' | 'Disqualified' | 'Converted';
-export type LeadSource = 'Website' | 'Referral' | 'Portal' | 'WalkIn' | 'SocialMedia' | 'Other';
+// Lead States - Supports both legacy (DB) and new MiCasa algorithm stages
+// Legacy: New, Contacted | New: Nurture, Interested, HighIntent
+export type LeadState = 'New' | 'Contacted' | 'Nurture' | 'Interested' | 'Qualified' | 'HighIntent' | 'Disqualified' | 'Converted';
+export type LeadSource = 'Website' | 'Referral' | 'Portal' | 'WalkIn' | 'SocialMedia' | 'WhatsApp' | 'Ads' | 'Phone' | 'Event' | 'Other';
 
 export interface LeadConsent {
   consent_type: 'Marketing' | 'DataProcessing' | 'Communication';
@@ -134,24 +136,43 @@ export interface Lead {
     locations?: string[];
     bedrooms_min?: number;
   };
+  // Scoring fields from algorithm
+  fit_score?: number;
+  intent_score?: number;
+  total_score?: number;
   notes: string;
   created_at: string;
   updated_at: string;
 }
 
-// Lead State Transition Requirements
+// Lead State Transition Requirements - Updated per MiCasa algorithm
+// Supports both legacy and new states
 export const LEAD_STATE_REQUIREMENTS: Record<LeadState, { required_fields: string[]; next_states: LeadState[] }> = {
+  // Legacy states (map to new behavior)
   New: {
-    required_fields: ['contact_identity.full_name', 'contact_identity.phone'],
-    next_states: ['Contacted', 'Disqualified'],
+    required_fields: ['contact_identity.phone'],
+    next_states: ['Contacted', 'Interested', 'Disqualified'],
   },
   Contacted: {
-    required_fields: ['assigned_broker_id', 'notes'],
+    required_fields: ['assigned_broker_id'],
     next_states: ['Qualified', 'Disqualified'],
+  },
+  // New MiCasa algorithm states
+  Nurture: {
+    required_fields: ['contact_identity.phone'],
+    next_states: ['Interested', 'Disqualified'],
+  },
+  Interested: {
+    required_fields: ['assigned_broker_id'],
+    next_states: ['Qualified', 'Nurture', 'Disqualified'],
   },
   Qualified: {
     required_fields: ['requirements', 'consents'],
-    next_states: ['Converted', 'Disqualified'],
+    next_states: ['HighIntent', 'Converted', 'Disqualified'],
+  },
+  HighIntent: {
+    required_fields: ['requirements', 'consents'],
+    next_states: ['Converted', 'Qualified', 'Disqualified'],
   },
   Disqualified: {
     required_fields: ['notes'],

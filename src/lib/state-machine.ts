@@ -294,11 +294,17 @@ export function transitionDealState(
 // STATE DISPLAY HELPERS
 // ============================================
 
+// Lead State Colors - Supports both legacy and new MiCasa algorithm states
 export const LEAD_STATE_COLORS: Record<LeadState, { bg: string; text: string; border: string }> = {
-  New: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/50' },
-  Contacted: { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/50' },
+  // Legacy states
+  New: { bg: 'bg-slate-500/20', text: 'text-slate-400', border: 'border-slate-500/50' },
+  Contacted: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/50' },
+  // New MiCasa algorithm states
+  Nurture: { bg: 'bg-slate-500/20', text: 'text-slate-400', border: 'border-slate-500/50' },
+  Interested: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/50' },
   Qualified: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/50' },
-  Disqualified: { bg: 'bg-slate-500/20', text: 'text-slate-400', border: 'border-slate-500/50' },
+  HighIntent: { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/50' },
+  Disqualified: { bg: 'bg-destructive/20', text: 'text-destructive', border: 'border-destructive/50' },
   Converted: { bg: 'bg-gold/20', text: 'text-gold', border: 'border-gold/50' },
 };
 

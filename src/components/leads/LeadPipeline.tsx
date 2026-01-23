@@ -31,6 +31,8 @@ interface LeadPipelineProps {
   onSetNextAction: (lead: ExtendedLead) => void;
 }
 
+// Pipeline columns - includes both legacy and new states for transition period
+// Legacy: New, Contacted | New: Nurture, Interested, HighIntent
 const PIPELINE_STATES: LeadState[] = ['New', 'Contacted', 'Qualified', 'Converted'];
 
 export function LeadPipeline({ 
