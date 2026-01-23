@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
 import { ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface FunnelStageProps {
   label: string;
@@ -46,6 +45,10 @@ export function FunnelStage({
     Z
   `;
 
+  // Calculate content area - use the narrower bottom width for safe text area
+  const contentWidth = bottomRight - bottomLeft - 16;
+  const contentX = bottomLeft + 8;
+
   return (
     <motion.g
       initial={{ opacity: 0, y: 20 }}
@@ -76,27 +79,27 @@ export function FunnelStage({
         }}
       />
       
-      {/* Content overlay */}
+      {/* Content overlay - centered in trapezoid */}
       <foreignObject
-        x={bottomLeft + 8}
-        y={yOffset + 4}
-        width={bottomRight - bottomLeft - 16}
-        height={height - 8}
-        style={{ pointerEvents: 'none' }}
+        x={contentX}
+        y={yOffset + 2}
+        width={contentWidth}
+        height={height - 4}
+        style={{ pointerEvents: 'none', overflow: 'visible' }}
       >
-        <div className="h-full flex items-center justify-between px-2">
-          <div className="flex items-center gap-2">
-            <Icon className="w-4 h-4 text-foreground/80" />
-            <span className="text-sm font-medium text-foreground truncate">
+        <div className="h-full flex items-center justify-between px-1 sm:px-2 gap-1">
+          <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
+            <Icon className="w-3 h-3 sm:w-4 sm:h-4 text-foreground/80 shrink-0" />
+            <span className="text-[10px] sm:text-xs md:text-sm font-medium text-foreground truncate">
               {label}
             </span>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="text-lg font-bold text-foreground">
+          <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+            <span className="text-sm sm:text-base md:text-lg font-bold text-foreground tabular-nums">
               <CountUp end={count} duration={1.5} delay={index * 0.1} />
             </span>
             {isClickable && (
-              <ChevronRight className="w-4 h-4 text-foreground/60" />
+              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-foreground/60" />
             )}
           </div>
         </div>

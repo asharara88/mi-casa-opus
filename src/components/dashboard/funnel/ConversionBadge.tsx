@@ -28,25 +28,26 @@ export function ConversionBadge({ rate, yPosition, index }: ConversionBadgeProps
       transition={{ delay: index * 0.1 + 0.3, duration: 0.3 }}
     >
       <foreignObject
-        x={155}
+        x={160}
         y={yPosition}
-        width={90}
-        height={24}
+        width={80}
+        height={20}
+        style={{ overflow: 'visible' }}
       >
         <motion.div 
           className={cn(
-            "h-full flex items-center justify-center gap-1 rounded-full border text-xs font-semibold",
+            "h-full flex items-center justify-center gap-0.5 rounded-full border text-[10px] sm:text-xs font-semibold px-1.5",
             getColorClass(rate)
           )}
           style={{
-            boxShadow: `0 0 12px ${getGlowColor(rate)}`,
+            boxShadow: `0 0 8px ${getGlowColor(rate)}`,
           }}
           whileHover={{ scale: 1.05 }}
           animate={rate < 10 ? {
             boxShadow: [
-              `0 0 12px ${getGlowColor(rate)}`,
-              `0 0 20px ${getGlowColor(rate)}`,
-              `0 0 12px ${getGlowColor(rate)}`,
+              `0 0 8px ${getGlowColor(rate)}`,
+              `0 0 16px ${getGlowColor(rate)}`,
+              `0 0 8px ${getGlowColor(rate)}`,
             ],
           } : {}}
           transition={rate < 10 ? {
@@ -55,8 +56,8 @@ export function ConversionBadge({ rate, yPosition, index }: ConversionBadgeProps
             ease: 'easeInOut',
           } : {}}
         >
-          <ArrowDown className="w-3 h-3" />
-          <span>{rate.toFixed(1)}%</span>
+          <ArrowDown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+          <span>{rate.toFixed(0)}%</span>
         </motion.div>
       </foreignObject>
     </motion.g>
