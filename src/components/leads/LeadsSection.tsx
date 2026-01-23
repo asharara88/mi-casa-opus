@@ -113,6 +113,16 @@ export function LeadsSection() {
   };
 
   const handleDragTransition = async (leadId: string, targetState: LeadState) => {
+    // If transitioning to Disqualified, show the lost reason modal
+    if (targetState === 'Disqualified') {
+      const lead = leads.find(l => l.id === leadId);
+      if (lead) {
+        setPendingLostLead(lead);
+        setLostModalOpen(true);
+      }
+      return;
+    }
+
     try {
       await updateLead.mutateAsync({
         id: leadId,
