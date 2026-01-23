@@ -1,24 +1,25 @@
 import { useMemo, useCallback } from 'react';
-import { useProspects, useProspectStats } from '@/hooks/useProspects';
+import { motion } from 'framer-motion';
+import { useProspectStats } from '@/hooks/useProspects';
 import { useLeads } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingDown, Users, UserCheck, Handshake, Trophy, ArrowRight, ChevronRight } from 'lucide-react';
-import CountUp from 'react-countup';
-import { cn } from '@/lib/utils';
-
-interface FunnelStage {
-  id: string;
-  section: string; // Maps to app section for navigation
-  label: string;
-  count: number;
-  icon: React.ElementType;
-  color: string;
-  bgColor: string;
-}
+import { TrendingDown, Users, UserCheck, Handshake, Trophy } from 'lucide-react';
+import { FunnelStage } from './funnel/FunnelStage';
+import { ConversionBadge } from './funnel/ConversionBadge';
+import { FunnelGradients } from './funnel/FunnelGradients';
 
 interface SalesFunnelChartProps {
   onNavigate?: (section: string) => void;
+}
+
+interface FunnelStageData {
+  id: string;
+  section: string;
+  label: string;
+  count: number;
+  icon: React.ElementType;
+  gradientId: string;
 }
 
 export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
@@ -32,15 +33,10 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
     onNavigate?.(section);
   }, [onNavigate]);
 
-  const funnelData = useMemo<FunnelStage[]>(() => {
+  const funnelData = useMemo<FunnelStageData[]>(() => {
     const totalProspects = prospectStats?.total || 0;
     
-    // Count leads by state - Support both legacy and new states
     const leads = dbLeads || [];
-    // Legacy states: New, Contacted | New states: Nurture, Interested, HighIntent
-    const earlyStageLeads = leads.filter(l => 
-      ['New', 'Contacted', 'Nurture', 'Interested'].includes(l.lead_state)
-    ).length;
     const qualifiedLeads = leads.filter(l => 
       ['Qualified', 'HighIntent'].includes(l.lead_state)
     ).length;
@@ -48,7 +44,6 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
       !['Disqualified', 'Converted'].includes(l.lead_state)
     ).length;
     
-    // Count deals by state
     const deals = dbDeals || [];
     const activeDeals = deals.filter(d => !['ClosedWon', 'ClosedLost'].includes(d.deal_state)).length;
     const closedWonDeals = deals.filter(d => d.deal_state === 'ClosedWon').length;
@@ -60,8 +55,7 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
         label: 'Prospects',
         count: totalProspects,
         icon: Users,
-        color: 'text-chart-1',
-        bgColor: 'bg-chart-1/20',
+        gradientId: 'funnel-gradient-prospects',
       },
       {
         id: 'leads',
@@ -69,17 +63,15 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
         label: 'Verified Leads',
         count: totalActiveLeads,
         icon: UserCheck,
-        color: 'text-chart-2',
-        bgColor: 'bg-chart-2/20',
+        gradientId: 'funnel-gradient-leads',
       },
       {
         id: 'qualified',
         section: 'leads',
-        label: 'Qualified + High Intent',
+        label: 'Qualified',
         count: qualifiedLeads,
         icon: UserCheck,
-        color: 'text-chart-3',
-        bgColor: 'bg-chart-3/20',
+        gradientId: 'funnel-gradient-qualified',
       },
       {
         id: 'deals',
@@ -87,8 +79,7 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
         label: 'Active Deals',
         count: activeDeals,
         icon: Handshake,
-        color: 'text-chart-4',
-        bgColor: 'bg-chart-4/20',
+        gradientId: 'funnel-gradient-deals',
       },
       {
         id: 'closed',
@@ -96,13 +87,11 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
         label: 'Closed Won',
         count: closedWonDeals,
         icon: Trophy,
-        color: 'text-gold',
-        bgColor: 'bg-gold/20',
+        gradientId: 'funnel-gradient-won',
       },
     ];
   }, [prospectStats, dbLeads, dbDeals]);
 
-  // Calculate conversion rates between stages
   const conversionRates = useMemo(() => {
     const rates: { from: string; to: string; rate: number }[] = [];
     
@@ -113,114 +102,118 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
       rates.push({
         from: current.id,
         to: next.id,
-        rate: Math.min(rate, 100), // Cap at 100%
+        rate: Math.min(rate, 100),
       });
     }
     
     return rates;
   }, [funnelData]);
 
-  // Overall conversion rate (Prospects to Closed)
   const overallConversion = useMemo(() => {
     const prospects = funnelData.find(s => s.id === 'prospects')?.count || 0;
     const closed = funnelData.find(s => s.id === 'closed')?.count || 0;
     return prospects > 0 ? (closed / prospects) * 100 : 0;
   }, [funnelData]);
 
+  // Calculate trapezoid dimensions
+  const stageHeight = 44;
+  const stageGap = 28; // Gap for conversion badge
+  const totalStages = funnelData.length;
+  const maxWidth = 360;
+  const minWidth = 120;
+  const widthStep = (maxWidth - minWidth) / (totalStages - 1);
+
   if (isLoading) {
     return (
-      <div className="card-surface p-4">
+      <div className="card-surface p-4 rounded-xl">
         <Skeleton className="h-6 w-48 mb-4" />
-        <div className="space-y-4">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
-          ))}
-        </div>
+        <Skeleton className="h-[320px] w-full" />
       </div>
     );
   }
 
-  const maxCount = Math.max(...funnelData.map(s => s.count), 1);
-
   return (
-    <div className="card-surface p-4">
+    <motion.div 
+      className="card-surface p-4 rounded-xl border border-border/50 bg-gradient-to-b from-card to-card/80"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      style={{
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+      }}
+    >
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-foreground flex items-center gap-2">
-          <TrendingDown className="w-4 h-4 text-primary" />
-          Sales Funnel
+          <motion.div
+            initial={{ rotate: 0 }}
+            animate={{ rotate: [0, -10, 10, 0] }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <TrendingDown className="w-5 h-5 text-primary" />
+          </motion.div>
+          <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            Sales Funnel
+          </span>
         </h3>
-        <div className="text-xs text-muted-foreground">
-          Overall: <span className="text-primary font-medium">{overallConversion.toFixed(1)}%</span>
-        </div>
+        <motion.div 
+          className="px-3 py-1 rounded-full bg-primary/20 border border-primary/30"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+        >
+          <span className="text-xs text-muted-foreground">Overall: </span>
+          <span className="text-sm font-bold text-primary">
+            {overallConversion.toFixed(1)}%
+          </span>
+        </motion.div>
       </div>
 
-      {/* Funnel Visualization */}
-      <div className="space-y-2">
+      {/* SVG Funnel */}
+      <svg
+        viewBox="0 0 400 340"
+        className="w-full h-auto"
+        style={{ maxHeight: '340px' }}
+      >
+        <FunnelGradients />
+        
         {funnelData.map((stage, index) => {
-          const widthPercent = (stage.count / maxCount) * 100;
-          const Icon = stage.icon;
-          const conversionRate = conversionRates[index];
+          const topWidth = maxWidth - (widthStep * index);
+          const bottomWidth = maxWidth - (widthStep * (index + 1));
+          const yOffset = index * (stageHeight + stageGap);
           
           return (
-            <div key={stage.id}>
-              {/* Stage Bar - Clickable */}
-              <div className="relative">
-                <button 
-                  onClick={() => handleStageClick(stage.section)}
-                  className={cn(
-                    stage.bgColor,
-                    "rounded-lg transition-all duration-300 ease-out w-full text-left",
-                    "hover:scale-[1.02] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    onNavigate && "cursor-pointer"
-                  )}
-                  style={{ 
-                    width: `${Math.max(widthPercent, 20)}%`,
-                    marginLeft: `${(100 - Math.max(widthPercent, 20)) / 2}%`,
-                  }}
-                  aria-label={`View ${stage.label}`}
-                >
-                  <div className="flex items-center justify-between px-3 py-3">
-                    <div className="flex items-center gap-2">
-                      <Icon className={`w-4 h-4 ${stage.color}`} />
-                      <span className="text-sm font-medium text-foreground">{stage.label}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-lg font-bold ${stage.color}`}>
-                        <CountUp end={stage.count} duration={1} />
-                      </span>
-                      {onNavigate && <ChevronRight className={`w-4 h-4 ${stage.color} opacity-60`} />}
-                    </div>
-                  </div>
-                </button>
-              </div>
-
-              {/* Conversion Arrow */}
-              {conversionRate && (
-                <div className="flex items-center justify-center py-1 text-xs text-muted-foreground">
-                  <ArrowRight className="w-3 h-3 mr-1" />
-                  <span className={conversionRate.rate > 30 ? 'text-emerald' : conversionRate.rate > 10 ? 'text-gold' : 'text-coral'}>
-                    {conversionRate.rate.toFixed(1)}%
-                  </span>
-                </div>
-              )}
-            </div>
+            <FunnelStage
+              key={stage.id}
+              label={stage.label}
+              count={stage.count}
+              icon={stage.icon}
+              gradientId={stage.gradientId}
+              topWidth={topWidth}
+              bottomWidth={bottomWidth}
+              height={stageHeight}
+              yOffset={yOffset}
+              index={index}
+              isClickable={!!onNavigate}
+              onClick={() => handleStageClick(stage.section)}
+            />
           );
         })}
-      </div>
 
-      {/* Summary Stats */}
-      <div className="mt-4 pt-4 border-t border-border grid grid-cols-3 gap-2 text-center">
-        {conversionRates.map((rate) => (
-          <div key={`${rate.from}-${rate.to}`} className="text-xs">
-            <div className="text-muted-foreground capitalize">
-              {rate.from.slice(0, 4)} → {rate.to.slice(0, 4)}
-            </div>
-            <div className={`font-medium ${rate.rate > 30 ? 'text-emerald' : rate.rate > 10 ? 'text-gold' : 'text-coral'}`}>
-              {rate.rate.toFixed(0)}%
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+        {/* Conversion badges between stages */}
+        {conversionRates.map((rate, index) => {
+          const yPosition = (index + 1) * (stageHeight + stageGap) - stageGap / 2 - 12;
+          
+          return (
+            <ConversionBadge
+              key={`${rate.from}-${rate.to}`}
+              rate={rate.rate}
+              yPosition={yPosition}
+              index={index}
+            />
+          );
+        })}
+      </svg>
+    </motion.div>
   );
 }
