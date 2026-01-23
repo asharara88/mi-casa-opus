@@ -12,7 +12,8 @@ import { useCreateLead } from '@/hooks/useLeads';
 import { ProspectImportModal } from './ProspectImportModal';
 import { ProspectDetailSheet } from './ProspectDetailSheet';
 import { AddProspectModal } from './AddProspectModal';
-import { Search, Upload, Users, Phone, Mail, CheckCircle, Clock, XCircle, Plus } from 'lucide-react';
+import { ProspectStatusChart } from './ProspectStatusChart';
+import { Search, Upload, Users, Phone, Mail, CheckCircle, Clock, XCircle, Plus, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Prospect } from '@/hooks/useProspects';
 
@@ -145,46 +146,62 @@ export function ProspectsSection() {
       <Header title="Prospects" subtitle="Cold outreach and engagement tracking" />
 
       <div className="flex-1 overflow-auto p-6 space-y-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="bg-card/50 border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Total Prospects
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-foreground">{stats?.total?.toLocaleString() || 0}</p>
-            </CardContent>
-          </Card>
+        {/* Stats Cards Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          {/* Left: Key Stats */}
+          <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="bg-card/50 border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Total Prospects
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-foreground">{stats?.total?.toLocaleString() || 0}</p>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-card/50 border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Not Contacted</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-foreground">{stats?.byStatus?.not_contacted?.toLocaleString() || 0}</p>
-            </CardContent>
-          </Card>
+            <Card className="bg-card/50 border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Not Contacted</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-foreground">{stats?.byStatus?.not_contacted?.toLocaleString() || 0}</p>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-card/50 border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">High Confidence</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-emerald-400">{stats?.byConfidence?.High?.toLocaleString() || 0}</p>
-            </CardContent>
-          </Card>
+            <Card className="bg-card/50 border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Follow Up
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-yellow-400">{stats?.byStatus?.follow_up?.toLocaleString() || 0}</p>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-card/50 border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Interested</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-blue-400">{stats?.byStatus?.interested?.toLocaleString() || 0}</p>
-            </CardContent>
-          </Card>
+            <Card className="bg-card/50 border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <UserCheck className="h-4 w-4" />
+                  Converted
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-emerald-400">{stats?.byStatus?.converted?.toLocaleString() || 0}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right: Status Distribution Chart */}
+          {stats?.byStatus && (
+            <div className="lg:col-span-1">
+              <ProspectStatusChart byStatus={stats.byStatus} />
+            </div>
+          )}
         </div>
 
         {/* Filters and Actions */}
