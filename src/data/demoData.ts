@@ -1591,7 +1591,8 @@ export const DEMO_PROSPECT_STATS = {
   total: 148,
   byStatus: {
     not_contacted: 35,
-    contacted: 78,
+    contacted: 68,
+    interested: 10,
     qualified: 12,
     not_interested: 5,
     converted: 18,
