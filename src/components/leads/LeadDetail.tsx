@@ -46,7 +46,8 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
   const stateColors = LEAD_STATE_COLORS[lead.lead_state];
 
   const handleStateClick = (targetState: LeadState) => {
-    if (targetState === 'Qualified' && lead.lead_state === 'Contacted') {
+    // Show qualification panel when moving to Qualified from early stages
+    if (targetState === 'Qualified' && ['New', 'Contacted', 'Interested'].includes(lead.lead_state)) {
       setShowQualificationPanel(true);
     } else {
       setSelectedTargetState(targetState);
@@ -351,7 +352,7 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
               )}
 
               {/* AI Property Matching */}
-              {lead.requirements && (lead.lead_state === 'Qualified' || lead.lead_state === 'Contacted') && (
+              {lead.requirements && ['Qualified', 'Contacted', 'Interested', 'HighIntent'].includes(lead.lead_state) && (
                 <AIPropertyMatcher 
                   lead={lead}
                   onViewListing={(listingId) => {

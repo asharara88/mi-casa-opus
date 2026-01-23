@@ -34,12 +34,19 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
 
   const funnelData = useMemo<FunnelStage[]>(() => {
     const totalProspects = prospectStats?.total || 0;
-    const convertedProspects = prospectStats?.byStatus?.converted || 0;
     
-    // Count leads by state
+    // Count leads by state - Support both legacy and new states
     const leads = dbLeads || [];
-    const activeLeads = leads.filter(l => !['Disqualified', 'Converted'].includes(l.lead_state)).length;
-    const convertedLeads = leads.filter(l => l.lead_state === 'Converted').length;
+    // Legacy states: New, Contacted | New states: Nurture, Interested, HighIntent
+    const earlyStageLeads = leads.filter(l => 
+      ['New', 'Contacted', 'Nurture', 'Interested'].includes(l.lead_state)
+    ).length;
+    const qualifiedLeads = leads.filter(l => 
+      ['Qualified', 'HighIntent'].includes(l.lead_state)
+    ).length;
+    const totalActiveLeads = leads.filter(l => 
+      !['Disqualified', 'Converted'].includes(l.lead_state)
+    ).length;
     
     // Count deals by state
     const deals = dbDeals || [];
@@ -59,29 +66,38 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
       {
         id: 'leads',
         section: 'leads',
-        label: 'Leads',
-        count: activeLeads + convertedLeads,
+        label: 'Verified Leads',
+        count: totalActiveLeads,
         icon: UserCheck,
         color: 'text-chart-2',
         bgColor: 'bg-chart-2/20',
       },
       {
-        id: 'deals',
-        section: 'deals',
-        label: 'Active Deals',
-        count: activeDeals + closedWonDeals,
-        icon: Handshake,
+        id: 'qualified',
+        section: 'leads',
+        label: 'Qualified + High Intent',
+        count: qualifiedLeads,
+        icon: UserCheck,
         color: 'text-chart-3',
         bgColor: 'bg-chart-3/20',
       },
       {
+        id: 'deals',
+        section: 'deals',
+        label: 'Active Deals',
+        count: activeDeals,
+        icon: Handshake,
+        color: 'text-chart-4',
+        bgColor: 'bg-chart-4/20',
+      },
+      {
         id: 'closed',
-        section: 'deals', // Closed won still navigates to deals section
+        section: 'deals',
         label: 'Closed Won',
         count: closedWonDeals,
         icon: Trophy,
-        color: 'text-chart-4',
-        bgColor: 'bg-chart-4/20',
+        color: 'text-gold',
+        bgColor: 'bg-gold/20',
       },
     ];
   }, [prospectStats, dbLeads, dbDeals]);
