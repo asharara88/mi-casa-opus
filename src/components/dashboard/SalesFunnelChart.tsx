@@ -115,12 +115,12 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
     return prospects > 0 ? (closed / prospects) * 100 : 0;
   }, [funnelData]);
 
-  // Calculate trapezoid dimensions
-  const stageHeight = 44;
-  const stageGap = 28; // Gap for conversion badge
+  // Calculate trapezoid dimensions - responsive
+  const stageHeight = 40;
+  const stageGap = 24; // Gap for conversion badge
   const totalStages = funnelData.length;
-  const maxWidth = 360;
-  const minWidth = 120;
+  const maxWidth = 340;
+  const minWidth = 100;
   const widthStep = (maxWidth - minWidth) / (totalStages - 1);
 
   if (isLoading) {
@@ -143,27 +143,27 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-foreground flex items-center gap-2">
+      <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+        <h3 className="font-semibold text-foreground flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
           <motion.div
             initial={{ rotate: 0 }}
             animate={{ rotate: [0, -10, 10, 0] }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <TrendingDown className="w-5 h-5 text-primary" />
+            <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
           </motion.div>
           <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
             Sales Funnel
           </span>
         </h3>
         <motion.div 
-          className="px-3 py-1 rounded-full bg-primary/20 border border-primary/30"
+          className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-primary/20 border border-primary/30 shrink-0"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
         >
-          <span className="text-xs text-muted-foreground">Overall: </span>
-          <span className="text-sm font-bold text-primary">
+          <span className="text-[10px] sm:text-xs text-muted-foreground">Overall: </span>
+          <span className="text-xs sm:text-sm font-bold text-primary">
             {overallConversion.toFixed(1)}%
           </span>
         </motion.div>
@@ -171,9 +171,10 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
 
       {/* SVG Funnel */}
       <svg
-        viewBox="0 0 400 340"
+        viewBox="0 0 400 310"
         className="w-full h-auto"
-        style={{ maxHeight: '340px' }}
+        preserveAspectRatio="xMidYMid meet"
+        style={{ maxHeight: '320px', minHeight: '200px' }}
       >
         <FunnelGradients />
         
