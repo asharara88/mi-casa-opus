@@ -1,8 +1,8 @@
-// Entity detection patterns for CRM entities
+// Entity detection patterns for CRM entities (no global flag to avoid stateful test())
 const ENTITY_PATTERNS = {
-  prospect: /\b(PR|CRM)-[A-Z0-9]{4,12}\b/gi,
-  lead: /\bLD-[A-Z0-9]{4,12}\b/gi,
-  deal: /\bDL-[A-Z0-9]{4,12}\b/gi,
+  prospect: /\b(PR|CRM)-[A-Z0-9]{4,12}\b/i,
+  lead: /\bLD-[A-Z0-9]{4,12}\b/i,
+  deal: /\bDL-[A-Z0-9]{4,12}\b/i,
 };
 
 // Topic-specific suggestion prompts
@@ -82,15 +82,12 @@ function detectTopic(content: string): keyof typeof TOPIC_SUGGESTIONS | null {
   
   // Check for entity ID patterns first (most specific)
   if (ENTITY_PATTERNS.prospect.test(content)) {
-    ENTITY_PATTERNS.prospect.lastIndex = 0; // Reset regex state
     return 'prospect';
   }
   if (ENTITY_PATTERNS.lead.test(content)) {
-    ENTITY_PATTERNS.lead.lastIndex = 0;
     return 'lead';
   }
   if (ENTITY_PATTERNS.deal.test(content)) {
-    ENTITY_PATTERNS.deal.lastIndex = 0;
     return 'deal';
   }
   
