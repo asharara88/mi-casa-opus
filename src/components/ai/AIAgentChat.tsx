@@ -1,12 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Send, Loader2, Bot, User, Trash2, AlertTriangle } from 'lucide-react';
 import { useBosLlmOps, useBosLlmRouter } from '@/hooks/useBosLlm';
 import { cn } from '@/lib/utils';
+import { generateSuggestions, INITIAL_SUGGESTIONS } from '@/lib/chat-suggestions';
+import { SuggestionChips } from './SuggestionChips';
 
 interface Message {
   id: string;
@@ -16,13 +18,6 @@ interface Message {
   timestamp: Date;
 }
 
-const QUICK_PROMPTS = [
-  { label: 'Pipeline Status', prompt: 'Give me a summary of the current pipeline health' },
-  { label: 'Today\'s Priorities', prompt: 'What should I focus on today?' },
-  { label: 'Lead Tips', prompt: 'How can I improve lead qualification?' },
-  { label: 'Deal Guidance', prompt: 'What are best practices for moving deals forward?' },
-];
-
 export function AIAgentChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -31,6 +26,20 @@ export function AIAgentChat() {
   const { askOps, isStreaming, response } = useBosLlmOps();
   const { routeRequest } = useBosLlmRouter();
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
+
+  // Generate context-aware suggestions based on conversation
+  const suggestions = useMemo(() => {
+    if (messages.length === 0) return INITIAL_SUGGESTIONS;
+    
+    const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+    const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant' && m.content);
+    
+    return generateSuggestions(
+      lastUserMsg?.content || '',
+      lastAssistantMsg?.content || '',
+      messages.length
+    );
+  }, [messages]);
 
   // Update streaming message
   useEffect(() => {
@@ -124,7 +133,7 @@ export function AIAgentChat() {
       {/* Disclaimer */}
       <div className="card-gold p-3">
         <div className="flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+          <AlertTriangle className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground">
             <span className="font-semibold text-foreground">Advisory Only.</span> AI responses are suggestions and cannot make compliance decisions, modify deals, or calculate commissions.
           </p>
@@ -158,15 +167,15 @@ export function AIAgentChat() {
                   Ask me about your pipeline, leads, deals, or general brokerage operations.
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center max-w-md">
-                  {QUICK_PROMPTS.map((qp) => (
+                  {suggestions.map((suggestion) => (
                     <Button
-                      key={qp.label}
+                      key={suggestion}
                       variant="outline"
                       size="sm"
                       className="text-xs"
-                      onClick={() => handleSend(qp.prompt)}
+                      onClick={() => handleSend(suggestion)}
                     >
-                      {qp.label}
+                      {suggestion}
                     </Button>
                   ))}
                 </div>
@@ -209,7 +218,7 @@ export function AIAgentChat() {
                       </div>
                     </div>
                     {msg.role === 'user' && (
-                      <div className="w-8 h-8 rounded-lg bg-foreground/10 flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                         <User className="w-4 h-4" />
                       </div>
                     )}
@@ -218,6 +227,14 @@ export function AIAgentChat() {
               </div>
             )}
           </ScrollArea>
+
+          {/* Suggestions - shown when there are messages and not streaming */}
+          {messages.length > 0 && !isStreaming && (
+            <SuggestionChips 
+              suggestions={suggestions} 
+              onSelect={handleSend}
+            />
+          )}
 
           {/* Input Area */}
           <div className="p-4 border-t border-border bg-card">
