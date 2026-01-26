@@ -1,200 +1,188 @@
 
-# API Integration Testing & Fixes Plan
 
-## Summary of Findings
+# Marketing Hub Implementation Plan
 
-After comprehensive testing of all API-connected integrations, here are the results:
+## Overview
 
-### Working Integrations (No Changes Needed)
+Create a comprehensive **Marketing Section** that serves as the command center for all marketing activities that feed into the sales funnel. This section will track advertisements, events, roadshows, networking activities, and integrate with the existing 13K prospect CRM database.
 
-| Integration | Status | Test Result |
-|-------------|--------|-------------|
-| **Firecrawl Scrape** | Working | Successfully scraped example.com, returned markdown + metadata |
-| **Competitor Analyze** | Working | AI analysis returns structured listings, insights, and recommendations |
-| **ElevenLabs Scribe Token** | Working | Token generation successful (`sutkn_...`) |
-| **BOS LLM Router** | Working | Correctly routes intents to appropriate modes |
-| **BOS LLM Ops** | Working | Streaming responses with database context |
-| **BOS LLM Lead Qualify** | Working | Returns lead scores, confidence levels, and recommended actions |
-| **BOS LLM Marketing Copy** | Working | Compliance-aware copy generation (correctly refuses non-approved listings) |
-
-### Integrations Requiring Fixes
-
-| Integration | Issue | Fix Required |
-|-------------|-------|--------------|
-| **ElevenLabs TTS** | API key flagged for "unusual activity" | User needs to upgrade to paid ElevenLabs plan |
-| **ListingAudioTour.tsx** | Calling `bos-llm-ops` with wrong parameters | Fix API call to use `userIntent` instead of `prompt` |
-| **VoiceMessageGenerator.tsx** | Calling `useVoiceMessage()` inside callback (React hooks violation) | Fix hook usage pattern |
-
-### Minor UI Warnings (Non-Critical)
-
-| Component | Warning |
-|-----------|---------|
-| ConversionBadge | Missing forwardRef |
-| Badge (PipelineHealthWidget) | Missing forwardRef |
+The Marketing Hub connects to the sales funnel by tracking how marketing efforts (ads, events, campaigns) generate prospects, which then convert to leads and deals.
 
 ---
 
-## Required Fixes
+## Marketing Hub Structure
 
-### 1. Fix ListingAudioTour API Call
-
-**File:** `src/components/voice/ListingAudioTour.tsx`
-
-**Problem:** The component calls `bos-llm-ops` with `{ prompt, operation }` but the edge function expects `{ userIntent }`.
-
-**Current code (lines 61-66):**
-```typescript
-const { data, error } = await supabase.functions.invoke('bos-llm-ops', {
-  body: {
-    prompt,
-    operation: 'generate_narration',
-  },
-});
-```
-
-**Fix:** Change to use `userIntent` parameter:
-```typescript
-const { data, error } = await supabase.functions.invoke('bos-llm-ops', {
-  body: {
-    userIntent: prompt,
-    contextType: 'listing',
-  },
-});
-```
-
-Also update the response handling (line 70) to parse the streaming response or use a non-streaming approach.
-
-### 2. Fix VoiceMessageGenerator React Hooks Violation
-
-**File:** `src/components/voice/VoiceMessageGenerator.tsx`
-
-**Problem:** Line 56 calls `useVoiceMessage()` inside a callback, which violates React hooks rules.
-
-**Current code (lines 52-57):**
-```typescript
-try {
-  cleanup();
-  
-  const textToGenerate = isCustomizing ? customText : getMessageText(selectedTemplate, messageParams);
-  
-  const { generateSpeech } = useVoiceMessage(); // WRONG - hooks can't be called inside callbacks
-  const url = await generateMessage(selectedTemplate, messageParams, selectedVoice);
-```
-
-**Fix:** Remove the incorrect hook call since `generateMessage` is already available from the hook called at component level:
-```typescript
-try {
-  cleanup();
-  
-  const textToGenerate = isCustomizing ? customText : getMessageText(selectedTemplate, messageParams);
-  
-  // For custom text, use generateSpeech directly (from the TTS hook)
-  // For templates, use generateMessage
-  const url = isCustomizing 
-    ? await generateSpeech(textToGenerate, selectedVoice)
-    : await generateMessage(selectedTemplate, messageParams, selectedVoice);
-```
-
-However, since `generateSpeech` isn't exposed through `useVoiceMessage()`, we need to also update the hook or use `useTextToSpeech` separately.
-
-### 3. ElevenLabs TTS - User Action Required
-
-**Issue:** The ElevenLabs API key is flagged for unusual activity:
-```
-"detected_unusual_activity"
-"Free Tier usage disabled"
-"Please purchase a Paid Subscription to continue"
-```
-
-**Resolution:** This is a limitation of the ElevenLabs free tier. The user must either:
-1. Upgrade to an ElevenLabs paid plan
-2. Contact ElevenLabs support to unflag the account
-
-The code is correct; it's an account-level issue.
-
----
-
-## Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/components/voice/ListingAudioTour.tsx` | Fix API call parameters and response handling |
-| `src/components/voice/VoiceMessageGenerator.tsx` | Fix React hooks violation |
-| `src/hooks/useElevenLabs.ts` | Expose `generateSpeech` in `useVoiceMessage` return |
-
----
-
-## Technical Implementation Details
-
-### ListingAudioTour Fix
-
-The `bos-llm-ops` edge function returns a streaming response. The current code expects JSON. We need to either:
-
-**Option A (Recommended):** Create a dedicated non-streaming narration endpoint
-- Add a `bos-llm-narration` function that returns plain JSON
-
-**Option B:** Parse the streaming response in the frontend
-- Collect SSE events and extract content
-
-For simplicity, Option A is cleaner. Alternatively, we can modify `bos-llm-ops` to accept a `stream: false` parameter.
-
-### VoiceMessageGenerator Fix
-
-Update the hook to properly expose TTS functionality:
-
-```typescript
-// In useElevenLabs.ts - update useVoiceMessage return
-return {
-  generateMessage,
-  generateSpeech: tts.generateSpeech, // Add this
-  getMessageText: (...),
-  ...tts,
-};
-```
-
-Then in VoiceMessageGenerator:
-```typescript
-const { generateMessage, generateSpeech, getMessageText, isLoading, audioUrl, cleanup } = useVoiceMessage();
-
-// In handleGenerate:
-const url = isCustomizing 
-  ? await generateSpeech(customText, selectedVoice)
-  : await generateMessage(selectedTemplate, messageParams, selectedVoice);
+```text
+Marketing Hub
+├── Dashboard (Campaign Overview + ROI Metrics)
+├── Advertisements (DARI Permits, Online Ads, Print)
+├── Campaigns (Email, SMS, WhatsApp sequences)
+├── Events (Roadshows, Property Launches, Exhibitions)
+├── Network (Partner Brokers, Referral Sources)
+└── CRM Summary (13K Prospects Source Analysis)
 ```
 
 ---
 
-## Integration Test Summary
+## Feature Details
 
-| Function | Endpoint | Status |
-|----------|----------|--------|
-| `firecrawl-scrape` | POST /firecrawl-scrape | Pass |
-| `competitor-analyze` | POST /competitor-analyze | Pass |
-| `elevenlabs-scribe-token` | POST /elevenlabs-scribe-token | Pass |
-| `elevenlabs-tts` | POST /elevenlabs-tts | Fail (Account issue) |
-| `bos-llm-router` | POST /bos-llm-router | Pass |
-| `bos-llm-ops` | POST /bos-llm-ops | Pass |
-| `bos-llm-lead-qualify` | POST /bos-llm-lead-qualify | Pass |
-| `bos-llm-marketing-copy` | POST /bos-llm-marketing-copy | Pass |
+### 1. Marketing Dashboard
+- **Campaign Performance Cards**: Active campaigns, total spend, leads generated
+- **Source Attribution Chart**: Visualize which marketing channels generate the most prospects
+- **ROI Calculator**: Cost per lead by channel
+- **Upcoming Events Timeline**: Next 30 days of marketing activities
+
+### 2. Advertisements Tab
+- **DARI Permit Tracking**: Based on the Abu Dhabi compliance requirements you shared
+  - Permit request status (Pending, Approved, Expired)
+  - Validity periods (30-90 days)
+  - Linked properties
+- **Online Ads Management**:
+  - Portal ads (Bayut, Property Finder, Dubizzle)
+  - Social media campaigns (Instagram, Facebook, LinkedIn)
+  - Google Ads tracking
+- **Print/Outdoor**: Billboards, brochures, magazine placements
+
+### 3. Campaigns Tab
+- **Campaign Types**: Email drip, SMS blast, WhatsApp broadcast
+- **Campaign Status**: Draft, Active, Paused, Completed
+- **Metrics**: Opens, clicks, responses, conversions
+- **Integration**: Link to prospect database for targeting
+
+### 4. Events Tab
+- **Event Types**:
+  - Roadshows (multi-city property tours)
+  - Property Launch Events
+  - Exhibitions (Cityscape, MIPIM)
+  - Networking Events
+- **Event Details**: Date, venue, budget, attendee count
+- **Lead Capture**: Track prospects registered vs attended
+- **Follow-up Status**: Post-event outreach tracking
+
+### 5. Network Tab
+- **Partner Sources**: Referral partners, co-brokers, developers
+- **Source Performance**: Leads generated per source
+- **Commission Sharing**: Track referral fees
+
+### 6. CRM Integration (Prospect Source Analysis)
+- **Source Breakdown**: CustomerList (9,407), McLaren (4,129), etc.
+- **Conversion Funnel by Source**: Which sources produce qualified leads?
+- **Campaign Attribution**: Link prospects to specific campaigns
 
 ---
 
-## Secrets Configuration
+## Database Schema Changes
 
-All required secrets are properly configured:
-- `ELEVENLABS_API_KEY` (managed by connector)
-- `FIRECRAWL_API_KEY` (managed by connector)
-- `LOVABLE_API_KEY` (system)
-- `OPENAI_API_KEY` (user-provided)
+### New Tables
+
+**marketing_campaigns**
+```
+id, campaign_id, name, type, channel, status, budget, spend,
+start_date, end_date, target_audience, metrics (JSONB),
+created_by, created_at, updated_at
+```
+
+**marketing_events**
+```
+id, event_id, name, type, venue, date, end_date, budget, spend,
+expected_attendees, actual_attendees, leads_captured,
+status, notes, created_at, updated_at
+```
+
+**marketing_ads**
+```
+id, ad_id, name, platform, type, status, listing_id,
+dari_permit_no, permit_status, permit_valid_until,
+budget, spend, impressions, clicks, leads_generated,
+start_date, end_date, created_at, updated_at
+```
+
+**referral_sources**
+```
+id, source_id, name, type, contact_name, contact_phone,
+contact_email, commission_percent, leads_generated,
+deals_closed, total_commission_paid, status,
+created_at, updated_at
+```
+
+### Prospect Table Enhancement
+Add column: `campaign_id` (nullable UUID) to track which campaign generated each prospect
 
 ---
 
-## Demo Mode Verification
+## UI Components
 
-Demo mode is properly implemented in:
-- `ListingAudioTour` - Shows success without API calls
-- `VoiceMessageGenerator` - Shows success without API calls
-- `VoiceTranscriber` - Simulates transcription with typing animation
-- `CompetitorAnalysis` - Uses pre-populated demo data
+### Navigation Update
+Add "Marketing" group to sidebar between "Dashboard" and "Customers":
+```
+Dashboard
+Marketing       <-- NEW
+  ├── Campaigns
+  ├── Ads
+  ├── Events
+  └── Network
+Customers
+  ├── Prospects
+  ├── Leads
+  └── Deals
+```
 
-This ensures the UI is testable without consuming API credits.
+### New Components
+1. **MarketingSection.tsx** - Main container with tabs
+2. **MarketingDashboard.tsx** - Overview with KPIs and charts
+3. **CampaignsList.tsx** - Campaign management table
+4. **AdsManager.tsx** - Advertisement tracking with DARI permits
+5. **EventsCalendar.tsx** - Events list with calendar view
+6. **NetworkDirectory.tsx** - Referral partner management
+7. **SourceAttributionChart.tsx** - Prospects by source visualization
+
+### Hooks
+1. **useMarketingCampaigns.ts** - CRUD for campaigns
+2. **useMarketingEvents.ts** - CRUD for events
+3. **useMarketingAds.ts** - CRUD for ads
+4. **useReferralSources.ts** - CRUD for network partners
+5. **useMarketingStats.ts** - Aggregated metrics
+
+---
+
+## Implementation Phases
+
+### Phase 1: Core Structure
+- Create database tables with RLS policies
+- Add Marketing group to sidebar navigation
+- Create MarketingSection with tab structure
+- Implement Marketing Dashboard with prospect source analytics
+
+### Phase 2: Campaigns & Ads
+- Campaign management interface
+- Advertisement tracking with DARI permit integration
+- Source attribution linking
+
+### Phase 3: Events & Network
+- Events calendar and management
+- Roadshow planning interface
+- Referral network directory
+
+### Phase 4: Analytics & Reporting
+- ROI calculations
+- Conversion attribution
+- Export capabilities
+
+---
+
+## Key Integration Points
+
+1. **Prospects**: Link prospects to campaigns/events via `campaign_id` or `source` field
+2. **Leads**: Track which marketing source generated each lead
+3. **Sales Funnel**: Show marketing-attributed conversion rates
+4. **DARI Compliance**: Track advertisement permits per Abu Dhabi regulations
+
+---
+
+## Technical Notes
+
+- All new tables will have RLS policies requiring Operator role
+- JSONB columns for flexible metrics storage
+- Realtime updates for campaign metrics
+- Mobile-responsive design matching existing UI patterns
+
