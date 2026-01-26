@@ -22,6 +22,7 @@ import { UsersSection } from '@/components/users/UsersSection';
 import { ListingsSection } from '@/components/listings/ListingsSection';
 import { TemplatesSection } from '@/components/templates/TemplatesSection';
 import { ProspectsSection } from '@/components/prospects/ProspectsSection';
+import { MarketingSection } from '@/components/marketing/MarketingSection';
 import { AIAgentChat } from '@/components/ai/AIAgentChat';
 import { FloatingAIChat } from '@/components/ai/FloatingAIChat';
 import { useBrokerageContext } from '@/hooks/useBrokerage';
@@ -44,6 +45,7 @@ import {
 const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   // Operator sections
   dashboard: { title: 'Control Room', subtitle: 'Brokerage operations overview' },
+  marketing: { title: 'Marketing Hub', subtitle: 'Campaigns, ads, events, and referral network' },
   leads: { title: 'Lead Pipeline', subtitle: 'Manage and qualify incoming leads' },
   deals: { title: 'Deal Pipeline', subtitle: 'Track deals through the transaction lifecycle' },
   listings: { title: 'Listings', subtitle: 'Property inventory management' },
@@ -173,6 +175,9 @@ export function BOSApp() {
       
       case 'prospects':
         return <ProspectsSection />;
+      
+      case 'marketing':
+        return <MarketingSection />;
       
       case 'settings':
         return <SettingsSection brokerage={brokerage} isLoading={isLoadingBrokerage} />;
