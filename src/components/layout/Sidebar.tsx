@@ -40,13 +40,16 @@ interface NavItem {
   group: string;
 }
 
-// Simplified navigation: 4 groups maximum
-// Dashboard | Customers | Operations | Settings
+// Simplified navigation: 5 groups
+// Dashboard | Marketing | Customers | Operations | Settings
 const NAV_ITEMS: NavItem[] = [
   // === OPERATOR ===
   // Dashboard
   { id: 'dashboard', label: 'Control Room', icon: LayoutDashboard, roles: ['Operator'], group: 'dashboard' },
   { id: 'ai-agent', label: 'AI Agent', icon: Bot, roles: ['Operator'], group: 'dashboard' },
+  
+  // Marketing (NEW)
+  { id: 'marketing', label: 'Marketing Hub', icon: Building2, roles: ['Operator'], group: 'marketing' },
   
   // Customers (unified funnel: Prospects → Leads → Deals)
   { id: 'prospects', label: 'Prospects', icon: Users, roles: ['Operator'], group: 'customers' },
@@ -85,6 +88,7 @@ const NAV_ITEMS: NavItem[] = [
 
 const GROUP_CONFIG: Record<string, { label: string; icon: React.ElementType }> = {
   dashboard: { label: 'Dashboard', icon: LayoutDashboard },
+  marketing: { label: 'Marketing', icon: Building2 },
   customers: { label: 'Customers', icon: Users },
   operations: { label: 'Operations', icon: Building2 },
   settings: { label: 'Settings', icon: Settings },
@@ -158,7 +162,7 @@ export function Sidebar({
   const roleBadge = getRoleBadge(currentRole);
 
   // Order groups consistently
-  const groupOrder = ['dashboard', 'customers', 'operations', 'settings'];
+  const groupOrder = ['dashboard', 'marketing', 'customers', 'operations', 'settings'];
   const orderedGroups = groupOrder.filter(g => groupedItems[g]?.length > 0);
 
   return (
