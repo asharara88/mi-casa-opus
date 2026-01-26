@@ -23,7 +23,7 @@ export function VoiceMessageGenerator({
   onClose,
 }: VoiceMessageGeneratorProps) {
   const { isDemoMode } = useDemoMode();
-  const { generateMessage, getMessageText, isLoading, audioUrl, cleanup } = useVoiceMessage();
+  const { generateMessage, generateSpeech, getMessageText, isLoading, audioUrl, cleanup } = useVoiceMessage();
   
   const [selectedTemplate, setSelectedTemplate] = useState<VoiceMessageTemplate>('follow-up');
   const [selectedVoice, setSelectedVoice] = useState('EXAVITQu4vr4xnSDxMaL');
@@ -53,8 +53,10 @@ export function VoiceMessageGenerator({
       
       const textToGenerate = isCustomizing ? customText : getMessageText(selectedTemplate, messageParams);
       
-      const { generateSpeech } = useVoiceMessage();
-      const url = await generateMessage(selectedTemplate, messageParams, selectedVoice);
+      // For custom text, use generateSpeech directly; for templates, use generateMessage
+      const url = isCustomizing 
+        ? await generateSpeech(textToGenerate, selectedVoice)
+        : await generateMessage(selectedTemplate, messageParams, selectedVoice);
       
       if (url) {
         setGeneratedAt('Just now');
@@ -64,7 +66,7 @@ export function VoiceMessageGenerator({
       console.error('Voice message error:', error);
       toast.error('Failed to generate voice message');
     }
-  }, [isDemoMode, isCustomizing, customText, selectedTemplate, selectedVoice, messageParams, generateMessage, cleanup]);
+  }, [isDemoMode, isCustomizing, customText, selectedTemplate, selectedVoice, messageParams, generateMessage, generateSpeech, cleanup]);
 
   const handleDownload = useCallback(() => {
     if (!audioUrl) return;

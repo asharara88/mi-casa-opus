@@ -168,6 +168,7 @@ export function useVoiceMessage() {
 
   return {
     generateMessage,
+    generateSpeech: tts.generateSpeech,
     getMessageText: (template: VoiceMessageTemplate, params: { clientName: string; agentName?: string; propertyDetails?: string }) => {
       const templateConfig = VOICE_MESSAGE_TEMPLATES[template];
       return templateConfig?.template(params) || '';
