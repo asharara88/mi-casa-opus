@@ -46,6 +46,68 @@ export type AnalysisResult = {
   analyzedAt: string;
 };
 
+// Developer Project Scraping Types
+export type ScrapedProject = {
+  name: string;
+  community: string;
+  location: string;
+  projectType: string;
+  status: string;
+  totalUnits: number | null;
+  availableUnits: number | null;
+  priceFrom: number | null;
+  priceTo: number | null;
+  expectedHandover: string | null;
+  commissionPercent: number | null;
+  paymentPlan: string | null;
+  amenities: string[];
+  brochureUrl: string | null;
+  floorPlansUrl: string | null;
+  description: string | null;
+};
+
+export type DeveloperScrapeResult = {
+  projects: ScrapedProject[];
+  developerInfo: {
+    name: string;
+    website: string;
+  };
+  scrapedAt: string;
+  sourceUrl: string;
+};
+
+// Listing Extraction Types
+export type ExtractedListing = {
+  title: string;
+  propertyType: string;
+  listingType: 'Sale' | 'Rent';
+  price: number;
+  currency: string;
+  bedrooms: number;
+  bathrooms: number;
+  sqft: number;
+  community: string;
+  building: string | null;
+  city: string;
+  description: string;
+  amenities: string[];
+  permitNumber: string | null;
+  agentName: string | null;
+  agentPhone: string | null;
+  referenceNumber: string | null;
+  imageUrls: string[];
+};
+
+export type ListingExtractResult = {
+  listing: ExtractedListing;
+  confidence: number;
+  extractedFields: string[];
+  missingFields: string[];
+  sourcePlatform: string;
+  sourceUrl: string;
+  extractedAt: string;
+};
+
 export const firecrawlApi = {
   // Scrape a single URL
   async scrape(url: string, options?: ScrapeOptions): Promise<FirecrawlResponse> {
@@ -70,6 +132,44 @@ export const firecrawlApi = {
         content: scrapedContent, 
         sourceUrl,
         ownListings 
+      },
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return data;
+  },
+
+  // Scrape and extract developer projects
+  async scrapeDeveloperProjects(
+    scrapedContent: string,
+    sourceUrl: string,
+    developerName?: string
+  ): Promise<FirecrawlResponse<DeveloperScrapeResult>> {
+    const { data, error } = await supabase.functions.invoke('developer-project-scrape', {
+      body: { 
+        content: scrapedContent, 
+        sourceUrl,
+        developerName 
+      },
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return data;
+  },
+
+  // Extract listing details from a property portal URL
+  async extractListingFromUrl(
+    scrapedContent: string,
+    sourceUrl: string
+  ): Promise<FirecrawlResponse<ListingExtractResult>> {
+    const { data, error } = await supabase.functions.invoke('listing-extract', {
+      body: { 
+        content: scrapedContent, 
+        sourceUrl 
       },
     });
 

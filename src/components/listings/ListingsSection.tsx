@@ -23,11 +23,14 @@ import {
   Edit,
   MoreHorizontal,
   Shield,
-  TrendingUp
+  TrendingUp,
+  Landmark,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ListingDetailModal } from './ListingDetailModal';
 import { CompetitorAnalysis } from './CompetitorAnalysis';
+import { DeveloperCatalog } from './DeveloperCatalog';
+import { AddListingModal } from './AddListingModal';
 import { useListings } from '@/hooks/useListings';
 
 interface Listing {
@@ -149,6 +152,8 @@ export function ListingsSection() {
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [competitorAnalysisOpen, setCompetitorAnalysisOpen] = useState(false);
+  const [developerCatalogOpen, setDeveloperCatalogOpen] = useState(false);
+  const [addListingModalOpen, setAddListingModalOpen] = useState(false);
   
   // Fetch real listings from database
   const { data: dbListings, refetch: refetchListings } = useListings();
@@ -225,13 +230,21 @@ export function ListingsSection() {
         <div className="flex items-center gap-2">
           <Button 
             variant="outline" 
+            onClick={() => setDeveloperCatalogOpen(true)}
+            className="hidden sm:flex"
+          >
+            <Landmark className="h-4 w-4 mr-2" />
+            Developer Catalog
+          </Button>
+          <Button 
+            variant="outline" 
             onClick={() => setCompetitorAnalysisOpen(true)}
             className="hidden sm:flex"
           >
             <TrendingUp className="h-4 w-4 mr-2" />
             Competitor Analysis
           </Button>
-          <Button className="btn-gold">
+          <Button className="btn-gold" onClick={() => setAddListingModalOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Listing
           </Button>
@@ -470,6 +483,19 @@ export function ListingsSection() {
             bedrooms: l.bedrooms,
           }))
         }
+      />
+
+      {/* Developer Catalog Sheet */}
+      <DeveloperCatalog
+        open={developerCatalogOpen}
+        onOpenChange={setDeveloperCatalogOpen}
+      />
+
+      {/* Add Listing Modal */}
+      <AddListingModal
+        open={addListingModalOpen}
+        onOpenChange={setAddListingModalOpen}
+        onSuccess={() => refetchListings()}
       />
     </div>
   );
