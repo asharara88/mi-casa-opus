@@ -1,225 +1,200 @@
 
-# ElevenLabs Voice AI Integration for MiCasa BOS
+# API Integration Testing & Fixes Plan
 
-## Overview
-Integrate ElevenLabs voice AI capabilities to enhance the brokerage platform with:
-1. **Audio Tours** - Convert listing descriptions into professional voice narrations
-2. **Voice Messages** - Generate professional follow-up messages for clients  
-3. **Speech-to-Text** - Transcribe meeting notes and client calls
-4. **Accessibility** - Audio playback throughout the platform
+## Summary of Findings
 
-## Architecture
+After comprehensive testing of all API-connected integrations, here are the results:
 
-```text
-+-------------------+     +-------------------+     +-------------------+
-|   Frontend        |---->| Edge Functions    |---->| ElevenLabs API    |
-|   Components      |     |                   |     | (ELEVENLABS_API_KEY)
-+-------------------+     +-------------------+     +-------------------+
-        |                         |
-        v                         v
-+-------------------+     +-------------------+
-| Audio Player      |     | Text-to-Speech    |
-| Components        |     | Speech-to-Text    |
-+-------------------+     +-------------------+
+### Working Integrations (No Changes Needed)
+
+| Integration | Status | Test Result |
+|-------------|--------|-------------|
+| **Firecrawl Scrape** | Working | Successfully scraped example.com, returned markdown + metadata |
+| **Competitor Analyze** | Working | AI analysis returns structured listings, insights, and recommendations |
+| **ElevenLabs Scribe Token** | Working | Token generation successful (`sutkn_...`) |
+| **BOS LLM Router** | Working | Correctly routes intents to appropriate modes |
+| **BOS LLM Ops** | Working | Streaming responses with database context |
+| **BOS LLM Lead Qualify** | Working | Returns lead scores, confidence levels, and recommended actions |
+| **BOS LLM Marketing Copy** | Working | Compliance-aware copy generation (correctly refuses non-approved listings) |
+
+### Integrations Requiring Fixes
+
+| Integration | Issue | Fix Required |
+|-------------|-------|--------------|
+| **ElevenLabs TTS** | API key flagged for "unusual activity" | User needs to upgrade to paid ElevenLabs plan |
+| **ListingAudioTour.tsx** | Calling `bos-llm-ops` with wrong parameters | Fix API call to use `userIntent` instead of `prompt` |
+| **VoiceMessageGenerator.tsx** | Calling `useVoiceMessage()` inside callback (React hooks violation) | Fix hook usage pattern |
+
+### Minor UI Warnings (Non-Critical)
+
+| Component | Warning |
+|-----------|---------|
+| ConversionBadge | Missing forwardRef |
+| Badge (PipelineHealthWidget) | Missing forwardRef |
+
+---
+
+## Required Fixes
+
+### 1. Fix ListingAudioTour API Call
+
+**File:** `src/components/voice/ListingAudioTour.tsx`
+
+**Problem:** The component calls `bos-llm-ops` with `{ prompt, operation }` but the edge function expects `{ userIntent }`.
+
+**Current code (lines 61-66):**
+```typescript
+const { data, error } = await supabase.functions.invoke('bos-llm-ops', {
+  body: {
+    prompt,
+    operation: 'generate_narration',
+  },
+});
 ```
 
-## Implementation Components
-
-### 1. Edge Functions (Backend)
-
-**File: `supabase/functions/elevenlabs-tts/index.ts`**
-- Receives text and voice configuration
-- Calls ElevenLabs TTS API using `ELEVENLABS_API_KEY`
-- Returns audio as binary response (MP3)
-- Supports multiple voices and voice settings
-
-**File: `supabase/functions/elevenlabs-scribe-token/index.ts`**
-- Generates single-use tokens for realtime transcription
-- Enables secure WebSocket connections for speech-to-text
-- Token expires after 15 minutes
-
-### 2. Frontend Components
-
-**File: `src/components/voice/ListingAudioTour.tsx`**
-- "Generate Audio Tour" button on listing detail modal
-- Uses AI to generate natural narration script from listing data
-- Sends to TTS edge function
-- Audio player with play/pause/progress controls
-- Download option for generated audio
-
-**File: `src/components/voice/VoiceMessageGenerator.tsx`**
-- Generate professional voice messages for leads/clients
-- Template selection (follow-up, introduction, scheduling)
-- Customizable with client name and listing details
-- Preview and send/download options
-
-**File: `src/components/voice/VoiceTranscriber.tsx`**
-- Real-time speech-to-text using `@elevenlabs/react` hook
-- Start/stop recording controls
-- Live transcript display as you speak
-- Commit transcribed text to notes field
-
-**File: `src/components/voice/AudioPlayer.tsx`**
-- Reusable audio player component
-- Play/pause, progress bar, volume control
-- Time display (current/total)
-- Loading and error states
-
-### 3. Custom Hooks
-
-**File: `src/hooks/useElevenLabs.ts`**
-- `useTextToSpeech()` - Generate audio from text
-- `useVoiceMessage()` - Generate templated voice messages
-- Voice selection utilities
-- Audio caching logic
-
-### 4. Integration Points
-
-**ListingDetailModal.tsx (AI Tab)**
-- Add "Audio Tour" section with generate button
-- Show audio player when tour is generated
-- Cache generated audio per listing
-
-**LeadDetail.tsx**
-- Add voice message button in contact section
-- "Record Notes" button using transcription
-- Voice memo transcription for quick notes
-
-**AIChatPanel.tsx** (Optional Enhancement)
-- Text-to-speech for AI responses
-- Voice input for queries
-
-## UI Design
-
-### Audio Tour on Listing Detail
-```text
-+--------------------------------------------------+
-| AI Tab                                            |
-+--------------------------------------------------+
-| Generate Description        [Generate Audio Tour] |
-+--------------------------------------------------+
-| Audio Tour                                        |
-|                                                   |
-| [▶] ━━━━━━━━━━━━━━━━━━━ 0:00 / 1:45  [⬇ Download] |
-|                                                   |
-| Voice: Sarah (Professional)                       |
-| Last generated: 2 hours ago                       |
-+--------------------------------------------------+
+**Fix:** Change to use `userIntent` parameter:
+```typescript
+const { data, error } = await supabase.functions.invoke('bos-llm-ops', {
+  body: {
+    userIntent: prompt,
+    contextType: 'listing',
+  },
+});
 ```
 
-### Voice Message Generator
-```text
-+--------------------------------------------------+
-| Voice Message                           [X Close] |
-+--------------------------------------------------+
-| Template: [Follow-up Call     ▼]                  |
-|                                                   |
-| Preview Text:                                     |
-| "Hello Ahmed, this is Sarah from MiCasa calling   |
-|  regarding the 3-bedroom apartment in Al Reem     |
-|  Island we discussed. I wanted to follow up..."   |
-|                                                   |
-| Voice: [Sarah     ▼]                              |
-|                                                   |
-| [▶ Preview] [Generate & Download] [Send via SMS]  |
-+--------------------------------------------------+
+Also update the response handling (line 70) to parse the streaming response or use a non-streaming approach.
+
+### 2. Fix VoiceMessageGenerator React Hooks Violation
+
+**File:** `src/components/voice/VoiceMessageGenerator.tsx`
+
+**Problem:** Line 56 calls `useVoiceMessage()` inside a callback, which violates React hooks rules.
+
+**Current code (lines 52-57):**
+```typescript
+try {
+  cleanup();
+  
+  const textToGenerate = isCustomizing ? customText : getMessageText(selectedTemplate, messageParams);
+  
+  const { generateSpeech } = useVoiceMessage(); // WRONG - hooks can't be called inside callbacks
+  const url = await generateMessage(selectedTemplate, messageParams, selectedVoice);
 ```
 
-### Voice Transcription
-```text
-+--------------------------------------------------+
-| Record Notes                                      |
-+--------------------------------------------------+
-| [🎙 Recording...]  [Stop]                         |
-|                                                   |
-| Live Transcript:                                  |
-| "Client mentioned they prefer a sea view and are  |
-|  flexible on the move-in date. Budget confirmed   |
-|  at 2.5 million AED..."                          |
-|                                                   |
-| [Save to Notes] [Clear]                           |
-+--------------------------------------------------+
+**Fix:** Remove the incorrect hook call since `generateMessage` is already available from the hook called at component level:
+```typescript
+try {
+  cleanup();
+  
+  const textToGenerate = isCustomizing ? customText : getMessageText(selectedTemplate, messageParams);
+  
+  // For custom text, use generateSpeech directly (from the TTS hook)
+  // For templates, use generateMessage
+  const url = isCustomizing 
+    ? await generateSpeech(textToGenerate, selectedVoice)
+    : await generateMessage(selectedTemplate, messageParams, selectedVoice);
 ```
 
-## Voice Options
+However, since `generateSpeech` isn't exposed through `useVoiceMessage()`, we need to also update the hook or use `useTextToSpeech` separately.
 
-Using ElevenLabs pre-built voices:
-- **Sarah** (EXAVITQu4vr4xnSDxMaL) - Professional female, ideal for listings
-- **Roger** (CwhRBWXzGAHq8TQ4Fs17) - Professional male
-- **George** (JBFqnCBsd6RMkjVDRZzb) - British accent, premium feel
-- **Lily** (pFZP5JQG7iQjIQuC4Bku) - Warm and friendly
+### 3. ElevenLabs TTS - User Action Required
 
-## Files to Create
+**Issue:** The ElevenLabs API key is flagged for unusual activity:
+```
+"detected_unusual_activity"
+"Free Tier usage disabled"
+"Please purchase a Paid Subscription to continue"
+```
 
-| File | Purpose |
-|------|---------|
-| `supabase/functions/elevenlabs-tts/index.ts` | Text-to-speech edge function |
-| `supabase/functions/elevenlabs-scribe-token/index.ts` | STT token generation |
-| `src/hooks/useElevenLabs.ts` | Voice AI hooks |
-| `src/components/voice/AudioPlayer.tsx` | Reusable audio player |
-| `src/components/voice/ListingAudioTour.tsx` | Listing audio generation |
-| `src/components/voice/VoiceMessageGenerator.tsx` | Client voice messages |
-| `src/components/voice/VoiceTranscriber.tsx` | Speech-to-text component |
+**Resolution:** This is a limitation of the ElevenLabs free tier. The user must either:
+1. Upgrade to an ElevenLabs paid plan
+2. Contact ElevenLabs support to unflag the account
+
+The code is correct; it's an account-level issue.
+
+---
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/components/listings/ListingDetailModal.tsx` | Add Audio Tour in AI tab |
-| `src/components/leads/LeadDetail.tsx` | Add voice message & transcribe buttons |
-| `supabase/config.toml` | Register new edge functions |
-| `package.json` | Add `@elevenlabs/react` dependency |
+| `src/components/voice/ListingAudioTour.tsx` | Fix API call parameters and response handling |
+| `src/components/voice/VoiceMessageGenerator.tsx` | Fix React hooks violation |
+| `src/hooks/useElevenLabs.ts` | Expose `generateSpeech` in `useVoiceMessage` return |
 
-## Demo Mode Support
+---
 
-For demo mode:
-- Show pre-recorded sample audio files
-- Simulate transcription with typing animation
-- Display voice features without API calls
+## Technical Implementation Details
 
-## Technical Details
+### ListingAudioTour Fix
 
-### TTS Edge Function Pattern
+The `bos-llm-ops` edge function returns a streaming response. The current code expects JSON. We need to either:
+
+**Option A (Recommended):** Create a dedicated non-streaming narration endpoint
+- Add a `bos-llm-narration` function that returns plain JSON
+
+**Option B:** Parse the streaming response in the frontend
+- Collect SSE events and extract content
+
+For simplicity, Option A is cleaner. Alternatively, we can modify `bos-llm-ops` to accept a `stream: false` parameter.
+
+### VoiceMessageGenerator Fix
+
+Update the hook to properly expose TTS functionality:
+
 ```typescript
-// Uses ELEVENLABS_API_KEY from environment
-// Returns binary audio response
-// Supports voice_id and voice_settings parameters
-const response = await fetch(
-  `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
-  {
-    headers: { "xi-api-key": ELEVENLABS_API_KEY },
-    body: JSON.stringify({ text, model_id: "eleven_turbo_v2_5" })
-  }
-);
+// In useElevenLabs.ts - update useVoiceMessage return
+return {
+  generateMessage,
+  generateSpeech: tts.generateSpeech, // Add this
+  getMessageText: (...),
+  ...tts,
+};
 ```
 
-### Frontend Audio Playback
+Then in VoiceMessageGenerator:
 ```typescript
-// Uses fetch with .blob() for binary audio
-const response = await fetch(TTS_URL, { method: 'POST', body: JSON.stringify({ text }) });
-const audioBlob = await response.blob();
-const audioUrl = URL.createObjectURL(audioBlob);
-const audio = new Audio(audioUrl);
-audio.play();
+const { generateMessage, generateSpeech, getMessageText, isLoading, audioUrl, cleanup } = useVoiceMessage();
+
+// In handleGenerate:
+const url = isCustomizing 
+  ? await generateSpeech(customText, selectedVoice)
+  : await generateMessage(selectedTemplate, messageParams, selectedVoice);
 ```
 
-### Realtime Transcription
-```typescript
-// Uses @elevenlabs/react useScribe hook
-const scribe = useScribe({
-  modelId: "scribe_v2_realtime",
-  commitStrategy: "vad",
-  onCommittedTranscript: (data) => setTranscript(data.text)
-});
-```
+---
 
-## Dependencies to Install
+## Integration Test Summary
 
-- `@elevenlabs/react` - For realtime transcription hooks
+| Function | Endpoint | Status |
+|----------|----------|--------|
+| `firecrawl-scrape` | POST /firecrawl-scrape | Pass |
+| `competitor-analyze` | POST /competitor-analyze | Pass |
+| `elevenlabs-scribe-token` | POST /elevenlabs-scribe-token | Pass |
+| `elevenlabs-tts` | POST /elevenlabs-tts | Fail (Account issue) |
+| `bos-llm-router` | POST /bos-llm-router | Pass |
+| `bos-llm-ops` | POST /bos-llm-ops | Pass |
+| `bos-llm-lead-qualify` | POST /bos-llm-lead-qualify | Pass |
+| `bos-llm-marketing-copy` | POST /bos-llm-marketing-copy | Pass |
 
-## Security Considerations
+---
 
-- ElevenLabs API key stored securely in Supabase secrets (already connected)
-- Edge functions handle all external API calls
-- Scribe tokens are single-use and expire after 15 minutes
-- Audio files are ephemeral (blob URLs), not persisted
+## Secrets Configuration
+
+All required secrets are properly configured:
+- `ELEVENLABS_API_KEY` (managed by connector)
+- `FIRECRAWL_API_KEY` (managed by connector)
+- `LOVABLE_API_KEY` (system)
+- `OPENAI_API_KEY` (user-provided)
+
+---
+
+## Demo Mode Verification
+
+Demo mode is properly implemented in:
+- `ListingAudioTour` - Shows success without API calls
+- `VoiceMessageGenerator` - Shows success without API calls
+- `VoiceTranscriber` - Simulates transcription with typing animation
+- `CompetitorAnalysis` - Uses pre-populated demo data
+
+This ensures the UI is testable without consuming API credits.
