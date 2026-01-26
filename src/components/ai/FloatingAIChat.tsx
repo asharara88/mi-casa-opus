@@ -1,12 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Send, Loader2, User, Trash2, X, Sparkles, MessageCircle } from 'lucide-react';
+import { Bot, Send, Loader2, User, Trash2, Sparkles, MessageCircle } from 'lucide-react';
 import { useBosLlmOps, useBosLlmRouter } from '@/hooks/useBosLlm';
 import { cn } from '@/lib/utils';
+import { generateSuggestions, INITIAL_SUGGESTIONS } from '@/lib/chat-suggestions';
+import { SuggestionChips } from './SuggestionChips';
 
 interface Message {
   id: string;
@@ -15,13 +17,6 @@ interface Message {
   mode?: string;
   timestamp: Date;
 }
-
-const QUICK_PROMPTS = [
-  'Pipeline status',
-  'Today\'s priorities',
-  'Find prospect Zaid',
-  'Recent leads',
-];
 
 export function FloatingAIChat() {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,6 +27,20 @@ export function FloatingAIChat() {
   const { askOps, isStreaming, response } = useBosLlmOps();
   const { routeRequest } = useBosLlmRouter();
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
+
+  // Generate context-aware suggestions based on conversation
+  const suggestions = useMemo(() => {
+    if (messages.length === 0) return INITIAL_SUGGESTIONS;
+    
+    const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+    const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant' && m.content);
+    
+    return generateSuggestions(
+      lastUserMsg?.content || '',
+      lastAssistantMsg?.content || '',
+      messages.length
+    );
+  }, [messages]);
 
   // Update streaming message
   useEffect(() => {
@@ -164,15 +173,15 @@ export function FloatingAIChat() {
                   Ask about your pipeline, leads, or deals
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  {QUICK_PROMPTS.map((qp) => (
+                  {suggestions.map((suggestion) => (
                     <Button
-                      key={qp}
+                      key={suggestion}
                       variant="outline"
                       size="sm"
                       className="text-xs h-7"
-                      onClick={() => handleSend(qp)}
+                      onClick={() => handleSend(suggestion)}
                     >
-                      {qp}
+                      {suggestion}
                     </Button>
                   ))}
                 </div>
@@ -212,7 +221,7 @@ export function FloatingAIChat() {
                       </div>
                     </div>
                     {msg.role === 'user' && (
-                      <div className="w-7 h-7 rounded-lg bg-foreground/10 flex items-center justify-center flex-shrink-0">
+                      <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                         <User className="w-3.5 h-3.5" />
                       </div>
                     )}
@@ -221,6 +230,15 @@ export function FloatingAIChat() {
               </div>
             )}
           </ScrollArea>
+
+          {/* Suggestions - shown when there are messages and not streaming */}
+          {messages.length > 0 && !isStreaming && (
+            <SuggestionChips 
+              suggestions={suggestions} 
+              onSelect={handleSend}
+              compact
+            />
+          )}
 
           {/* Input Area */}
           <div className="p-3 border-t border-border bg-card flex-shrink-0">
