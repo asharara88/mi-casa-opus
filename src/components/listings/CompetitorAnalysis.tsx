@@ -117,9 +117,15 @@ const DEMO_ANALYSIS_RESULT: AnalysisResult = {
 };
 
 const PORTAL_PRESETS = [
-  { name: 'Bayut', url: 'https://www.bayut.com/for-sale/property/abu-dhabi/' },
-  { name: 'Property Finder', url: 'https://www.propertyfinder.ae/en/search?c=2&l=9&fu=0&rp=y&ob=mr' },
-  { name: 'Dubizzle', url: 'https://www.dubizzle.com/en/abudhabi/properties/properties-for-sale/' },
+  // Property Finder - Abu Dhabi
+  { name: 'PF Sale', url: 'https://www.propertyfinder.ae/en/search?c=1&fu=0&ob=nd&tt[]=70030076155545783,24.459227,54.381018,driving,15,1#' },
+  { name: 'PF Rent', url: 'https://www.propertyfinder.ae/en/search?c=2&fu=0&rp=y&ob=nd&tt[]=70030076155545783,24.459227,54.381018,driving,45,1' },
+  // Bayut - Abu Dhabi
+  { name: 'Bayut Sale', url: 'https://www.bayut.com/for-sale/property/abu-dhabi/' },
+  { name: 'Bayut Rent', url: 'https://www.bayut.com/to-rent/property/abu-dhabi/' },
+  // Dubizzle - Abu Dhabi
+  { name: 'Dubizzle Sale', url: 'https://www.dubizzle.com/en/abudhabi/properties/properties-for-sale/' },
+  { name: 'Dubizzle Rent', url: 'https://www.dubizzle.com/en/abudhabi/properties/properties-for-rent/' },
 ];
 
 export function CompetitorAnalysis({ open, onOpenChange, ownListings }: CompetitorAnalysisProps) {
