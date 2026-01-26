@@ -1,5 +1,4 @@
-import { useState, useCallback } from 'react';
-import { useScribe, CommitStrategy } from '@elevenlabs/react';
+import { useState, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,20 +19,16 @@ export function VoiceTranscriber({ onSave, placeholder = 'Your transcribed notes
   const { getToken, isLoading: isLoadingToken } = useScribeToken();
   const [transcript, setTranscript] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [partialTranscript, setPartialTranscript] = useState('');
+  
+  // Refs for WebSocket and MediaRecorder
+  const wsRef = useRef<WebSocket | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Demo mode simulation state
   const [demoRecording, setDemoRecording] = useState(false);
-
-  const scribe = useScribe({
-    modelId: 'scribe_v2_realtime',
-    commitStrategy: 'vad' as CommitStrategy,
-    onPartialTranscript: (data: { text: string }) => {
-      // Show partial results in real-time
-    },
-    onCommittedTranscript: (data: { text: string }) => {
-      setTranscript(prev => prev + (prev ? ' ' : '') + data.text);
-    },
-  });
 
   const handleStartRecording = useCallback(async () => {
     if (isDemoMode) {
@@ -62,7 +57,14 @@ export function VoiceTranscriber({ onSave, placeholder = 'Your transcribed notes
       setIsConnecting(true);
 
       // Request microphone permission
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        } 
+      });
+      streamRef.current = stream;
 
       // Get token from edge function
       const token = await getToken();
@@ -70,24 +72,61 @@ export function VoiceTranscriber({ onSave, placeholder = 'Your transcribed notes
         throw new Error('Failed to get transcription token');
       }
 
-      // Connect to scribe
-      await scribe.connect({
-        token,
-        microphone: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
+      // Connect to ElevenLabs Scribe WebSocket
+      const ws = new WebSocket(`wss://api.elevenlabs.io/v1/scribe?model_id=scribe_v1&token=${token}`);
+      wsRef.current = ws;
 
-      toast.success('Recording started');
+      ws.onopen = () => {
+        setIsRecording(true);
+        setIsConnecting(false);
+        toast.success('Recording started');
+
+        // Start sending audio data
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        mediaRecorderRef.current = mediaRecorder;
+
+        mediaRecorder.ondataavailable = async (event) => {
+          if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
+            const arrayBuffer = await event.data.arrayBuffer();
+            ws.send(arrayBuffer);
+          }
+        };
+
+        mediaRecorder.start(250); // Send chunks every 250ms
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'transcript' && data.text) {
+            if (data.is_final) {
+              setTranscript(prev => prev + (prev ? ' ' : '') + data.text);
+              setPartialTranscript('');
+            } else {
+              setPartialTranscript(data.text);
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing WebSocket message:', e);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        toast.error('Transcription connection error');
+        handleStopRecording();
+      };
+
+      ws.onclose = () => {
+        setIsRecording(false);
+      };
+
     } catch (error) {
       console.error('Recording error:', error);
       toast.error('Failed to start recording. Please check microphone permissions.');
-    } finally {
       setIsConnecting(false);
     }
-  }, [isDemoMode, getToken, scribe]);
+  }, [isDemoMode, getToken]);
 
   const handleStopRecording = useCallback(() => {
     if (isDemoMode) {
@@ -95,9 +134,28 @@ export function VoiceTranscriber({ onSave, placeholder = 'Your transcribed notes
       return;
     }
 
-    scribe.disconnect();
+    // Stop media recorder
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current = null;
+    }
+
+    // Close WebSocket
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
+    // Stop media stream
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+
+    setIsRecording(false);
+    setPartialTranscript('');
     toast.success('Recording stopped');
-  }, [isDemoMode, scribe]);
+  }, [isDemoMode]);
 
   const handleSave = useCallback(() => {
     if (transcript.trim() && onSave) {
@@ -108,10 +166,11 @@ export function VoiceTranscriber({ onSave, placeholder = 'Your transcribed notes
 
   const handleClear = useCallback(() => {
     setTranscript('');
+    setPartialTranscript('');
   }, []);
 
-  const isRecording = isDemoMode ? demoRecording : scribe.isConnected;
-  const showPartial = scribe.partialTranscript && isRecording;
+  const currentlyRecording = isDemoMode ? demoRecording : isRecording;
+  const showPartial = partialTranscript && currentlyRecording;
 
   return (
     <Card className={className}>
@@ -124,7 +183,7 @@ export function VoiceTranscriber({ onSave, placeholder = 'Your transcribed notes
       <CardContent className="space-y-4">
         {/* Recording Controls */}
         <div className="flex items-center gap-2">
-          {isRecording ? (
+          {currentlyRecording ? (
             <Button
               variant="destructive"
               onClick={handleStopRecording}
@@ -171,7 +230,7 @@ export function VoiceTranscriber({ onSave, placeholder = 'Your transcribed notes
         </div>
 
         {/* Recording Indicator */}
-        {isRecording && (
+        {currentlyRecording && (
           <div className="flex items-center gap-2 text-sm text-destructive">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
@@ -184,7 +243,7 @@ export function VoiceTranscriber({ onSave, placeholder = 'Your transcribed notes
         {/* Transcript Display */}
         <div className="space-y-2">
           <Textarea
-            value={transcript + (showPartial ? ` ${scribe.partialTranscript}` : '')}
+            value={transcript + (showPartial ? ` ${partialTranscript}` : '')}
             onChange={(e) => setTranscript(e.target.value)}
             placeholder={placeholder}
             rows={4}
