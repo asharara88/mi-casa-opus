@@ -1,164 +1,225 @@
 
-# Competitor Analysis Tool for MiCasa BOS
+# ElevenLabs Voice AI Integration for MiCasa BOS
 
 ## Overview
-Build an AI-powered competitor analysis tool that uses Firecrawl to scrape listings from property portals and Lovable AI to summarize and compare them against your inventory. This feature will be integrated into the Listings page.
-
-## What This Tool Will Do
-- Scrape competitor listings from major UAE property portals (Bayut, Property Finder, Dubizzle)
-- Extract key listing data (price, specs, location, features)
-- Use AI to summarize trends and generate actionable insights
-- Compare competitor pricing against your listings
-- Identify market gaps and opportunities
+Integrate ElevenLabs voice AI capabilities to enhance the brokerage platform with:
+1. **Audio Tours** - Convert listing descriptions into professional voice narrations
+2. **Voice Messages** - Generate professional follow-up messages for clients  
+3. **Speech-to-Text** - Transcribe meeting notes and client calls
+4. **Accessibility** - Audio playback throughout the platform
 
 ## Architecture
 
 ```text
-+-------------------+     +----------------------+     +-------------------+
-|   ListingsSection |---->| CompetitorAnalysis   |---->| firecrawl-scrape  |
-|   (Add new tab)   |     | Modal/Panel          |     | Edge Function     |
-+-------------------+     +----------------------+     +-------------------+
-                                    |                          |
-                                    v                          v
-                          +----------------------+     +-------------------+
-                          | competitor-analyze   |<----| Firecrawl API     |
-                          | Edge Function        |     | (FIRECRAWL_API_KEY)
-                          +----------------------+     +-------------------+
-                                    |
-                                    v
-                          +-------------------+
-                          | Lovable AI Gateway|
-                          | (Summarization)   |
-                          +-------------------+
++-------------------+     +-------------------+     +-------------------+
+|   Frontend        |---->| Edge Functions    |---->| ElevenLabs API    |
+|   Components      |     |                   |     | (ELEVENLABS_API_KEY)
++-------------------+     +-------------------+     +-------------------+
+        |                         |
+        v                         v
++-------------------+     +-------------------+
+| Audio Player      |     | Text-to-Speech    |
+| Components        |     | Speech-to-Text    |
++-------------------+     +-------------------+
 ```
 
-## Implementation Steps
+## Implementation Components
 
-### 1. Create Firecrawl API Wrapper
-**File:** `src/lib/api/firecrawl.ts`
+### 1. Edge Functions (Backend)
 
-A reusable API client for calling Firecrawl through edge functions:
-- `scrape(url)` - Scrape a single URL
-- `search(query)` - Search and optionally scrape results
-- Error handling and response typing
+**File: `supabase/functions/elevenlabs-tts/index.ts`**
+- Receives text and voice configuration
+- Calls ElevenLabs TTS API using `ELEVENLABS_API_KEY`
+- Returns audio as binary response (MP3)
+- Supports multiple voices and voice settings
 
-### 2. Create Edge Function for Scraping
-**File:** `supabase/functions/firecrawl-scrape/index.ts`
+**File: `supabase/functions/elevenlabs-scribe-token/index.ts`**
+- Generates single-use tokens for realtime transcription
+- Enables secure WebSocket connections for speech-to-text
+- Token expires after 15 minutes
 
-Edge function that:
-- Receives URL from frontend
-- Calls Firecrawl API with `FIRECRAWL_API_KEY`
-- Returns scraped content (markdown + metadata)
-- Handles errors gracefully
+### 2. Frontend Components
 
-### 3. Create Edge Function for Analysis
-**File:** `supabase/functions/competitor-analyze/index.ts`
+**File: `src/components/voice/ListingAudioTour.tsx`**
+- "Generate Audio Tour" button on listing detail modal
+- Uses AI to generate natural narration script from listing data
+- Sends to TTS edge function
+- Audio player with play/pause/progress controls
+- Download option for generated audio
 
-Edge function that:
-- Receives scraped listing data
-- Uses Lovable AI Gateway (google/gemini-3-flash-preview) to analyze
-- Extracts structured data: price, beds, baths, sqft, location
-- Generates market insights and comparison summary
-- Returns structured JSON response
+**File: `src/components/voice/VoiceMessageGenerator.tsx`**
+- Generate professional voice messages for leads/clients
+- Template selection (follow-up, introduction, scheduling)
+- Customizable with client name and listing details
+- Preview and send/download options
 
-### 4. Create Competitor Analysis Component
-**File:** `src/components/listings/CompetitorAnalysis.tsx`
+**File: `src/components/voice/VoiceTranscriber.tsx`**
+- Real-time speech-to-text using `@elevenlabs/react` hook
+- Start/stop recording controls
+- Live transcript display as you speak
+- Commit transcribed text to notes field
 
-UI component featuring:
-- Input field for competitor portal URL
-- Pre-configured buttons for major portals (Bayut, Property Finder, Dubizzle)
-- Loading state with progress indication
-- Results display with:
-  - Scraped listing cards
-  - Price comparison chart
-  - AI-generated market insights
-  - Recommendations for pricing adjustments
+**File: `src/components/voice/AudioPlayer.tsx`**
+- Reusable audio player component
+- Play/pause, progress bar, volume control
+- Time display (current/total)
+- Loading and error states
 
-### 5. Integrate into Listings Section
-**File:** `src/components/listings/ListingsSection.tsx`
+### 3. Custom Hooks
 
-Add new elements:
-- "Competitor Analysis" button in the header
-- Modal or sheet to open the analysis tool
-- Badge showing last analysis date
+**File: `src/hooks/useElevenLabs.ts`**
+- `useTextToSpeech()` - Generate audio from text
+- `useVoiceMessage()` - Generate templated voice messages
+- Voice selection utilities
+- Audio caching logic
+
+### 4. Integration Points
+
+**ListingDetailModal.tsx (AI Tab)**
+- Add "Audio Tour" section with generate button
+- Show audio player when tour is generated
+- Cache generated audio per listing
+
+**LeadDetail.tsx**
+- Add voice message button in contact section
+- "Record Notes" button using transcription
+- Voice memo transcription for quick notes
+
+**AIChatPanel.tsx** (Optional Enhancement)
+- Text-to-speech for AI responses
+- Voice input for queries
 
 ## UI Design
 
-### Competitor Analysis Panel
+### Audio Tour on Listing Detail
 ```text
 +--------------------------------------------------+
-| Competitor Analysis                    [X Close] |
+| AI Tab                                            |
 +--------------------------------------------------+
-| Analyze listings from competitor portals         |
-|                                                  |
-| [Bayut] [Property Finder] [Dubizzle] [Custom URL]|
-|                                                  |
-| URL: [________________________________] [Scrape] |
-|                                                  |
-| Filter by: [Community ▼] [Property Type ▼]       |
+| Generate Description        [Generate Audio Tour] |
 +--------------------------------------------------+
-| Results (12 listings found)                      |
-+--------------------------------------------------+
-| +----------------+ +----------------+            |
-| | 3 BR Apartment | | 4 BR Villa     |            |
-| | Al Reem Island | | Yas Island     |            |
-| | AED 2.1M       | | AED 4.5M       |            |
-| | 1,850 sqft     | | 3,200 sqft     |            |
-| +----------------+ +----------------+            |
-|                                                  |
-| AI Insights:                                     |
-| - Average price in Al Reem Island: AED 2.3M     |
-| - Your listings are 8% below market average     |
-| - High demand for 3BR apartments (low supply)   |
-| - Recommend: Increase LST-2024-001 by 5-8%      |
+| Audio Tour                                        |
+|                                                   |
+| [▶] ━━━━━━━━━━━━━━━━━━━ 0:00 / 1:45  [⬇ Download] |
+|                                                   |
+| Voice: Sarah (Professional)                       |
+| Last generated: 2 hours ago                       |
 +--------------------------------------------------+
 ```
+
+### Voice Message Generator
+```text
++--------------------------------------------------+
+| Voice Message                           [X Close] |
++--------------------------------------------------+
+| Template: [Follow-up Call     ▼]                  |
+|                                                   |
+| Preview Text:                                     |
+| "Hello Ahmed, this is Sarah from MiCasa calling   |
+|  regarding the 3-bedroom apartment in Al Reem     |
+|  Island we discussed. I wanted to follow up..."   |
+|                                                   |
+| Voice: [Sarah     ▼]                              |
+|                                                   |
+| [▶ Preview] [Generate & Download] [Send via SMS]  |
++--------------------------------------------------+
+```
+
+### Voice Transcription
+```text
++--------------------------------------------------+
+| Record Notes                                      |
++--------------------------------------------------+
+| [🎙 Recording...]  [Stop]                         |
+|                                                   |
+| Live Transcript:                                  |
+| "Client mentioned they prefer a sea view and are  |
+|  flexible on the move-in date. Budget confirmed   |
+|  at 2.5 million AED..."                          |
+|                                                   |
+| [Save to Notes] [Clear]                           |
++--------------------------------------------------+
+```
+
+## Voice Options
+
+Using ElevenLabs pre-built voices:
+- **Sarah** (EXAVITQu4vr4xnSDxMaL) - Professional female, ideal for listings
+- **Roger** (CwhRBWXzGAHq8TQ4Fs17) - Professional male
+- **George** (JBFqnCBsd6RMkjVDRZzb) - British accent, premium feel
+- **Lily** (pFZP5JQG7iQjIQuC4Bku) - Warm and friendly
+
+## Files to Create
+
+| File | Purpose |
+|------|---------|
+| `supabase/functions/elevenlabs-tts/index.ts` | Text-to-speech edge function |
+| `supabase/functions/elevenlabs-scribe-token/index.ts` | STT token generation |
+| `src/hooks/useElevenLabs.ts` | Voice AI hooks |
+| `src/components/voice/AudioPlayer.tsx` | Reusable audio player |
+| `src/components/voice/ListingAudioTour.tsx` | Listing audio generation |
+| `src/components/voice/VoiceMessageGenerator.tsx` | Client voice messages |
+| `src/components/voice/VoiceTranscriber.tsx` | Speech-to-text component |
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/components/listings/ListingDetailModal.tsx` | Add Audio Tour in AI tab |
+| `src/components/leads/LeadDetail.tsx` | Add voice message & transcribe buttons |
+| `supabase/config.toml` | Register new edge functions |
+| `package.json` | Add `@elevenlabs/react` dependency |
+
+## Demo Mode Support
+
+For demo mode:
+- Show pre-recorded sample audio files
+- Simulate transcription with typing animation
+- Display voice features without API calls
 
 ## Technical Details
 
-### Firecrawl Edge Function
+### TTS Edge Function Pattern
 ```typescript
-// supabase/functions/firecrawl-scrape/index.ts
-// Uses FIRECRAWL_API_KEY from environment
-// Extracts markdown content for AI processing
-// Returns structured listing data
+// Uses ELEVENLABS_API_KEY from environment
+// Returns binary audio response
+// Supports voice_id and voice_settings parameters
+const response = await fetch(
+  `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
+  {
+    headers: { "xi-api-key": ELEVENLABS_API_KEY },
+    body: JSON.stringify({ text, model_id: "eleven_turbo_v2_5" })
+  }
+);
 ```
 
-### AI Analysis Prompt Strategy
-The AI will receive scraped markdown and extract:
-1. Structured listing data (price, specs, location)
-2. Market trend analysis
-3. Competitive positioning insights
-4. Actionable recommendations
+### Frontend Audio Playback
+```typescript
+// Uses fetch with .blob() for binary audio
+const response = await fetch(TTS_URL, { method: 'POST', body: JSON.stringify({ text }) });
+const audioBlob = await response.blob();
+const audioUrl = URL.createObjectURL(audioBlob);
+const audio = new Audio(audioUrl);
+audio.play();
+```
 
-### Error Handling
-- Invalid URLs: Show user-friendly message
-- Rate limits: Implement retry with backoff
-- Parsing failures: Graceful degradation with partial data
-- API errors: Clear error states with retry options
+### Realtime Transcription
+```typescript
+// Uses @elevenlabs/react useScribe hook
+const scribe = useScribe({
+  modelId: "scribe_v2_realtime",
+  commitStrategy: "vad",
+  onCommittedTranscript: (data) => setTranscript(data.text)
+});
+```
 
-## Demo Mode Support
-For demo mode, the tool will:
-- Display pre-populated competitor data
-- Show simulated AI insights
-- Allow users to explore the UI without API calls
+## Dependencies to Install
 
-## Files to Create/Modify
-
-| File | Action | Purpose |
-|------|--------|---------|
-| `src/lib/api/firecrawl.ts` | Create | Firecrawl API wrapper |
-| `supabase/functions/firecrawl-scrape/index.ts` | Create | Scraping edge function |
-| `supabase/functions/competitor-analyze/index.ts` | Create | AI analysis edge function |
-| `src/components/listings/CompetitorAnalysis.tsx` | Create | Main analysis UI |
-| `src/components/listings/CompetitorListingCard.tsx` | Create | Competitor listing display |
-| `src/components/listings/MarketInsightsPanel.tsx` | Create | AI insights display |
-| `src/components/listings/ListingsSection.tsx` | Modify | Add analysis button/modal |
-| `supabase/config.toml` | Modify | Add new function configs |
-| `src/data/demoData.ts` | Modify | Add demo competitor data |
+- `@elevenlabs/react` - For realtime transcription hooks
 
 ## Security Considerations
-- Firecrawl API key stored securely in Supabase secrets
+
+- ElevenLabs API key stored securely in Supabase secrets (already connected)
 - Edge functions handle all external API calls
-- No sensitive data exposed to frontend
-- Rate limiting to prevent abuse
+- Scribe tokens are single-use and expire after 15 minutes
+- Audio files are ephemeral (blob URLs), not persisted
