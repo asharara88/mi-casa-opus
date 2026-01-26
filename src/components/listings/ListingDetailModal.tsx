@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, HelpCircle } from 'lucide-react';
 import { CompliancePanel } from '@/components/compliance/CompliancePanel';
 import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
@@ -11,6 +12,7 @@ import { toast } from 'sonner';
 import type { OverridePayload } from '@/types/compliance';
 import { AIGenerateDescription } from '@/components/ai/AIGenerateDescription';
 import { AIListingFAQ } from '@/components/ai/AIListingFAQ';
+import { ListingAudioTour } from '@/components/voice/ListingAudioTour';
 
 interface ListingDisplayData {
   id: string;
@@ -253,6 +255,25 @@ export function ListingDetailModal({
                 toast.success('Description copied to clipboard');
               }}
             />
+
+            <Separator />
+
+            {/* Audio Tour */}
+            <ListingAudioTour
+              listingData={{
+                listing_id: listing.listing_id,
+                property_type: listing.property_type,
+                listing_type: listing.listing_type,
+                location: listing.location,
+                price: listing.price,
+                currency: listing.currency,
+                bedrooms: listing.bedrooms,
+                bathrooms: listing.bathrooms,
+                sqft: listing.sqft,
+              }}
+            />
+
+            <Separator />
 
             {/* FAQ */}
             <AIListingFAQ

@@ -20,13 +20,16 @@ import {
   CheckCircle,
   History,
   Edit2,
-  Zap
+  Zap,
+  MessageSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { AIChatPanel } from '@/components/ai/AIChatPanel';
 import { AIPropertyMatcher } from '@/components/ai/AIPropertyMatcher';
 import { QuickConvertButton } from '@/components/funnel/QuickConvertButton';
+import { VoiceMessageGenerator } from '@/components/voice/VoiceMessageGenerator';
+import { VoiceTranscriber } from '@/components/voice/VoiceTranscriber';
 
 interface LeadDetailProps {
   lead: Lead;
@@ -40,6 +43,7 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
   const [selectedTargetState, setSelectedTargetState] = useState<LeadState | null>(null);
   const [notes, setNotes] = useState(lead.notes);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [showVoiceMessage, setShowVoiceMessage] = useState(false);
 
   const currentRequirements = LEAD_STATE_REQUIREMENTS[lead.lead_state];
   const nextStates = currentRequirements.next_states.filter(s => s !== 'Disqualified');
@@ -366,10 +370,43 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
                 />
               )}
 
+              {/* Voice Message Generator */}
+              {showVoiceMessage && (
+                <VoiceMessageGenerator
+                  clientName={lead.contact_identity.full_name}
+                  propertyDetails={lead.requirements?.locations?.[0] || undefined}
+                  onClose={() => setShowVoiceMessage(false)}
+                />
+              )}
+
+              {/* Voice Transcription */}
+              <VoiceTranscriber
+                onSave={(text) => {
+                  const newNotes = notes ? `${notes}\n\n${text}` : text;
+                  setNotes(newNotes);
+                  onUpdate({
+                    ...lead,
+                    notes: newNotes,
+                    updated_at: new Date().toISOString(),
+                  });
+                }}
+                placeholder="Record voice notes about this lead..."
+              />
+
               {/* Notes */}
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-base">Notes</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-base">Notes</CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowVoiceMessage(!showVoiceMessage)}
+                    >
+                      <MessageSquare className="w-4 h-4 mr-1" />
+                      Voice Message
+                    </Button>
+                  </div>
                   <Button 
                     variant="ghost" 
                     size="sm"
@@ -393,7 +430,7 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
                       </Button>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                       {lead.notes || 'No notes added yet.'}
                     </p>
                   )}
