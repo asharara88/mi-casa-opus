@@ -22,10 +22,12 @@ import {
   Eye,
   Edit,
   MoreHorizontal,
-  Shield
+  Shield,
+  TrendingUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ListingDetailModal } from './ListingDetailModal';
+import { CompetitorAnalysis } from './CompetitorAnalysis';
 import { useListings } from '@/hooks/useListings';
 
 interface Listing {
@@ -146,6 +148,7 @@ export function ListingsSection() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [competitorAnalysisOpen, setCompetitorAnalysisOpen] = useState(false);
   
   // Fetch real listings from database
   const { data: dbListings, refetch: refetchListings } = useListings();
@@ -219,10 +222,20 @@ export function ListingsSection() {
             </p>
           </div>
         </div>
-        <Button className="btn-gold">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Listing
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setCompetitorAnalysisOpen(true)}
+            className="hidden sm:flex"
+          >
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Competitor Analysis
+          </Button>
+          <Button className="btn-gold">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Listing
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -442,6 +455,21 @@ export function ListingsSection() {
           refetchListings();
           setSelectedListing(null);
         }}
+      />
+
+      {/* Competitor Analysis Sheet */}
+      <CompetitorAnalysis
+        open={competitorAnalysisOpen}
+        onOpenChange={setCompetitorAnalysisOpen}
+        ownListings={allListings
+          .filter(l => l.status === 'Active')
+          .map(l => ({
+            id: l.listing_id,
+            price: l.price,
+            community: l.location.community,
+            bedrooms: l.bedrooms,
+          }))
+        }
       />
     </div>
   );
