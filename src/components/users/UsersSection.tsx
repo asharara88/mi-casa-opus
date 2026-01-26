@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -37,79 +37,12 @@ import {
   Phone,
   MoreHorizontal,
   Briefcase,
-  Clock
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
-
-interface UserProfile {
-  id: string;
-  user_id: string;
-  full_name: string;
-  email: string;
-  phone?: string;
-  role: 'Operator' | 'LegalOwner' | 'Broker' | 'Investor';
-  status: 'Active' | 'Pending' | 'Suspended';
-  created_at: string;
-  broker_id?: string;
-  license_no?: string;
-}
-
-const DEMO_USERS: UserProfile[] = [
-  {
-    id: '1',
-    user_id: 'USR-001',
-    full_name: 'Ahmed Hassan',
-    email: 'ahmed@micasa.ae',
-    phone: '+971 50 123 4567',
-    role: 'Operator',
-    status: 'Active',
-    created_at: '2023-06-15',
-  },
-  {
-    id: '2',
-    user_id: 'USR-002',
-    full_name: 'Sara Ali',
-    email: 'sara@micasa.ae',
-    phone: '+971 50 234 5678',
-    role: 'Broker',
-    status: 'Active',
-    created_at: '2023-08-20',
-    broker_id: 'BRK-002',
-    license_no: 'BRN-2024-1234',
-  },
-  {
-    id: '3',
-    user_id: 'USR-003',
-    full_name: 'John Smith',
-    email: 'john@micasa.ae',
-    phone: '+971 50 345 6789',
-    role: 'Broker',
-    status: 'Active',
-    created_at: '2023-09-10',
-    broker_id: 'BRK-003',
-    license_no: 'BRN-2024-5678',
-  },
-  {
-    id: '4',
-    user_id: 'USR-004',
-    full_name: 'Fatima Khan',
-    email: 'fatima@micasa.ae',
-    role: 'LegalOwner',
-    status: 'Active',
-    created_at: '2023-01-01',
-  },
-  {
-    id: '5',
-    user_id: 'USR-005',
-    full_name: 'Michael Brown',
-    email: 'michael@example.com',
-    phone: '+971 55 987 6543',
-    role: 'Investor',
-    status: 'Pending',
-    created_at: '2024-01-10',
-  },
-];
+import { useUsers, UserWithRole } from '@/hooks/useUsers';
+import { format } from 'date-fns';
 
 const ROLE_COLORS: Record<string, string> = {
   Operator: 'bg-primary/20 text-primary border-primary/30',
@@ -119,8 +52,11 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
+  active: 'bg-emerald/20 text-emerald',
   Active: 'bg-emerald/20 text-emerald',
+  pending: 'bg-amber-500/20 text-amber-600',
   Pending: 'bg-amber-500/20 text-amber-600',
+  suspended: 'bg-destructive/20 text-destructive',
   Suspended: 'bg-destructive/20 text-destructive',
 };
 
@@ -128,18 +64,21 @@ export function UsersSection() {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [showAddDialog, setShowAddDialog] = useState(false);
+  
+  const { data: users = [], isLoading, error } = useUsers();
 
-  const filteredUsers = DEMO_USERS.filter((user) => {
+  const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      (user.full_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (user.email?.toLowerCase() || '').includes(searchQuery.toLowerCase());
 
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
 
     return matchesSearch && matchesRole;
   });
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null) => {
+    if (!name) return '??';
     return name
       .split(' ')
       .map(n => n[0])
@@ -147,7 +86,31 @@ export function UsersSection() {
       .toUpperCase();
   };
 
-  const roleCount = (role: string) => DEMO_USERS.filter(u => u.role === role).length;
+  const roleCount = (role: string) => users.filter(u => u.role === role).length;
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return format(new Date(dateStr), 'MMM d, yyyy');
+    } catch {
+      return dateStr;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-6">
+        <p className="text-destructive">Error loading users. Please try again.</p>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -250,79 +213,93 @@ export function UsersSection() {
       {/* Users Table */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/50">
-                <TableHead>User</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>License</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead className="w-12"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id} className="hover:bg-muted/50">
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarFallback className="bg-primary/10 text-primary">
-                          {getInitials(user.full_name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium text-foreground">{user.full_name}</div>
-                        <code className="text-xs text-muted-foreground">{user.user_id}</code>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={cn('text-xs', ROLE_COLORS[user.role])}>
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1 text-sm">
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Mail className="h-3 w-3" />
-                        {user.email}
-                      </div>
-                      {user.phone && (
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Phone className="h-3 w-3" />
-                          {user.phone}
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={cn('text-xs', STATUS_COLORS[user.status])}>
-                      {user.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {user.license_no ? (
-                      <code className="text-xs font-mono bg-muted px-2 py-1 rounded">
-                        {user.license_no}
-                      </code>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {user.created_at}
-                  </TableCell>
-                  <TableCell>
-                    <Button size="sm" variant="ghost">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+          {filteredUsers.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              No users found
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead>User</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>License</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead className="w-12"></TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((user) => (
+                  <TableRow key={user.id} className="hover:bg-muted/50">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {getInitials(user.full_name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium text-foreground">
+                            {user.full_name || 'Unnamed User'}
+                          </div>
+                          <code className="text-xs text-muted-foreground">
+                            {user.user_id.slice(0, 8)}...
+                          </code>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {user.role ? (
+                        <Badge variant="outline" className={cn('text-xs', ROLE_COLORS[user.role])}>
+                          {user.role}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">No role</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <Mail className="h-3 w-3" />
+                          {user.email || '—'}
+                        </div>
+                        {user.phone && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Phone className="h-3 w-3" />
+                            {user.phone}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={cn('text-xs capitalize', STATUS_COLORS[user.status || 'pending'])}>
+                        {user.status || 'pending'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {user.license_no ? (
+                        <code className="text-xs font-mono bg-muted px-2 py-1 rounded">
+                          {user.license_no}
+                        </code>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {formatDate(user.created_at)}
+                    </TableCell>
+                    <TableCell>
+                      <Button size="sm" variant="ghost">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
