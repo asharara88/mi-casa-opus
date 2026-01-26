@@ -1128,6 +1128,231 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_ads: {
+        Row: {
+          ad_content: Json | null
+          ad_id: string
+          budget: number | null
+          campaign_id: string | null
+          clicks: number | null
+          created_at: string
+          dari_permit_no: string | null
+          end_date: string | null
+          id: string
+          impressions: number | null
+          leads_generated: number | null
+          listing_id: string | null
+          name: string
+          permit_status: Database["public"]["Enums"]["permit_status"]
+          permit_valid_from: string | null
+          permit_valid_until: string | null
+          platform: Database["public"]["Enums"]["ad_platform"]
+          spend: number | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["ad_status"]
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          ad_content?: Json | null
+          ad_id: string
+          budget?: number | null
+          campaign_id?: string | null
+          clicks?: number | null
+          created_at?: string
+          dari_permit_no?: string | null
+          end_date?: string | null
+          id?: string
+          impressions?: number | null
+          leads_generated?: number | null
+          listing_id?: string | null
+          name: string
+          permit_status?: Database["public"]["Enums"]["permit_status"]
+          permit_valid_from?: string | null
+          permit_valid_until?: string | null
+          platform: Database["public"]["Enums"]["ad_platform"]
+          spend?: number | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["ad_status"]
+          type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ad_content?: Json | null
+          ad_id?: string
+          budget?: number | null
+          campaign_id?: string | null
+          clicks?: number | null
+          created_at?: string
+          dari_permit_no?: string | null
+          end_date?: string | null
+          id?: string
+          impressions?: number | null
+          leads_generated?: number | null
+          listing_id?: string | null
+          name?: string
+          permit_status?: Database["public"]["Enums"]["permit_status"]
+          permit_valid_from?: string | null
+          permit_valid_until?: string | null
+          platform?: Database["public"]["Enums"]["ad_platform"]
+          spend?: number | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["ad_status"]
+          type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_ads_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_ads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_campaigns: {
+        Row: {
+          budget: number | null
+          campaign_id: string
+          channel: Database["public"]["Enums"]["campaign_channel"]
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          metrics: Json | null
+          name: string
+          spend: number | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["campaign_status"]
+          target_audience: Json | null
+          type: Database["public"]["Enums"]["campaign_type"]
+          updated_at: string
+        }
+        Insert: {
+          budget?: number | null
+          campaign_id: string
+          channel: Database["public"]["Enums"]["campaign_channel"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          metrics?: Json | null
+          name: string
+          spend?: number | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["campaign_status"]
+          target_audience?: Json | null
+          type: Database["public"]["Enums"]["campaign_type"]
+          updated_at?: string
+        }
+        Update: {
+          budget?: number | null
+          campaign_id?: string
+          channel?: Database["public"]["Enums"]["campaign_channel"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          metrics?: Json | null
+          name?: string
+          spend?: number | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["campaign_status"]
+          target_audience?: Json | null
+          type?: Database["public"]["Enums"]["campaign_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      marketing_events: {
+        Row: {
+          actual_attendees: number | null
+          budget: number | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          end_date: string | null
+          end_time: string | null
+          event_date: string
+          event_id: string
+          expected_attendees: number | null
+          id: string
+          leads_captured: number | null
+          location: string | null
+          name: string
+          notes: string | null
+          organizer: string | null
+          registered_attendees: number | null
+          spend: number | null
+          start_time: string | null
+          status: Database["public"]["Enums"]["event_status"]
+          type: Database["public"]["Enums"]["event_type"]
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          actual_attendees?: number | null
+          budget?: number | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          end_date?: string | null
+          end_time?: string | null
+          event_date: string
+          event_id: string
+          expected_attendees?: number | null
+          id?: string
+          leads_captured?: number | null
+          location?: string | null
+          name: string
+          notes?: string | null
+          organizer?: string | null
+          registered_attendees?: number | null
+          spend?: number | null
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["event_status"]
+          type: Database["public"]["Enums"]["event_type"]
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          actual_attendees?: number | null
+          budget?: number | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          end_date?: string | null
+          end_time?: string | null
+          event_date?: string
+          event_id?: string
+          expected_attendees?: number | null
+          id?: string
+          leads_captured?: number | null
+          location?: string | null
+          name?: string
+          notes?: string | null
+          organizer?: string | null
+          registered_attendees?: number | null
+          spend?: number | null
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["event_status"]
+          type?: Database["public"]["Enums"]["event_type"]
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
       payout_batches: {
         Row: {
           approved_at: string | null
@@ -1256,6 +1481,7 @@ export type Database = {
           budget_max: number | null
           budget_min: number | null
           buyer_type: string | null
+          campaign_id: string | null
           city: string | null
           contact_attempts: number | null
           country: string | null
@@ -1267,6 +1493,7 @@ export type Database = {
           disqualification_reason: string | null
           disqualified_at: string | null
           email: string | null
+          event_id: string | null
           first_name: string | null
           fit_score: number | null
           full_name: string
@@ -1283,6 +1510,7 @@ export type Database = {
           phone: string | null
           price_list_requested: boolean | null
           prospect_status: string | null
+          referral_source_id: string | null
           repeat_visit_7d: boolean | null
           source: string | null
           timeframe: string | null
@@ -1295,6 +1523,7 @@ export type Database = {
           budget_max?: number | null
           budget_min?: number | null
           buyer_type?: string | null
+          campaign_id?: string | null
           city?: string | null
           contact_attempts?: number | null
           country?: string | null
@@ -1306,6 +1535,7 @@ export type Database = {
           disqualification_reason?: string | null
           disqualified_at?: string | null
           email?: string | null
+          event_id?: string | null
           first_name?: string | null
           fit_score?: number | null
           full_name: string
@@ -1322,6 +1552,7 @@ export type Database = {
           phone?: string | null
           price_list_requested?: boolean | null
           prospect_status?: string | null
+          referral_source_id?: string | null
           repeat_visit_7d?: boolean | null
           source?: string | null
           timeframe?: string | null
@@ -1334,6 +1565,7 @@ export type Database = {
           budget_max?: number | null
           budget_min?: number | null
           buyer_type?: string | null
+          campaign_id?: string | null
           city?: string | null
           contact_attempts?: number | null
           country?: string | null
@@ -1345,6 +1577,7 @@ export type Database = {
           disqualification_reason?: string | null
           disqualified_at?: string | null
           email?: string | null
+          event_id?: string | null
           first_name?: string | null
           fit_score?: number | null
           full_name?: string
@@ -1361,6 +1594,7 @@ export type Database = {
           phone?: string | null
           price_list_requested?: boolean | null
           prospect_status?: string | null
+          referral_source_id?: string | null
           repeat_visit_7d?: boolean | null
           source?: string | null
           timeframe?: string | null
@@ -1370,13 +1604,91 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "prospects_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospects_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_events"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "prospects_linked_lead_id_fkey"
             columns: ["linked_lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "prospects_referral_source_id_fkey"
+            columns: ["referral_source_id"]
+            isOneToOne: false
+            referencedRelation: "referral_sources"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      referral_sources: {
+        Row: {
+          commission_percent: number | null
+          company_name: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          deals_closed: number | null
+          id: string
+          leads_generated: number | null
+          name: string
+          notes: string | null
+          source_id: string
+          status: string | null
+          total_commission_paid: number | null
+          type: Database["public"]["Enums"]["referral_type"]
+          updated_at: string
+        }
+        Insert: {
+          commission_percent?: number | null
+          company_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          deals_closed?: number | null
+          id?: string
+          leads_generated?: number | null
+          name: string
+          notes?: string | null
+          source_id: string
+          status?: string | null
+          total_commission_paid?: number | null
+          type: Database["public"]["Enums"]["referral_type"]
+          updated_at?: string
+        }
+        Update: {
+          commission_percent?: number | null
+          company_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          deals_closed?: number | null
+          id?: string
+          leads_generated?: number | null
+          name?: string
+          notes?: string | null
+          source_id?: string
+          status?: string | null
+          total_commission_paid?: number | null
+          type?: Database["public"]["Enums"]["referral_type"]
+          updated_at?: string
+        }
+        Relationships: []
       }
       signature_envelopes: {
         Row: {
@@ -1472,6 +1784,26 @@ export type Database = {
       }
     }
     Enums: {
+      ad_platform:
+        | "Bayut"
+        | "PropertyFinder"
+        | "Dubizzle"
+        | "Instagram"
+        | "Facebook"
+        | "LinkedIn"
+        | "Google"
+        | "TikTok"
+        | "YouTube"
+        | "Print"
+        | "Billboard"
+        | "Brochure"
+      ad_status:
+        | "Draft"
+        | "PendingApproval"
+        | "Active"
+        | "Paused"
+        | "Expired"
+        | "Rejected"
       aml_risk_level: "LOW" | "MEDIUM" | "HIGH"
       app_role: "Operator" | "LegalOwner" | "Broker" | "Investor"
       approval_status: "Pending" | "Approved" | "Rejected"
@@ -1481,6 +1813,30 @@ export type Database = {
         | "ComplianceWaiver"
         | "TemplatePublish"
       broker_status: "Pending" | "Active" | "Suspended" | "Terminated"
+      campaign_channel:
+        | "Email"
+        | "SMS"
+        | "WhatsApp"
+        | "Instagram"
+        | "Facebook"
+        | "LinkedIn"
+        | "Google"
+        | "Bayut"
+        | "PropertyFinder"
+        | "Dubizzle"
+        | "Print"
+        | "Billboard"
+        | "Event"
+      campaign_status: "Draft" | "Active" | "Paused" | "Completed" | "Cancelled"
+      campaign_type:
+        | "Email"
+        | "SMS"
+        | "WhatsApp"
+        | "Social"
+        | "Display"
+        | "Search"
+        | "Print"
+        | "Event"
       commission_status: "Expected" | "Earned" | "Received" | "Paid" | "Voided"
       compliance_context_type: "listing" | "transaction" | "marketing"
       compliance_rule_severity: "BLOCK" | "ESCALATE"
@@ -1509,6 +1865,21 @@ export type Database = {
         | "Receipt"
         | "Other"
       document_status: "Draft" | "Pending" | "Executed" | "Voided"
+      event_status:
+        | "Planning"
+        | "Confirmed"
+        | "InProgress"
+        | "Completed"
+        | "Cancelled"
+        | "Postponed"
+      event_type:
+        | "Roadshow"
+        | "PropertyLaunch"
+        | "Exhibition"
+        | "Networking"
+        | "Seminar"
+        | "OpenHouse"
+        | "Other"
       evidence_type:
         | "DARI"
         | "TAMM"
@@ -1588,6 +1959,20 @@ export type Database = {
         | "Approved"
         | "Executed"
         | "Voided"
+      permit_status:
+        | "NotRequired"
+        | "Pending"
+        | "Approved"
+        | "Expired"
+        | "Rejected"
+      referral_type:
+        | "Broker"
+        | "Developer"
+        | "Bank"
+        | "Agency"
+        | "Individual"
+        | "Corporate"
+        | "Other"
       secondary_dead_reason:
         | "NoSuitableProperty"
         | "BudgetMismatch"
@@ -1738,6 +2123,28 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ad_platform: [
+        "Bayut",
+        "PropertyFinder",
+        "Dubizzle",
+        "Instagram",
+        "Facebook",
+        "LinkedIn",
+        "Google",
+        "TikTok",
+        "YouTube",
+        "Print",
+        "Billboard",
+        "Brochure",
+      ],
+      ad_status: [
+        "Draft",
+        "PendingApproval",
+        "Active",
+        "Paused",
+        "Expired",
+        "Rejected",
+      ],
       aml_risk_level: ["LOW", "MEDIUM", "HIGH"],
       app_role: ["Operator", "LegalOwner", "Broker", "Investor"],
       approval_status: ["Pending", "Approved", "Rejected"],
@@ -1748,6 +2155,32 @@ export const Constants = {
         "TemplatePublish",
       ],
       broker_status: ["Pending", "Active", "Suspended", "Terminated"],
+      campaign_channel: [
+        "Email",
+        "SMS",
+        "WhatsApp",
+        "Instagram",
+        "Facebook",
+        "LinkedIn",
+        "Google",
+        "Bayut",
+        "PropertyFinder",
+        "Dubizzle",
+        "Print",
+        "Billboard",
+        "Event",
+      ],
+      campaign_status: ["Draft", "Active", "Paused", "Completed", "Cancelled"],
+      campaign_type: [
+        "Email",
+        "SMS",
+        "WhatsApp",
+        "Social",
+        "Display",
+        "Search",
+        "Print",
+        "Event",
+      ],
       commission_status: ["Expected", "Earned", "Received", "Paid", "Voided"],
       compliance_context_type: ["listing", "transaction", "marketing"],
       compliance_rule_severity: ["BLOCK", "ESCALATE"],
@@ -1778,6 +2211,23 @@ export const Constants = {
         "Other",
       ],
       document_status: ["Draft", "Pending", "Executed", "Voided"],
+      event_status: [
+        "Planning",
+        "Confirmed",
+        "InProgress",
+        "Completed",
+        "Cancelled",
+        "Postponed",
+      ],
+      event_type: [
+        "Roadshow",
+        "PropertyLaunch",
+        "Exhibition",
+        "Networking",
+        "Seminar",
+        "OpenHouse",
+        "Other",
+      ],
       evidence_type: [
         "DARI",
         "TAMM",
@@ -1865,6 +2315,22 @@ export const Constants = {
         "Approved",
         "Executed",
         "Voided",
+      ],
+      permit_status: [
+        "NotRequired",
+        "Pending",
+        "Approved",
+        "Expired",
+        "Rejected",
+      ],
+      referral_type: [
+        "Broker",
+        "Developer",
+        "Bank",
+        "Agency",
+        "Individual",
+        "Corporate",
+        "Other",
       ],
       secondary_dead_reason: [
         "NoSuitableProperty",
