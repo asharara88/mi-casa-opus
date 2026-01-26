@@ -1,292 +1,451 @@
 
-
-# Dynamic Suggested Prompts for AI Agent Chat
+# Multi-Channel Communication & Productivity Integration
 
 ## Overview
 
-Enhance the AI Agent chat experience by replacing static quick prompts with intelligent, context-aware suggestions that adapt based on the conversation flow. This eliminates repetitive typing and guides users toward productive next steps.
+This plan integrates five major productivity and communication tools into the real estate CRM to enable automated prospect engagement, viewing scheduling, document signing, and location intelligence.
 
 ---
 
-## Current State
+## Integration Summary
 
-Both `AIAgentChat.tsx` and `FloatingAIChat.tsx` have hardcoded `QUICK_PROMPTS` arrays that only appear when the chat is empty:
-
-```typescript
-const QUICK_PROMPTS = [
-  { label: 'Pipeline Status', prompt: 'Give me a summary of the current pipeline health' },
-  { label: 'Today\'s Priorities', prompt: 'What should I focus on today?' },
-  // ... etc
-];
-```
-
-**Problems:**
-- Suggestions disappear after the first message
-- No contextual awareness of conversation topic
-- Users must type follow-up questions manually
+| Tool | Purpose | API Keys Required |
+|------|---------|-------------------|
+| **Twilio** | WhatsApp Business + SMS messaging | TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER |
+| **SendGrid** | Email campaigns + transactional emails | SENDGRID_API_KEY |
+| **Cal.com** | Embedded scheduling for viewings | CAL_API_KEY (optional for API integration) |
+| **DocuSign** (or PandaDoc) | E-signatures for MOUs, SPAs, booking forms | DOCUSIGN_INTEGRATION_KEY, DOCUSIGN_API_ACCOUNT_ID |
+| **Mapbox** | Interactive property maps + neighborhood insights | MAPBOX_ACCESS_TOKEN |
 
 ---
 
-## Solution: Smart Suggestion Engine
+## Feature 1: WhatsApp Business + SMS via Twilio
 
-### Suggestion Categories
+### What It Does
 
-| Category | Trigger | Example Suggestions |
-|----------|---------|---------------------|
-| **Initial** | Empty chat | "Pipeline status", "Today's priorities", "Recent leads" |
-| **Prospect Context** | User asks about a prospect | "Show contact history", "Generate voice message", "Update status" |
-| **Lead Context** | User asks about a lead | "Qualify this lead", "Find matching properties", "Schedule follow-up" |
-| **Deal Context** | User asks about a deal | "Show deal economics", "Check compliance status", "View timeline" |
-| **Pipeline/Analytics** | User asks about metrics | "Compare to last month", "Show by agent", "Export report" |
-| **Follow-up** | After any response | "Tell me more", "What's next?", "Any concerns?" |
+- Send WhatsApp messages directly from prospect/lead detail sheets
+- Automated SMS notifications for follow-ups and reminders
+- Message templates for common outreach scenarios
+- Delivery status tracking and logging
 
-### Implementation Approach
-
-1. **Analyze last message content** to detect entities and topics
-2. **Generate 3-4 relevant suggestions** based on detected context
-3. **Display suggestions below the input area** (always visible during conversation)
-4. **Clicking a suggestion sends it immediately**
-
----
-
-## Technical Implementation
-
-### New Utility: `generateSuggestions()`
-
-Create a function that analyzes the conversation and returns contextual prompts:
-
-```typescript
-interface SuggestionContext {
-  lastUserMessage: string;
-  lastAssistantMessage: string;
-  messageCount: number;
-  detectedEntities: {
-    prospectIds?: string[];
-    leadIds?: string[];
-    dealIds?: string[];
-    names?: string[];
-  };
-}
-
-function generateSuggestions(context: SuggestionContext): string[] {
-  // Returns 3-4 relevant prompts based on context
-}
-```
-
-### Entity Detection Logic
-
-Parse messages for:
-- **CRM IDs**: `PR-XXXXXX`, `LD-XXXXXX`, `DL-XXXXXX`
-- **Names**: Capitalized words that aren't common terms
-- **Topics**: Keywords like "pipeline", "deal", "lead", "prospect", "compliance"
-
-### Suggestion Mapping
-
-| Detected Pattern | Generated Suggestions |
-|------------------|----------------------|
-| Prospect name/ID mentioned | "Show their requirements", "Generate a follow-up message", "What's their status?" |
-| Lead ID mentioned | "Qualify this lead", "Find matching listings", "What's the next action?" |
-| Deal ID mentioned | "Show deal economics", "Check compliance status", "What documents are pending?" |
-| Pipeline/metrics topic | "Break down by stage", "Show aging leads", "Compare to last week" |
-| Listing topic | "Generate description", "Find similar listings", "What's the competition?" |
-| No specific context | "Show today's priorities", "Any urgent follow-ups?", "Pipeline health check" |
-
----
-
-## UI Changes
-
-### Suggestion Chips Component
-
-Create a reusable `SuggestionChips.tsx` component:
-
-```tsx
-interface SuggestionChipsProps {
-  suggestions: string[];
-  onSelect: (suggestion: string) => void;
-  isLoading?: boolean;
-}
-
-function SuggestionChips({ suggestions, onSelect, isLoading }: SuggestionChipsProps) {
-  if (isLoading || suggestions.length === 0) return null;
-  
-  return (
-    <div className="flex flex-wrap gap-2 px-4 py-2 border-t border-border bg-muted/30">
-      <span className="text-xs text-muted-foreground">Suggestions:</span>
-      {suggestions.map((s) => (
-        <Button
-          key={s}
-          variant="outline"
-          size="sm"
-          className="text-xs h-7"
-          onClick={() => onSelect(s)}
-        >
-          {s}
-        </Button>
-      ))}
-    </div>
-  );
-}
-```
-
-### Layout Update
-
-Place suggestions between the message area and input:
+### Architecture
 
 ```text
-┌────────────────────────────────────┐
-│ [Messages ScrollArea]              │
-├────────────────────────────────────┤
-│ Suggestions: [Chip] [Chip] [Chip]  │  ← NEW
-├────────────────────────────────────┤
-│ [Input] [Send]                     │
-└────────────────────────────────────┘
++-------------------+     +------------------------+     +----------+
+| ProspectDetailSheet|---->| twilio-messaging       |---->| Twilio   |
+| LeadDetail        |     | (Edge Function)        |     | API      |
++-------------------+     +------------------------+     +----------+
+                                    |
+                                    v
+                          +-------------------+
+                          | communication_logs|
+                          | (Database Table)  |
+                          +-------------------+
 ```
 
----
+### New Components
 
-## Files to Create
+| Component | Purpose |
+|-----------|---------|
+| `WhatsAppMessagePanel.tsx` | Send template-based WhatsApp messages with preview |
+| `SMSNotificationButton.tsx` | Quick SMS send with predefined templates |
+| `CommunicationHistory.tsx` | Display message history for prospect/lead |
 
-| File | Purpose |
-|------|---------|
-| `src/components/ai/SuggestionChips.tsx` | Reusable suggestion buttons component |
-| `src/lib/chat-suggestions.ts` | Suggestion generation logic with entity detection |
-
-## Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/components/ai/AIAgentChat.tsx` | Add dynamic suggestions below messages, integrate suggestion generator |
-| `src/components/ai/FloatingAIChat.tsx` | Same updates for the floating chat panel |
-
----
-
-## Suggestion Generation Logic
+### Edge Function: `twilio-messaging`
 
 ```typescript
-// src/lib/chat-suggestions.ts
-
-const ENTITY_PATTERNS = {
-  prospect: /\b(PR|CRM)-[A-Z0-9]{4,12}\b/gi,
-  lead: /\bLD-[A-Z0-9]{4,12}\b/gi,
-  deal: /\bDL-[A-Z0-9]{4,12}\b/gi,
-};
-
-const TOPIC_SUGGESTIONS = {
-  prospect: [
-    "What's their contact history?",
-    "Generate a follow-up voice message",
-    "Update their status",
-    "Show their requirements",
-  ],
-  lead: [
-    "Qualify this lead",
-    "Find matching properties",
-    "Schedule next action",
-    "Show lead timeline",
-  ],
-  deal: [
-    "Show deal economics",
-    "Check compliance status",
-    "What documents are pending?",
-    "Show transaction timeline",
-  ],
-  pipeline: [
-    "Break down by stage",
-    "Show aging leads",
-    "Compare to last week",
-    "Which deals need attention?",
-  ],
-  listing: [
-    "Generate a description",
-    "Find similar properties",
-    "What's the competition?",
-    "Show market insights",
-  ],
-  default: [
-    "Show today's priorities",
-    "Any urgent follow-ups?",
-    "Pipeline health check",
-    "Recent activity summary",
-  ],
-};
-
-export function generateSuggestions(
-  lastUserMessage: string,
-  lastAssistantResponse: string,
-  messageCount: number
-): string[] {
-  // Empty chat - show defaults
-  if (messageCount === 0) {
-    return TOPIC_SUGGESTIONS.default;
-  }
-
-  const combined = `${lastUserMessage} ${lastAssistantResponse}`.toLowerCase();
-  
-  // Check for entity mentions
-  if (ENTITY_PATTERNS.prospect.test(lastUserMessage) || combined.includes('prospect')) {
-    return TOPIC_SUGGESTIONS.prospect.slice(0, 4);
-  }
-  if (ENTITY_PATTERNS.lead.test(lastUserMessage) || combined.includes('lead')) {
-    return TOPIC_SUGGESTIONS.lead.slice(0, 4);
-  }
-  if (ENTITY_PATTERNS.deal.test(lastUserMessage) || combined.includes('deal') || combined.includes('transaction')) {
-    return TOPIC_SUGGESTIONS.deal.slice(0, 4);
-  }
-  
-  // Check for topic keywords
-  if (combined.includes('pipeline') || combined.includes('funnel') || combined.includes('metrics')) {
-    return TOPIC_SUGGESTIONS.pipeline.slice(0, 4);
-  }
-  if (combined.includes('listing') || combined.includes('property') || combined.includes('unit')) {
-    return TOPIC_SUGGESTIONS.listing.slice(0, 4);
-  }
-  
-  // Generic follow-ups
-  return [
-    "Tell me more",
-    "What should I do next?",
-    "Any concerns?",
-    "Show related data",
-  ];
+// POST /twilio-messaging
+{
+  "channel": "whatsapp" | "sms",
+  "to": "+971501234567",
+  "template": "new_listing_alert",
+  "variables": { "name": "Ahmed", "property": "3BR Marina View" },
+  "prospectId": "uuid"
 }
 ```
+
+### Database Schema
+
+New table `communication_logs`:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary key |
+| entity_type | text | 'prospect' or 'lead' |
+| entity_id | uuid | FK to prospect/lead |
+| channel | text | 'whatsapp', 'sms', 'email' |
+| direction | text | 'outbound' or 'inbound' |
+| template_used | text | Template name if applicable |
+| content | text | Message content |
+| status | text | 'sent', 'delivered', 'failed', 'read' |
+| twilio_sid | text | Twilio message SID for tracking |
+| sent_at | timestamp | When message was sent |
+| delivered_at | timestamp | When delivered (webhook update) |
+
+---
+
+## Feature 2: Email Campaigns via SendGrid
+
+### What It Does
+
+- Send email campaigns for new listings
+- Automated appointment reminders
+- Transactional emails (viewing confirmations, document requests)
+- Email templates with personalization
+
+### New Components
+
+| Component | Purpose |
+|-----------|---------|
+| `EmailCampaignBuilder.tsx` | Create/send email campaigns to prospect segments |
+| `EmailTemplateSelector.tsx` | Choose from predefined templates |
+| `AppointmentReminder.tsx` | Configure automated reminder emails |
+
+### Edge Function: `sendgrid-email`
+
+```typescript
+// POST /sendgrid-email
+{
+  "type": "campaign" | "transactional",
+  "to": ["email1@test.com", "email2@test.com"],
+  "template": "new_listing",
+  "variables": { ... },
+  "scheduleAt": "2024-01-15T09:00:00Z" // Optional
+}
+```
+
+### Predefined Templates
+
+| Template | Use Case |
+|----------|----------|
+| `new_listing_alert` | Notify about matching properties |
+| `viewing_confirmation` | Confirm scheduled viewing |
+| `viewing_reminder` | 24-hour reminder before viewing |
+| `document_request` | Request documents from client |
+| `deal_milestone` | Update client on deal progress |
+
+---
+
+## Feature 3: Viewing Scheduling via Cal.com
+
+### What It Does
+
+- Embed Cal.com booking widget for property viewings
+- Sync with agent calendars (Google/Outlook)
+- Automated reminders and rescheduling
+- Round-robin assignment for new leads
+
+### Architecture
+
+```text
++------------------+     +-------------------+     +----------+
+| ViewingScheduler |---->| Cal.com Embed     |---->| Cal.com  |
+| (React Component)|     | (iframe or SDK)   |     | API      |
++------------------+     +-------------------+     +----------+
+          |                                               |
+          |                +--------------------+         |
+          +--------------->| viewing_bookings   |<--------+
+                           | (Database Table)   |  (webhook)
+                           +--------------------+
+```
+
+### New Components
+
+| Component | Purpose |
+|-----------|---------|
+| `ViewingScheduler.tsx` | Embed Cal.com booking calendar |
+| `AgentAvailability.tsx` | Display agent calendar slots |
+| `ViewingConfirmation.tsx` | Confirmation screen after booking |
+| `ViewingReminderConfig.tsx` | Configure reminder preferences |
+
+### Edge Function: `cal-webhook`
+
+Receives booking events from Cal.com webhooks:
+- `booking.created` - Creates viewing record, triggers confirmations
+- `booking.rescheduled` - Updates viewing record
+- `booking.cancelled` - Updates status, triggers notifications
+
+### Database Schema
+
+New table `viewing_bookings`:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary key |
+| cal_booking_id | text | Cal.com booking reference |
+| deal_id | uuid | FK to deals table |
+| prospect_id | uuid | FK to prospects (if no deal yet) |
+| listing_id | uuid | Property being viewed |
+| agent_id | uuid | Assigned agent |
+| scheduled_at | timestamp | Viewing date/time |
+| duration_minutes | int | Typically 30-60 mins |
+| status | text | 'scheduled', 'completed', 'cancelled', 'no_show' |
+| location | text | Property address or meeting point |
+| notes | text | Special instructions |
+| reminder_sent | boolean | Whether reminder was sent |
+| created_at | timestamp | Record creation |
+
+---
+
+## Feature 4: E-Signatures via DocuSign
+
+### What It Does
+
+- Send documents for electronic signature
+- Track signature status
+- Download executed documents
+- Audit trails for compliance
+
+### Architecture
+
+```text
++------------------+     +----------------------+     +----------+
+| DocumentInstance |---->| docusign-envelope    |---->| DocuSign |
+| (Send for Sign)  |     | (Edge Function)      |     | API      |
++------------------+     +----------------------+     +----------+
+                                    |
+                                    v
+                         +---------------------+
+                         | signature_envelopes |
+                         | (Existing Table)    |
+                         +---------------------+
+```
+
+### New Components
+
+| Component | Purpose |
+|-----------|---------|
+| `SendForSignatureButton.tsx` | Trigger DocuSign envelope creation |
+| `SignatureStatusTracker.tsx` | Display real-time signature progress |
+| `SignerManagement.tsx` | Add/remove signers before sending |
+| `ExecutedDocumentViewer.tsx` | View completed documents |
+
+### Edge Functions
+
+| Function | Purpose |
+|----------|---------|
+| `docusign-envelope` | Create and send envelope to signers |
+| `docusign-webhook` | Receive status updates from DocuSign |
+| `docusign-download` | Retrieve signed document PDF |
+
+### Document Types Supported
+
+- MOU (Memorandum of Understanding)
+- SPA (Sales & Purchase Agreement)
+- Reservation Form
+- Booking Form
+- Mandate Agreement
+- NOC Application
+
+---
+
+## Feature 5: Location Intelligence via Mapbox
+
+### What It Does
+
+- Interactive property maps
+- Neighborhood insights (schools, hospitals, metro)
+- Commute time calculations
+- Area comparison tools
+
+### Architecture
+
+```text
++------------------+     +-------------------+     +---------+
+| ListingDetailMap |---->| Mapbox GL JS      |---->| Mapbox  |
+| (React Component)|     | (Client-side SDK) |     | API     |
++------------------+     +-------------------+     +---------+
+         |
+         v
++-------------------------+
+| NeighborhoodInsights    |
+| (POI data from Mapbox)  |
++-------------------------+
+```
+
+### New Components
+
+| Component | Purpose |
+|-----------|---------|
+| `PropertyMap.tsx` | Interactive Mapbox map with property marker |
+| `NeighborhoodInsights.tsx` | Display nearby POIs (schools, metro, hospitals) |
+| `CommuteCalculator.tsx` | Calculate driving/transit times to key locations |
+| `AreaComparison.tsx` | Compare amenities between neighborhoods |
+| `ListingsMapView.tsx` | Map view of all active listings |
+
+### Implementation Notes
+
+- Mapbox GL JS is client-side (no edge function needed)
+- Access token stored as environment variable (public key is okay for client)
+- Use Mapbox Geocoding API for address search
+- Use Mapbox Directions API for commute times
+- Use Mapbox POI data for nearby amenities
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Core Logic
-1. Create `src/lib/chat-suggestions.ts` with entity detection and suggestion mapping
-2. Create `src/components/ai/SuggestionChips.tsx` component
+### Phase 1: Infrastructure & Secrets (Day 1)
+1. Add required secrets: TWILIO_*, SENDGRID_API_KEY, DOCUSIGN_*, MAPBOX_ACCESS_TOKEN
+2. Create database tables: communication_logs, viewing_bookings
+3. Create base edge functions with CORS setup
 
-### Phase 2: Integrate into AIAgentChat
-1. Import suggestion generator and chips component
-2. Add state for current suggestions
-3. Update suggestions after each message exchange
-4. Display chips above the input area
+### Phase 2: Twilio WhatsApp + SMS (Days 2-3)
+1. Create `twilio-messaging` edge function
+2. Build `WhatsAppMessagePanel.tsx` component
+3. Build `SMSNotificationButton.tsx` component
+4. Integrate into ProspectDetailSheet and LeadDetail
+5. Add `CommunicationHistory.tsx` to show message log
 
-### Phase 3: Integrate into FloatingAIChat
-1. Apply same changes to the floating chat variant
-2. Adjust styling for the narrower sheet layout
+### Phase 3: SendGrid Email (Days 4-5)
+1. Create `sendgrid-email` edge function
+2. Build `EmailTemplateSelector.tsx`
+3. Add email templates for common scenarios
+4. Integrate with viewing reminders and deal milestones
+5. Add to MarketingSection for campaign management
+
+### Phase 4: Cal.com Scheduling (Days 6-7)
+1. Create Cal.com webhook edge function
+2. Build `ViewingScheduler.tsx` with Cal.com embed
+3. Create viewing_bookings table
+4. Connect to deal funnel automation (auto-advance on booking)
+5. Configure reminder triggers
+
+### Phase 5: DocuSign Integration (Days 8-10)
+1. Create DocuSign edge functions (envelope, webhook, download)
+2. Build signature request UI in DocumentsSection
+3. Add signature status tracking
+4. Connect to compliance workflow
+5. Update signature_envelopes table with DocuSign data
+
+### Phase 6: Mapbox Location Intelligence (Days 11-12)
+1. Add Mapbox GL JS to dependencies
+2. Build `PropertyMap.tsx` component
+3. Add `NeighborhoodInsights.tsx` with POI display
+4. Build `CommuteCalculator.tsx`
+5. Integrate into ListingDetailModal
 
 ---
 
-## Result
+## Files to Create
 
-Users will see 3-4 contextual suggestions that update after each exchange:
+### Edge Functions
+| File | Purpose |
+|------|---------|
+| `supabase/functions/twilio-messaging/index.ts` | WhatsApp and SMS messaging |
+| `supabase/functions/twilio-webhook/index.ts` | Receive delivery status updates |
+| `supabase/functions/sendgrid-email/index.ts` | Send emails via SendGrid |
+| `supabase/functions/cal-webhook/index.ts` | Receive Cal.com booking events |
+| `supabase/functions/docusign-envelope/index.ts` | Create and send envelopes |
+| `supabase/functions/docusign-webhook/index.ts` | Receive signature events |
+| `supabase/functions/docusign-download/index.ts` | Download signed documents |
 
-**Scenario 1: User asks about a prospect**
-> User: "Tell me about prospect Zaid"
-> AI: "Found Zaid Al-Rashid (PR-ABC123)..."
-> **Suggestions**: [What's their contact history?] [Generate follow-up message] [Update status] [Show requirements]
+### React Components
+| File | Purpose |
+|------|---------|
+| `src/components/communication/WhatsAppMessagePanel.tsx` | WhatsApp messaging UI |
+| `src/components/communication/SMSNotificationButton.tsx` | Quick SMS button |
+| `src/components/communication/EmailCampaignBuilder.tsx` | Email campaign creation |
+| `src/components/communication/CommunicationHistory.tsx` | Message log display |
+| `src/components/scheduling/ViewingScheduler.tsx` | Cal.com booking embed |
+| `src/components/scheduling/ViewingConfirmation.tsx` | Booking confirmation |
+| `src/components/documents/SendForSignatureButton.tsx` | DocuSign trigger |
+| `src/components/documents/SignatureStatusTracker.tsx` | Signature progress |
+| `src/components/maps/PropertyMap.tsx` | Mapbox property map |
+| `src/components/maps/NeighborhoodInsights.tsx` | Nearby amenities |
+| `src/components/maps/CommuteCalculator.tsx` | Travel time calculator |
 
-**Scenario 2: User asks about pipeline**
-> User: "Pipeline status"
-> AI: "Current pipeline shows 45 leads..."
-> **Suggestions**: [Break down by stage] [Show aging leads] [Compare to last week] [Which deals need attention?]
+### Hooks
+| File | Purpose |
+|------|---------|
+| `src/hooks/useCommunications.ts` | Communication log queries |
+| `src/hooks/useViewingBookings.ts` | Viewing bookings queries |
+| `src/hooks/useDocuSign.ts` | DocuSign envelope management |
 
-**Scenario 3: Generic follow-up**
-> User: "What should I focus on today?"
-> AI: "You have 3 leads due for follow-up..."
-> **Suggestions**: [Tell me more] [Show lead details] [Any compliance issues?] [Schedule reminders]
+## Files to Modify
 
+| File | Changes |
+|------|---------|
+| `src/components/prospects/ProspectDetailSheet.tsx` | Add WhatsApp panel, SMS button, communication history |
+| `src/components/leads/LeadDetail.tsx` | Add messaging and scheduling components |
+| `src/components/documents/DocumentsSection.tsx` | Add DocuSign integration |
+| `src/components/listings/ListingDetailModal.tsx` | Add Mapbox map and neighborhood insights |
+| `supabase/config.toml` | Add new edge function configurations |
+| `package.json` | Add mapbox-gl dependency |
+
+---
+
+## Required Secrets
+
+Before implementation, the following secrets must be configured:
+
+| Secret | Service | Required |
+|--------|---------|----------|
+| `TWILIO_ACCOUNT_SID` | Twilio | Yes |
+| `TWILIO_AUTH_TOKEN` | Twilio | Yes |
+| `TWILIO_PHONE_NUMBER` | Twilio (WhatsApp-enabled) | Yes |
+| `SENDGRID_API_KEY` | SendGrid | Yes |
+| `CAL_API_KEY` | Cal.com | Optional (for API calls) |
+| `DOCUSIGN_INTEGRATION_KEY` | DocuSign | Yes |
+| `DOCUSIGN_API_ACCOUNT_ID` | DocuSign | Yes |
+| `DOCUSIGN_RSA_PRIVATE_KEY` | DocuSign (JWT auth) | Yes |
+| `MAPBOX_ACCESS_TOKEN` | Mapbox | Yes (can be public) |
+
+---
+
+## User Experience Flow
+
+### Prospect Outreach
+```text
+1. Agent opens ProspectDetailSheet
+2. Sees "Communication" section with WhatsApp, SMS, Email options
+3. Selects template (e.g., "New Listing Alert")
+4. Previews message with personalization
+5. Clicks "Send" → Message delivered via Twilio
+6. Status updates in real-time (sent → delivered → read)
+7. All communications logged in CommunicationHistory
+```
+
+### Property Viewing
+```text
+1. Agent clicks "Schedule Viewing" on deal
+2. Cal.com widget opens with agent availability
+3. Client selects preferred time slot
+4. Booking confirmed → viewing_bookings created
+5. Automated SMS/email confirmation sent
+6. 24-hour reminder triggered automatically
+7. Deal state advances to "ViewingScheduled"
+```
+
+### Document Signing
+```text
+1. Agent generates MOU from template
+2. Clicks "Send for Signature"
+3. Adds buyer + seller as signers
+4. DocuSign envelope created and sent
+5. Status tracked: Sent → Viewed → Signed by Buyer → Signed by Seller
+6. Executed document auto-downloaded
+7. Compliance status updated
+```
+
+### Property Location
+```text
+1. Agent/client opens ListingDetailModal
+2. Map tab shows interactive Mapbox map
+3. Property marker with popup details
+4. Nearby amenities panel: schools, metro, hospitals
+5. Commute calculator: "15 mins to Dubai Mall"
+6. Area insights: "Walk Score: 85"
+```
+
+---
+
+## Technical Notes
+
+- **Twilio**: Use approved WhatsApp templates for business messaging
+- **SendGrid**: Requires domain verification for sending
+- **Cal.com**: Can use free tier with embed, API for advanced features
+- **DocuSign**: Use JWT authentication for server-to-server calls
+- **Mapbox**: Client-side token is safe to expose (restricted by domain)
+
+All integrations include webhook handlers for real-time status updates and connect to the existing audit trail system.
