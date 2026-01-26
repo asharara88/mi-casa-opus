@@ -17,8 +17,16 @@ export default defineConfig(({ mode }) => ({
       "react": path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
     },
+    // Dedupe ensures only one copy of React exists in the bundle
+    dedupe: ["react", "react-dom"],
   },
   optimizeDeps: {
     include: ["react", "react-dom"],
+  },
+  build: {
+    commonjsOptions: {
+      // Ensure React is treated as a singleton in production builds
+      include: [/node_modules/],
+    },
   },
 }));
