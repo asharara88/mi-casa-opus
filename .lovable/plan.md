@@ -1,238 +1,193 @@
 
 
-# Developer Project Catalog & Listing Import from URL
+# Cold Calling with ElevenLabs
 
 ## Overview
 
-This plan implements two interconnected features that leverage the existing Firecrawl scraping integration:
+This plan implements a comprehensive cold calling toolkit using ElevenLabs, with two main components:
 
-1. **Developer Project Catalog** - A dedicated section to scrape developer websites (Aldar, Emaar, Reportage, etc.) and automatically import off-plan projects, floor plans, and pricing into the system
-2. **Listing Import from URL** - A tool to scrape any property portal listing page and auto-fill a new listing form with extracted property details
-
-Both features will extend the existing Firecrawl + AI analysis pattern used in Competitor Analysis.
+1. **AI Voice Agent** - An autonomous conversational AI that can handle initial prospect outreach
+2. **Cold Call Toolkit** - Enhanced voice message templates, live call transcription, and script rehearsal for prospects
 
 ---
 
-## Part 1: Developer Project Catalog
+## Feature 1: AI Cold Calling Voice Agent
 
-### Database Changes
+### What It Does
 
-No new tables required - we'll use the existing `developers` and `developer_projects` tables which already have:
-- Project name, location, community
-- Price ranges (price_from, price_to)
-- Total/available units
-- Handover dates
-- Brochure/floor plan URLs
-- Payment plan details
-- Amenities
+A real-time conversational AI agent that can:
+- Initiate conversations with prospects when triggered by an agent
+- Qualify interest level and collect property requirements
+- Answer FAQs about available listings
+- Schedule viewings or callback times
+- Transfer context to human agent when needed
 
-### New Edge Function: `developer-project-scrape`
+### Architecture
 
-This edge function will:
-1. Accept scraped content from a developer website
-2. Use AI to extract structured project data
-3. Return parsed projects ready for import
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                     Agent Dashboard                          │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ Prospect: Ahmed Al-Rashid   [Start AI Call] [Manual] │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│              ElevenLabs Conversational AI                    │
+│  • WebRTC connection via @elevenlabs/react                   │
+│  • Configured agent with real estate context                 │
+│  • Client tools for CRM updates                              │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Edge Function                              │
+│  elevenlabs-conversation-token                               │
+│  • Generates secure WebRTC token                             │
+│  • Passes prospect context to agent                          │
+└─────────────────────────────────────────────────────────────┘
+```
 
-**AI Extraction Schema:**
-```json
+### New Components
+
+| Component | Purpose |
+|-----------|---------|
+| `AIVoiceAgent.tsx` | Main voice agent interface with start/stop controls, live transcript display, and status indicators |
+| `AICallPanel.tsx` | Expandable panel showing call progress, detected intents, and suggested actions |
+| `useConversationAgent` hook | Wrapper around `@elevenlabs/react` `useConversation` with CRM integration |
+
+### Edge Function: `elevenlabs-conversation-token`
+
+Generates a secure conversation token with prospect context:
+
+```typescript
+// Returns WebRTC token with context
 {
-  "projects": [
-    {
-      "name": "Saadiyat Lagoons",
-      "community": "Saadiyat Island",
-      "location": "Abu Dhabi",
-      "projectType": "Villa",
-      "status": "Launching",
-      "totalUnits": 450,
-      "priceFrom": 3500000,
-      "priceTo": 12000000,
-      "expectedHandover": "Q4 2027",
-      "commissionPercent": 5,
-      "paymentPlan": "60/40",
-      "amenities": ["Beach Access", "Golf Course", "Community Pool"],
-      "brochureUrl": "https://...",
-      "floorPlansUrl": "https://..."
-    }
-  ],
-  "developerInfo": {
-    "name": "Aldar Properties",
-    "website": "https://aldar.com"
+  token: "...",
+  conversationId: "...",
+  context: {
+    prospectName: "Ahmed Al-Rashid",
+    propertyInterests: ["3BR Villa", "Al Reem Island"],
+    previousInteractions: 2
   }
 }
 ```
 
-### New UI Components
+### Client Tools (Triggered by AI)
 
-**1. DeveloperCatalog.tsx** (Sheet component, similar to CompetitorAnalysis)
-- Developer website presets (Aldar, Emaar, Reportage, Bloom, Q Properties)
-- Custom URL input field
-- Scrape + Analyze button
-- Results display with project cards
-- "Import to Database" button for each project
+The agent can call these functions during conversation:
 
-**2. DeveloperProjectCard.tsx**
-- Display scraped project details
-- Price range, unit count, handover date
-- Import checkbox for batch import
-- Links to brochure/floor plans if available
+| Tool | Action |
+|------|--------|
+| `updateProspectStatus` | Update outreach status in CRM |
+| `scheduleCallback` | Create calendar event for follow-up |
+| `captureRequirements` | Save detected property requirements |
+| `requestHumanTransfer` | Flag for agent takeover |
 
-**3. Integration Points:**
-- Add "Developer Catalog" button to ListingsSection header
-- Add sidebar entry under a new "Research" group or within Listings
+### Agent Configuration (ElevenLabs Dashboard)
 
-### Developer Website Presets
-
-```typescript
-const DEVELOPER_PRESETS = [
-  { name: 'Aldar', url: 'https://www.aldar.com/en/explore-aldar/businesses/development/residential' },
-  { name: 'Emaar', url: 'https://www.emaar.com/en/our-communities/abu-dhabi' },
-  { name: 'Reportage', url: 'https://reportageproperties.com/abu-dhabi/' },
-  { name: 'Bloom', url: 'https://bloomholding.com/properties/' },
-  { name: 'Q Properties', url: 'https://www.qproperties.ae/projects' },
-  { name: 'Imkan', url: 'https://www.imkan.ae/en/projects' },
-];
-```
-
-### Firecrawl API Extension
-
-Add new method to `src/lib/api/firecrawl.ts`:
-
-```typescript
-async scrapeDeveloperProjects(
-  scrapedContent: string,
-  sourceUrl: string,
-  developerName?: string
-): Promise<FirecrawlResponse<DeveloperScrapeResult>> {
-  const { data, error } = await supabase.functions.invoke('developer-project-scrape', {
-    body: { content: scrapedContent, sourceUrl, developerName },
-  });
-  // ...
-}
-```
+The AI agent needs to be configured with:
+- **System Prompt**: Real estate context, MiCasa branding, compliance guidelines
+- **First Message**: Personalized greeting using prospect name
+- **Voice**: Professional voice (Sarah or George)
+- **Client Tools**: The functions listed above
 
 ---
 
-## Part 2: Listing Import from URL
+## Feature 2: Cold Call Toolkit for Prospects
 
-### New Edge Function: `listing-extract`
+### New Templates for Cold Calling
 
-This edge function will:
-1. Accept scraped content from any property portal listing page
-2. Use AI to extract a single listing's details
-3. Return structured data matching the `listings` table schema
+Add prospect-specific voice message templates:
 
-**AI Extraction Schema:**
-```json
-{
-  "listing": {
-    "title": "Stunning 3BR Apartment in Al Reem Island",
-    "propertyType": "Apartment",
-    "listingType": "Sale",
-    "price": 2500000,
-    "currency": "AED",
-    "bedrooms": 3,
-    "bathrooms": 3,
-    "sqft": 2100,
-    "community": "Al Reem Island",
-    "building": "Sky Tower",
-    "city": "Abu Dhabi",
-    "description": "...",
-    "amenities": ["Pool", "Gym", "Parking"],
-    "permitNumber": "DARI-2024-12345",
-    "sourceUrl": "https://bayut.com/..."
-  },
-  "confidence": 0.95
-}
-```
+| Template | Use Case |
+|----------|----------|
+| `cold-intro` | First contact with a new prospect |
+| `new-listing-alert` | Notify about matching properties |
+| `investor-opportunity` | Off-plan investment pitch |
+| `event-invitation` | Invite to property launches/roadshows |
+| `re-engagement` | Win back inactive prospects |
 
-### New UI Components
+### ProspectDetailSheet Integration
 
-**1. AddListingModal.tsx** (New component)
-- Tab structure: "Manual Entry" | "Import from URL"
-- Import tab:
-  - URL input field
-  - Portal preset buttons (Bayut, Property Finder, Dubizzle)
-  - Scrape button
-  - Form pre-filled with extracted data
-  - Edit capability before saving
-- Manual tab:
-  - Standard form fields for property details
-
-**2. ListingImportForm.tsx**
-- Form with all listing fields
-- Pre-populated from AI extraction
-- Editable before submission
-- Confidence indicator showing extraction quality
-- Warning badges for low-confidence fields
-
-**3. Integration:**
-- Replace current "Add Listing" button with one that opens AddListingModal
-- The modal allows both manual entry and URL import
-
-### Workflow
+Add voice features to the prospect detail view:
 
 ```text
-User clicks "Add Listing"
-    ↓
-Modal opens with two tabs
-    ↓
-"Import from URL" tab selected
-    ↓
-User pastes Bayut/PF/Dubizzle URL
-    ↓
-Click "Extract" → Firecrawl scrapes page
-    ↓
-AI extracts listing details
-    ↓
-Form auto-fills with extracted data
-    ↓
-User reviews/edits as needed
-    ↓
-Click "Create Listing" → Saved to database
+┌─────────────────────────────────────────────────────────────┐
+│ Prospect: Ahmed Al-Rashid                                    │
+│ Status: Not Contacted                                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│ [AI Call Assistant]  [Generate Voice Drop]  [Call Script]   │
+│                                                              │
+│ ┌──────────────────────────────────────────────────────────┐│
+│ │ 🎤 AI Voice Agent                              [Start]  ││
+│ │ Start an AI-assisted call with this prospect            ││
+│ └──────────────────────────────────────────────────────────┘│
+│                                                              │
+│ ┌──────────────────────────────────────────────────────────┐│
+│ │ 📨 Voice Message                                         ││
+│ │ Template: [Cold Intro ▼]  Voice: [Sarah ▼]               ││
+│ │ "Hello Ahmed, I'm Sarah from MiCasa Real Estate..."     ││
+│ │                                    [Generate] [Download] ││
+│ └──────────────────────────────────────────────────────────┘│
+│                                                              │
+│ ┌──────────────────────────────────────────────────────────┐│
+│ │ 🎙️ Live Call Notes                                       ││
+│ │ [Start Recording] to capture call notes in real-time    ││
+│ └──────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Firecrawl API Extension
+### Call Script Rehearsal
 
-Add new method to `src/lib/api/firecrawl.ts`:
+Generate TTS audio of cold call scripts for agent training:
 
-```typescript
-async extractListingFromUrl(
-  scrapedContent: string,
-  sourceUrl: string
-): Promise<FirecrawlResponse<ListingExtractResult>> {
-  const { data, error } = await supabase.functions.invoke('listing-extract', {
-    body: { content: scrapedContent, sourceUrl },
-  });
-  // ...
-}
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ 📜 Call Script Rehearsal                                     │
+│                                                              │
+│ Script: [Cold Call Opening ▼]                                │
+│                                                              │
+│ "Good morning, this is [Agent] from MiCasa Real Estate.     │
+│ I noticed you recently inquired about properties in          │
+│ [Location]. I have a few exclusive listings that might       │
+│ interest you..."                                             │
+│                                                              │
+│ [▶️ Play Script]  [🔄 Regenerate]                            │
+│                                                              │
+│ 💡 Practice alongside the AI voice to perfect your pitch    │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Core Infrastructure
-1. Create `developer-project-scrape` edge function
-2. Create `listing-extract` edge function
-3. Extend `src/lib/api/firecrawl.ts` with new methods
-4. Add types for scraped data structures
+### Phase 1: Infrastructure
+1. Install `@elevenlabs/react` package
+2. Create `elevenlabs-conversation-token` edge function
+3. Create `useConversationAgent` hook
+4. Add config entry for edge function
 
-### Phase 2: Developer Project Catalog
-1. Create `DeveloperCatalog.tsx` sheet component
-2. Create `DeveloperProjectCard.tsx` for displaying scraped projects
-3. Add import functionality using existing `useCreateDeveloperProject` hook
-4. Add button to ListingsSection header
+### Phase 2: AI Voice Agent UI
+1. Create `AIVoiceAgent.tsx` component
+2. Create `AICallPanel.tsx` for call controls and transcript
+3. Add volume visualization and status indicators
+4. Implement client tools for CRM updates
 
-### Phase 3: Listing Import from URL
-1. Create `AddListingModal.tsx` with tabs
-2. Create `ListingImportForm.tsx` with auto-fill capability
-3. Wire up to existing `useCreateListing` hook
-4. Replace current "Add Listing" button in ListingsSection
+### Phase 3: Prospect Integration
+1. Add cold calling templates to `useElevenLabs.ts`
+2. Integrate `VoiceMessageGenerator` into `ProspectDetailSheet.tsx`
+3. Integrate `VoiceTranscriber` for live call notes
+4. Add AI Voice Agent trigger button
 
-### Phase 4: Demo Mode Support
-1. Add demo data for developer catalog
-2. Add demo data for listing import
-3. Skip API calls in demo mode with realistic mock responses
+### Phase 4: Call Script Rehearsal
+1. Create `CallScriptRehearsal.tsx` component
+2. Add predefined scripts for common scenarios
+3. Enable custom script editing
+4. Add to training/resources section
 
 ---
 
@@ -240,27 +195,46 @@ async extractListingFromUrl(
 
 | File | Purpose |
 |------|---------|
-| `supabase/functions/developer-project-scrape/index.ts` | AI extraction for developer projects |
-| `supabase/functions/listing-extract/index.ts` | AI extraction for single listing |
-| `src/components/listings/DeveloperCatalog.tsx` | Developer scraping sheet |
-| `src/components/listings/DeveloperProjectCard.tsx` | Project display card |
-| `src/components/listings/AddListingModal.tsx` | New listing modal with import |
-| `src/components/listings/ListingImportForm.tsx` | Auto-fill form component |
+| `supabase/functions/elevenlabs-conversation-token/index.ts` | Generate WebRTC conversation tokens |
+| `src/hooks/useConversationAgent.ts` | Wrapper hook for ElevenLabs agent |
+| `src/components/voice/AIVoiceAgent.tsx` | Main voice agent component |
+| `src/components/voice/AICallPanel.tsx` | Call controls and transcript display |
+| `src/components/voice/CallScriptRehearsal.tsx` | Script practice component |
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/lib/api/firecrawl.ts` | Add `scrapeDeveloperProjects` and `extractListingFromUrl` methods |
-| `src/components/listings/ListingsSection.tsx` | Add Developer Catalog button, replace Add Listing button |
+| `package.json` | Add `@elevenlabs/react` dependency |
+| `supabase/config.toml` | Add edge function config |
+| `src/hooks/useElevenLabs.ts` | Add cold calling templates |
+| `src/components/prospects/ProspectDetailSheet.tsx` | Add voice agent and message generator |
+
+---
+
+## Dependencies
+
+- `@elevenlabs/react` - React SDK for Conversational AI
+- Existing `ELEVENLABS_API_KEY` secret (already configured)
+
+---
+
+## ElevenLabs Agent Setup Requirement
+
+The AI Voice Agent requires creating an agent in the ElevenLabs dashboard with:
+1. Custom system prompt for real estate context
+2. Client tools configuration matching the ones we implement
+3. Voice selection and language settings
+
+This is a one-time setup that enables the conversational capabilities.
 
 ---
 
 ## Technical Notes
 
-- Both edge functions use the Lovable AI Gateway (no additional API keys needed)
-- Firecrawl connector must remain connected for scraping
-- Demo mode bypasses API calls with mock data
-- All new components follow existing UI patterns (shadcn/ui)
-- RLS policies already exist for `listings` and `developer_projects` tables
+- WebRTC provides low-latency, high-quality audio
+- Conversation tokens are single-use for security
+- Client tools allow the AI to trigger CRM updates during calls
+- All transcripts are captured for compliance and training
+- Demo mode will simulate conversations without API calls
 
