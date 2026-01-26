@@ -121,31 +121,75 @@ export function useScribeToken() {
 }
 
 // Voice message templates
-export type VoiceMessageTemplate = 'follow-up' | 'introduction' | 'scheduling' | 'thank-you';
+export type VoiceMessageTemplate = 
+  | 'follow-up' 
+  | 'introduction' 
+  | 'scheduling' 
+  | 'thank-you'
+  | 'cold-intro'
+  | 'new-listing-alert'
+  | 'investor-opportunity'
+  | 'event-invitation'
+  | 're-engagement';
 
 export const VOICE_MESSAGE_TEMPLATES: Record<VoiceMessageTemplate, {
   name: string;
-  template: (params: { clientName: string; agentName?: string; propertyDetails?: string }) => string;
+  category: 'lead' | 'prospect' | 'general';
+  template: (params: { clientName: string; agentName?: string; propertyDetails?: string; location?: string; eventName?: string; eventDate?: string }) => string;
 }> = {
   'follow-up': {
     name: 'Follow-up Call',
+    category: 'lead',
     template: ({ clientName, agentName = 'your agent', propertyDetails }) =>
       `Hello ${clientName}, this is ${agentName} from MiCasa Real Estate calling to follow up on our recent conversation${propertyDetails ? ` about ${propertyDetails}` : ''}. I wanted to check in and see if you have any questions or if you'd like to schedule a viewing. Please feel free to call me back at your convenience. Have a wonderful day!`,
   },
   'introduction': {
     name: 'Introduction',
+    category: 'lead',
     template: ({ clientName, agentName = 'your dedicated agent' }) =>
       `Hello ${clientName}, I'm ${agentName} from MiCasa Real Estate. I'm reaching out because we received your inquiry and I'm excited to help you find your perfect property. I have several options that might interest you based on your preferences. I'd love to schedule a call at your convenience to discuss your requirements in detail. Looking forward to speaking with you soon!`,
   },
   'scheduling': {
     name: 'Schedule Viewing',
+    category: 'lead',
     template: ({ clientName, propertyDetails, agentName = 'your agent' }) =>
       `Hi ${clientName}, this is ${agentName} from MiCasa. I'm calling to schedule a viewing${propertyDetails ? ` for the ${propertyDetails}` : ''} you expressed interest in. I have availability this week and would love to show you the property in person. Please let me know your preferred time and I'll arrange everything. Talk to you soon!`,
   },
   'thank-you': {
     name: 'Thank You',
+    category: 'general',
     template: ({ clientName, agentName = 'your agent' }) =>
       `Hello ${clientName}, this is ${agentName} from MiCasa Real Estate. I wanted to personally thank you for choosing us for your property search. It was a pleasure working with you. If you ever need assistance with real estate in the future, please don't hesitate to reach out. Wishing you all the best in your new home!`,
+  },
+  'cold-intro': {
+    name: 'Cold Introduction',
+    category: 'prospect',
+    template: ({ clientName, agentName = 'your property advisor', location }) =>
+      `Hello ${clientName}, this is ${agentName} from MiCasa Real Estate. I noticed you recently expressed interest in properties${location ? ` in ${location}` : ' in the UAE'}. I'm calling to introduce myself and learn more about what you're looking for. We have some exclusive listings that might be perfect for you. I'd love to chat for just a few minutes when you have time. Feel free to call or text me back!`,
+  },
+  'new-listing-alert': {
+    name: 'New Listing Alert',
+    category: 'prospect',
+    template: ({ clientName, propertyDetails, location, agentName = 'your agent' }) =>
+      `Hi ${clientName}, this is ${agentName} from MiCasa with exciting news! A new ${propertyDetails || 'property'} just came on the market${location ? ` in ${location}` : ''} that matches what you've been looking for. It's priced competitively and I expect it to move quickly. Would you like to be among the first to view it? Give me a call back as soon as you can!`,
+  },
+  'investor-opportunity': {
+    name: 'Investor Opportunity',
+    category: 'prospect',
+    template: ({ clientName, propertyDetails, agentName = 'your investment advisor' }) =>
+      `Hello ${clientName}, this is ${agentName} from MiCasa Real Estate. I'm reaching out because we have an exclusive off-plan investment opportunity that I think would interest you. ${propertyDetails ? propertyDetails : 'This project offers attractive payment plans and strong projected returns.'} Many of our investors are already securing units. I'd love to share the investment summary with you. Let me know when you're available for a quick call!`,
+  },
+  'event-invitation': {
+    name: 'Event Invitation',
+    category: 'prospect',
+    template: ({ clientName, eventName, eventDate, agentName = 'your agent' }) =>
+      `Hi ${clientName}, this is ${agentName} from MiCasa Real Estate. I'm personally inviting you to ${eventName || 'our upcoming property launch event'}${eventDate ? ` on ${eventDate}` : ' this week'}. It's a great opportunity to see exclusive properties, meet developers, and get first access to new listings. Would you like me to reserve a spot for you? Let me know!`,
+  },
+  're-engagement': {
+    name: 'Re-engagement',
+    category: 'prospect',
+    template: ({ clientName, agentName = 'your agent', location }) =>
+      `Hello ${clientName}, this is ${agentName} from MiCasa Real Estate. It's been a while since we last spoke, and I wanted to check in. The market${location ? ` in ${location}` : ''} has some interesting developments, and I thought of you. Whether you're still considering a purchase or just want to stay updated, I'm here to help. Feel free to reach out anytime. Hope to hear from you soon!`,
   },
 };
 
@@ -154,7 +198,14 @@ export function useVoiceMessage() {
 
   const generateMessage = useCallback(async (
     template: VoiceMessageTemplate,
-    params: { clientName: string; agentName?: string; propertyDetails?: string },
+    params: { 
+      clientName: string; 
+      agentName?: string; 
+      propertyDetails?: string;
+      location?: string;
+      eventName?: string;
+      eventDate?: string;
+    },
     voiceId?: string
   ) => {
     const templateConfig = VOICE_MESSAGE_TEMPLATES[template];
@@ -166,13 +217,30 @@ export function useVoiceMessage() {
     return tts.generateSpeech(text, voiceId);
   }, [tts]);
 
+  const getTemplatesByCategory = useCallback((category: 'lead' | 'prospect' | 'general') => {
+    return Object.entries(VOICE_MESSAGE_TEMPLATES)
+      .filter(([_, config]) => config.category === category)
+      .map(([key, config]) => ({ key: key as VoiceMessageTemplate, ...config }));
+  }, []);
+
   return {
     generateMessage,
     generateSpeech: tts.generateSpeech,
-    getMessageText: (template: VoiceMessageTemplate, params: { clientName: string; agentName?: string; propertyDetails?: string }) => {
+    getMessageText: (
+      template: VoiceMessageTemplate, 
+      params: { 
+        clientName: string; 
+        agentName?: string; 
+        propertyDetails?: string;
+        location?: string;
+        eventName?: string;
+        eventDate?: string;
+      }
+    ) => {
       const templateConfig = VOICE_MESSAGE_TEMPLATES[template];
       return templateConfig?.template(params) || '';
     },
+    getTemplatesByCategory,
     ...tts,
   };
 }
