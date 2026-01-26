@@ -1,193 +1,146 @@
 
 
-# Cold Calling with ElevenLabs
+# Dynamic Suggested Prompts for AI Agent Chat
 
 ## Overview
 
-This plan implements a comprehensive cold calling toolkit using ElevenLabs, with two main components:
-
-1. **AI Voice Agent** - An autonomous conversational AI that can handle initial prospect outreach
-2. **Cold Call Toolkit** - Enhanced voice message templates, live call transcription, and script rehearsal for prospects
+Enhance the AI Agent chat experience by replacing static quick prompts with intelligent, context-aware suggestions that adapt based on the conversation flow. This eliminates repetitive typing and guides users toward productive next steps.
 
 ---
 
-## Feature 1: AI Cold Calling Voice Agent
+## Current State
 
-### What It Does
-
-A real-time conversational AI agent that can:
-- Initiate conversations with prospects when triggered by an agent
-- Qualify interest level and collect property requirements
-- Answer FAQs about available listings
-- Schedule viewings or callback times
-- Transfer context to human agent when needed
-
-### Architecture
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                     Agent Dashboard                          │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │ Prospect: Ahmed Al-Rashid   [Start AI Call] [Manual] │   │
-│  └──────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│              ElevenLabs Conversational AI                    │
-│  • WebRTC connection via @elevenlabs/react                   │
-│  • Configured agent with real estate context                 │
-│  • Client tools for CRM updates                              │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Edge Function                              │
-│  elevenlabs-conversation-token                               │
-│  • Generates secure WebRTC token                             │
-│  • Passes prospect context to agent                          │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### New Components
-
-| Component | Purpose |
-|-----------|---------|
-| `AIVoiceAgent.tsx` | Main voice agent interface with start/stop controls, live transcript display, and status indicators |
-| `AICallPanel.tsx` | Expandable panel showing call progress, detected intents, and suggested actions |
-| `useConversationAgent` hook | Wrapper around `@elevenlabs/react` `useConversation` with CRM integration |
-
-### Edge Function: `elevenlabs-conversation-token`
-
-Generates a secure conversation token with prospect context:
+Both `AIAgentChat.tsx` and `FloatingAIChat.tsx` have hardcoded `QUICK_PROMPTS` arrays that only appear when the chat is empty:
 
 ```typescript
-// Returns WebRTC token with context
-{
-  token: "...",
-  conversationId: "...",
-  context: {
-    prospectName: "Ahmed Al-Rashid",
-    propertyInterests: ["3BR Villa", "Al Reem Island"],
-    previousInteractions: 2
-  }
+const QUICK_PROMPTS = [
+  { label: 'Pipeline Status', prompt: 'Give me a summary of the current pipeline health' },
+  { label: 'Today\'s Priorities', prompt: 'What should I focus on today?' },
+  // ... etc
+];
+```
+
+**Problems:**
+- Suggestions disappear after the first message
+- No contextual awareness of conversation topic
+- Users must type follow-up questions manually
+
+---
+
+## Solution: Smart Suggestion Engine
+
+### Suggestion Categories
+
+| Category | Trigger | Example Suggestions |
+|----------|---------|---------------------|
+| **Initial** | Empty chat | "Pipeline status", "Today's priorities", "Recent leads" |
+| **Prospect Context** | User asks about a prospect | "Show contact history", "Generate voice message", "Update status" |
+| **Lead Context** | User asks about a lead | "Qualify this lead", "Find matching properties", "Schedule follow-up" |
+| **Deal Context** | User asks about a deal | "Show deal economics", "Check compliance status", "View timeline" |
+| **Pipeline/Analytics** | User asks about metrics | "Compare to last month", "Show by agent", "Export report" |
+| **Follow-up** | After any response | "Tell me more", "What's next?", "Any concerns?" |
+
+### Implementation Approach
+
+1. **Analyze last message content** to detect entities and topics
+2. **Generate 3-4 relevant suggestions** based on detected context
+3. **Display suggestions below the input area** (always visible during conversation)
+4. **Clicking a suggestion sends it immediately**
+
+---
+
+## Technical Implementation
+
+### New Utility: `generateSuggestions()`
+
+Create a function that analyzes the conversation and returns contextual prompts:
+
+```typescript
+interface SuggestionContext {
+  lastUserMessage: string;
+  lastAssistantMessage: string;
+  messageCount: number;
+  detectedEntities: {
+    prospectIds?: string[];
+    leadIds?: string[];
+    dealIds?: string[];
+    names?: string[];
+  };
+}
+
+function generateSuggestions(context: SuggestionContext): string[] {
+  // Returns 3-4 relevant prompts based on context
 }
 ```
 
-### Client Tools (Triggered by AI)
+### Entity Detection Logic
 
-The agent can call these functions during conversation:
+Parse messages for:
+- **CRM IDs**: `PR-XXXXXX`, `LD-XXXXXX`, `DL-XXXXXX`
+- **Names**: Capitalized words that aren't common terms
+- **Topics**: Keywords like "pipeline", "deal", "lead", "prospect", "compliance"
 
-| Tool | Action |
-|------|--------|
-| `updateProspectStatus` | Update outreach status in CRM |
-| `scheduleCallback` | Create calendar event for follow-up |
-| `captureRequirements` | Save detected property requirements |
-| `requestHumanTransfer` | Flag for agent takeover |
+### Suggestion Mapping
 
-### Agent Configuration (ElevenLabs Dashboard)
-
-The AI agent needs to be configured with:
-- **System Prompt**: Real estate context, MiCasa branding, compliance guidelines
-- **First Message**: Personalized greeting using prospect name
-- **Voice**: Professional voice (Sarah or George)
-- **Client Tools**: The functions listed above
-
----
-
-## Feature 2: Cold Call Toolkit for Prospects
-
-### New Templates for Cold Calling
-
-Add prospect-specific voice message templates:
-
-| Template | Use Case |
-|----------|----------|
-| `cold-intro` | First contact with a new prospect |
-| `new-listing-alert` | Notify about matching properties |
-| `investor-opportunity` | Off-plan investment pitch |
-| `event-invitation` | Invite to property launches/roadshows |
-| `re-engagement` | Win back inactive prospects |
-
-### ProspectDetailSheet Integration
-
-Add voice features to the prospect detail view:
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ Prospect: Ahmed Al-Rashid                                    │
-│ Status: Not Contacted                                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│ [AI Call Assistant]  [Generate Voice Drop]  [Call Script]   │
-│                                                              │
-│ ┌──────────────────────────────────────────────────────────┐│
-│ │ 🎤 AI Voice Agent                              [Start]  ││
-│ │ Start an AI-assisted call with this prospect            ││
-│ └──────────────────────────────────────────────────────────┘│
-│                                                              │
-│ ┌──────────────────────────────────────────────────────────┐│
-│ │ 📨 Voice Message                                         ││
-│ │ Template: [Cold Intro ▼]  Voice: [Sarah ▼]               ││
-│ │ "Hello Ahmed, I'm Sarah from MiCasa Real Estate..."     ││
-│ │                                    [Generate] [Download] ││
-│ └──────────────────────────────────────────────────────────┘│
-│                                                              │
-│ ┌──────────────────────────────────────────────────────────┐│
-│ │ 🎙️ Live Call Notes                                       ││
-│ │ [Start Recording] to capture call notes in real-time    ││
-│ └──────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Call Script Rehearsal
-
-Generate TTS audio of cold call scripts for agent training:
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ 📜 Call Script Rehearsal                                     │
-│                                                              │
-│ Script: [Cold Call Opening ▼]                                │
-│                                                              │
-│ "Good morning, this is [Agent] from MiCasa Real Estate.     │
-│ I noticed you recently inquired about properties in          │
-│ [Location]. I have a few exclusive listings that might       │
-│ interest you..."                                             │
-│                                                              │
-│ [▶️ Play Script]  [🔄 Regenerate]                            │
-│                                                              │
-│ 💡 Practice alongside the AI voice to perfect your pitch    │
-└─────────────────────────────────────────────────────────────┘
-```
+| Detected Pattern | Generated Suggestions |
+|------------------|----------------------|
+| Prospect name/ID mentioned | "Show their requirements", "Generate a follow-up message", "What's their status?" |
+| Lead ID mentioned | "Qualify this lead", "Find matching listings", "What's the next action?" |
+| Deal ID mentioned | "Show deal economics", "Check compliance status", "What documents are pending?" |
+| Pipeline/metrics topic | "Break down by stage", "Show aging leads", "Compare to last week" |
+| Listing topic | "Generate description", "Find similar listings", "What's the competition?" |
+| No specific context | "Show today's priorities", "Any urgent follow-ups?", "Pipeline health check" |
 
 ---
 
-## Implementation Phases
+## UI Changes
 
-### Phase 1: Infrastructure
-1. Install `@elevenlabs/react` package
-2. Create `elevenlabs-conversation-token` edge function
-3. Create `useConversationAgent` hook
-4. Add config entry for edge function
+### Suggestion Chips Component
 
-### Phase 2: AI Voice Agent UI
-1. Create `AIVoiceAgent.tsx` component
-2. Create `AICallPanel.tsx` for call controls and transcript
-3. Add volume visualization and status indicators
-4. Implement client tools for CRM updates
+Create a reusable `SuggestionChips.tsx` component:
 
-### Phase 3: Prospect Integration
-1. Add cold calling templates to `useElevenLabs.ts`
-2. Integrate `VoiceMessageGenerator` into `ProspectDetailSheet.tsx`
-3. Integrate `VoiceTranscriber` for live call notes
-4. Add AI Voice Agent trigger button
+```tsx
+interface SuggestionChipsProps {
+  suggestions: string[];
+  onSelect: (suggestion: string) => void;
+  isLoading?: boolean;
+}
 
-### Phase 4: Call Script Rehearsal
-1. Create `CallScriptRehearsal.tsx` component
-2. Add predefined scripts for common scenarios
-3. Enable custom script editing
-4. Add to training/resources section
+function SuggestionChips({ suggestions, onSelect, isLoading }: SuggestionChipsProps) {
+  if (isLoading || suggestions.length === 0) return null;
+  
+  return (
+    <div className="flex flex-wrap gap-2 px-4 py-2 border-t border-border bg-muted/30">
+      <span className="text-xs text-muted-foreground">Suggestions:</span>
+      {suggestions.map((s) => (
+        <Button
+          key={s}
+          variant="outline"
+          size="sm"
+          className="text-xs h-7"
+          onClick={() => onSelect(s)}
+        >
+          {s}
+        </Button>
+      ))}
+    </div>
+  );
+}
+```
+
+### Layout Update
+
+Place suggestions between the message area and input:
+
+```text
+┌────────────────────────────────────┐
+│ [Messages ScrollArea]              │
+├────────────────────────────────────┤
+│ Suggestions: [Chip] [Chip] [Chip]  │  ← NEW
+├────────────────────────────────────┤
+│ [Input] [Send]                     │
+└────────────────────────────────────┘
+```
 
 ---
 
@@ -195,46 +148,145 @@ Generate TTS audio of cold call scripts for agent training:
 
 | File | Purpose |
 |------|---------|
-| `supabase/functions/elevenlabs-conversation-token/index.ts` | Generate WebRTC conversation tokens |
-| `src/hooks/useConversationAgent.ts` | Wrapper hook for ElevenLabs agent |
-| `src/components/voice/AIVoiceAgent.tsx` | Main voice agent component |
-| `src/components/voice/AICallPanel.tsx` | Call controls and transcript display |
-| `src/components/voice/CallScriptRehearsal.tsx` | Script practice component |
+| `src/components/ai/SuggestionChips.tsx` | Reusable suggestion buttons component |
+| `src/lib/chat-suggestions.ts` | Suggestion generation logic with entity detection |
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `package.json` | Add `@elevenlabs/react` dependency |
-| `supabase/config.toml` | Add edge function config |
-| `src/hooks/useElevenLabs.ts` | Add cold calling templates |
-| `src/components/prospects/ProspectDetailSheet.tsx` | Add voice agent and message generator |
+| `src/components/ai/AIAgentChat.tsx` | Add dynamic suggestions below messages, integrate suggestion generator |
+| `src/components/ai/FloatingAIChat.tsx` | Same updates for the floating chat panel |
 
 ---
 
-## Dependencies
+## Suggestion Generation Logic
 
-- `@elevenlabs/react` - React SDK for Conversational AI
-- Existing `ELEVENLABS_API_KEY` secret (already configured)
+```typescript
+// src/lib/chat-suggestions.ts
+
+const ENTITY_PATTERNS = {
+  prospect: /\b(PR|CRM)-[A-Z0-9]{4,12}\b/gi,
+  lead: /\bLD-[A-Z0-9]{4,12}\b/gi,
+  deal: /\bDL-[A-Z0-9]{4,12}\b/gi,
+};
+
+const TOPIC_SUGGESTIONS = {
+  prospect: [
+    "What's their contact history?",
+    "Generate a follow-up voice message",
+    "Update their status",
+    "Show their requirements",
+  ],
+  lead: [
+    "Qualify this lead",
+    "Find matching properties",
+    "Schedule next action",
+    "Show lead timeline",
+  ],
+  deal: [
+    "Show deal economics",
+    "Check compliance status",
+    "What documents are pending?",
+    "Show transaction timeline",
+  ],
+  pipeline: [
+    "Break down by stage",
+    "Show aging leads",
+    "Compare to last week",
+    "Which deals need attention?",
+  ],
+  listing: [
+    "Generate a description",
+    "Find similar properties",
+    "What's the competition?",
+    "Show market insights",
+  ],
+  default: [
+    "Show today's priorities",
+    "Any urgent follow-ups?",
+    "Pipeline health check",
+    "Recent activity summary",
+  ],
+};
+
+export function generateSuggestions(
+  lastUserMessage: string,
+  lastAssistantResponse: string,
+  messageCount: number
+): string[] {
+  // Empty chat - show defaults
+  if (messageCount === 0) {
+    return TOPIC_SUGGESTIONS.default;
+  }
+
+  const combined = `${lastUserMessage} ${lastAssistantResponse}`.toLowerCase();
+  
+  // Check for entity mentions
+  if (ENTITY_PATTERNS.prospect.test(lastUserMessage) || combined.includes('prospect')) {
+    return TOPIC_SUGGESTIONS.prospect.slice(0, 4);
+  }
+  if (ENTITY_PATTERNS.lead.test(lastUserMessage) || combined.includes('lead')) {
+    return TOPIC_SUGGESTIONS.lead.slice(0, 4);
+  }
+  if (ENTITY_PATTERNS.deal.test(lastUserMessage) || combined.includes('deal') || combined.includes('transaction')) {
+    return TOPIC_SUGGESTIONS.deal.slice(0, 4);
+  }
+  
+  // Check for topic keywords
+  if (combined.includes('pipeline') || combined.includes('funnel') || combined.includes('metrics')) {
+    return TOPIC_SUGGESTIONS.pipeline.slice(0, 4);
+  }
+  if (combined.includes('listing') || combined.includes('property') || combined.includes('unit')) {
+    return TOPIC_SUGGESTIONS.listing.slice(0, 4);
+  }
+  
+  // Generic follow-ups
+  return [
+    "Tell me more",
+    "What should I do next?",
+    "Any concerns?",
+    "Show related data",
+  ];
+}
+```
 
 ---
 
-## ElevenLabs Agent Setup Requirement
+## Implementation Phases
 
-The AI Voice Agent requires creating an agent in the ElevenLabs dashboard with:
-1. Custom system prompt for real estate context
-2. Client tools configuration matching the ones we implement
-3. Voice selection and language settings
+### Phase 1: Core Logic
+1. Create `src/lib/chat-suggestions.ts` with entity detection and suggestion mapping
+2. Create `src/components/ai/SuggestionChips.tsx` component
 
-This is a one-time setup that enables the conversational capabilities.
+### Phase 2: Integrate into AIAgentChat
+1. Import suggestion generator and chips component
+2. Add state for current suggestions
+3. Update suggestions after each message exchange
+4. Display chips above the input area
+
+### Phase 3: Integrate into FloatingAIChat
+1. Apply same changes to the floating chat variant
+2. Adjust styling for the narrower sheet layout
 
 ---
 
-## Technical Notes
+## Result
 
-- WebRTC provides low-latency, high-quality audio
-- Conversation tokens are single-use for security
-- Client tools allow the AI to trigger CRM updates during calls
-- All transcripts are captured for compliance and training
-- Demo mode will simulate conversations without API calls
+Users will see 3-4 contextual suggestions that update after each exchange:
+
+**Scenario 1: User asks about a prospect**
+> User: "Tell me about prospect Zaid"
+> AI: "Found Zaid Al-Rashid (PR-ABC123)..."
+> **Suggestions**: [What's their contact history?] [Generate follow-up message] [Update status] [Show requirements]
+
+**Scenario 2: User asks about pipeline**
+> User: "Pipeline status"
+> AI: "Current pipeline shows 45 leads..."
+> **Suggestions**: [Break down by stage] [Show aging leads] [Compare to last week] [Which deals need attention?]
+
+**Scenario 3: Generic follow-up**
+> User: "What should I focus on today?"
+> AI: "You have 3 leads due for follow-up..."
+> **Suggestions**: [Tell me more] [Show lead details] [Any compliance issues?] [Schedule reminders]
 
