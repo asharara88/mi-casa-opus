@@ -9,10 +9,11 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Phone, Mail, MapPin, Calendar, User, Building, Hash, MessageSquare, 
   Zap, Target, TrendingUp, CheckCircle, XCircle, AlertCircle,
-  DollarSign, Clock, FileText, Download, RotateCw
+  DollarSign, Clock, FileText, Download, RotateCw, Bot, Volume2, Mic, ChevronDown
 } from 'lucide-react';
 import type { Prospect } from '@/hooks/useProspects';
 import { format } from 'date-fns';
@@ -26,6 +27,8 @@ import {
 } from '@/lib/scoring-engine';
 import { getGateStatus, type ProspectData } from '@/lib/qualification-gates';
 import { useFunnelProcessor } from '@/hooks/useFunnelProcessor';
+import { ProspectVoiceMessage } from '@/components/voice/ProspectVoiceMessage';
+import { LiveCallNotes } from '@/components/voice/LiveCallNotes';
 
 interface Props {
   prospect: Prospect | null;
@@ -358,6 +361,31 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
               Email
             </Button>
           </div>
+
+          {/* Voice Tools Section */}
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" className="w-full justify-between">
+                <span className="flex items-center gap-2">
+                  <Bot className="h-4 w-4" />
+                  Cold Calling Tools
+                </span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-3 pt-3">
+              <ProspectVoiceMessage 
+                prospectName={extProspect.full_name}
+                location={extProspect.city || undefined}
+              />
+              <LiveCallNotes 
+                onTranscriptChange={(transcript) => {
+                  // Optionally auto-save to notes
+                  console.log('Transcript:', transcript);
+                }}
+              />
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Convert to Lead */}
           {!isAlreadyConverted && !isDisqualified && (
