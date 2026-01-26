@@ -218,6 +218,66 @@ export type Database = {
           },
         ]
       }
+      communication_logs: {
+        Row: {
+          channel: Database["public"]["Enums"]["communication_channel"]
+          content: string
+          created_at: string
+          created_by: string | null
+          delivered_at: string | null
+          direction: Database["public"]["Enums"]["message_direction"]
+          entity_id: string
+          entity_type: string
+          error_message: string | null
+          external_id: string | null
+          id: string
+          metadata: Json | null
+          read_at: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["message_status"]
+          subject: string | null
+          template_used: string | null
+        }
+        Insert: {
+          channel: Database["public"]["Enums"]["communication_channel"]
+          content: string
+          created_at?: string
+          created_by?: string | null
+          delivered_at?: string | null
+          direction?: Database["public"]["Enums"]["message_direction"]
+          entity_id: string
+          entity_type: string
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          metadata?: Json | null
+          read_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["message_status"]
+          subject?: string | null
+          template_used?: string | null
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["communication_channel"]
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          delivered_at?: string | null
+          direction?: Database["public"]["Enums"]["message_direction"]
+          entity_id?: string
+          entity_type?: string
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          metadata?: Json | null
+          read_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["message_status"]
+          subject?: string | null
+          template_used?: string | null
+        }
+        Relationships: []
+      }
       compliance_modules: {
         Row: {
           created_at: string
@@ -1696,33 +1756,48 @@ export type Database = {
           completed_at: string | null
           created_at: string
           document_id: string
+          docusign_envelope_id: string | null
+          docusign_status: string | null
           envelope_id: string
           execution_evidence: Json | null
           id: string
+          sent_at: string | null
           signers: Json
           status: Database["public"]["Enums"]["signature_status"]
+          void_reason: string | null
+          voided_at: string | null
         }
         Insert: {
           authority_checks?: Json | null
           completed_at?: string | null
           created_at?: string
           document_id: string
+          docusign_envelope_id?: string | null
+          docusign_status?: string | null
           envelope_id: string
           execution_evidence?: Json | null
           id?: string
+          sent_at?: string | null
           signers?: Json
           status?: Database["public"]["Enums"]["signature_status"]
+          void_reason?: string | null
+          voided_at?: string | null
         }
         Update: {
           authority_checks?: Json | null
           completed_at?: string | null
           created_at?: string
           document_id?: string
+          docusign_envelope_id?: string | null
+          docusign_status?: string | null
           envelope_id?: string
           execution_evidence?: Json | null
           id?: string
+          sent_at?: string | null
           signers?: Json
           status?: Database["public"]["Enums"]["signature_status"]
+          void_reason?: string | null
+          voided_at?: string | null
         }
         Relationships: [
           {
@@ -1754,6 +1829,88 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      viewing_bookings: {
+        Row: {
+          agent_id: string | null
+          cal_booking_id: string | null
+          cancelled_at: string | null
+          cancelled_reason: string | null
+          confirmation_sent: boolean | null
+          created_at: string
+          deal_id: string | null
+          duration_minutes: number
+          id: string
+          listing_id: string | null
+          location: string | null
+          notes: string | null
+          prospect_id: string | null
+          reminder_sent: boolean | null
+          scheduled_at: string
+          status: Database["public"]["Enums"]["viewing_status"]
+          updated_at: string
+        }
+        Insert: {
+          agent_id?: string | null
+          cal_booking_id?: string | null
+          cancelled_at?: string | null
+          cancelled_reason?: string | null
+          confirmation_sent?: boolean | null
+          created_at?: string
+          deal_id?: string | null
+          duration_minutes?: number
+          id?: string
+          listing_id?: string | null
+          location?: string | null
+          notes?: string | null
+          prospect_id?: string | null
+          reminder_sent?: boolean | null
+          scheduled_at: string
+          status?: Database["public"]["Enums"]["viewing_status"]
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string | null
+          cal_booking_id?: string | null
+          cancelled_at?: string | null
+          cancelled_reason?: string | null
+          confirmation_sent?: boolean | null
+          created_at?: string
+          deal_id?: string | null
+          duration_minutes?: number
+          id?: string
+          listing_id?: string | null
+          location?: string | null
+          notes?: string | null
+          prospect_id?: string | null
+          reminder_sent?: boolean | null
+          scheduled_at?: string
+          status?: Database["public"]["Enums"]["viewing_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viewing_bookings_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viewing_bookings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viewing_bookings_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -1838,6 +1995,7 @@ export type Database = {
         | "Print"
         | "Event"
       commission_status: "Expected" | "Earned" | "Received" | "Paid" | "Voided"
+      communication_channel: "whatsapp" | "sms" | "email"
       compliance_context_type: "listing" | "transaction" | "marketing"
       compliance_rule_severity: "BLOCK" | "ESCALATE"
       compliance_status: "APPROVED" | "BLOCKED" | "ESCALATED"
@@ -1919,6 +2077,8 @@ export type Database = {
         | "DuplicateLead"
         | "Other"
       madhmoun_status: "DRAFT" | "PENDING" | "VERIFIED" | "REJECTED"
+      message_direction: "outbound" | "inbound"
+      message_status: "pending" | "sent" | "delivered" | "failed" | "read"
       next_action_type:
         | "Call"
         | "WhatsApp"
@@ -1996,6 +2156,13 @@ export type Database = {
         | "ClosedLost"
       signature_status: "Pending" | "Signed" | "Declined" | "Expired"
       template_status: "Draft" | "Published" | "Deprecated"
+      viewing_status:
+        | "scheduled"
+        | "confirmed"
+        | "completed"
+        | "cancelled"
+        | "no_show"
+        | "rescheduled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2182,6 +2349,7 @@ export const Constants = {
         "Event",
       ],
       commission_status: ["Expected", "Earned", "Received", "Paid", "Voided"],
+      communication_channel: ["whatsapp", "sms", "email"],
       compliance_context_type: ["listing", "transaction", "marketing"],
       compliance_rule_severity: ["BLOCK", "ESCALATE"],
       compliance_status: ["APPROVED", "BLOCKED", "ESCALATED"],
@@ -2271,6 +2439,8 @@ export const Constants = {
         "Other",
       ],
       madhmoun_status: ["DRAFT", "PENDING", "VERIFIED", "REJECTED"],
+      message_direction: ["outbound", "inbound"],
+      message_status: ["pending", "sent", "delivered", "failed", "read"],
       next_action_type: [
         "Call",
         "WhatsApp",
@@ -2357,6 +2527,14 @@ export const Constants = {
       ],
       signature_status: ["Pending", "Signed", "Declined", "Expired"],
       template_status: ["Draft", "Published", "Deprecated"],
+      viewing_status: [
+        "scheduled",
+        "confirmed",
+        "completed",
+        "cancelled",
+        "no_show",
+        "rescheduled",
+      ],
     },
   },
 } as const
