@@ -87,19 +87,25 @@ export function FunnelStage({
         height={height - 4}
         style={{ pointerEvents: 'none', overflow: 'visible' }}
       >
-        <div className="h-full flex items-center justify-between px-1 sm:px-2 gap-1">
+        <div 
+          className="h-full flex items-center justify-between px-1 sm:px-2 gap-1"
+          style={{ 
+            color: 'white',
+            textShadow: '0 1px 3px rgba(0,0,0,0.5), 0 0 8px rgba(0,0,0,0.3)'
+          }}
+        >
           <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
-            <Icon className="w-3 h-3 sm:w-4 sm:h-4 text-foreground/80 shrink-0" />
-            <span className="text-[10px] sm:text-xs md:text-sm font-medium text-foreground truncate">
+            <Icon className="w-3 h-3 sm:w-4 sm:h-4 shrink-0 drop-shadow-md" style={{ color: 'white' }} />
+            <span className="text-[10px] sm:text-xs md:text-sm font-semibold truncate drop-shadow-md">
               {label}
             </span>
           </div>
           <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
-            <span className="text-sm sm:text-base md:text-lg font-bold text-foreground tabular-nums">
+            <span className="text-sm sm:text-base md:text-lg font-bold tabular-nums drop-shadow-md">
               <CountUp end={count} duration={1.5} delay={index * 0.1} />
             </span>
             {isClickable && (
-              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-foreground/60" />
+              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 opacity-80 drop-shadow-md" style={{ color: 'white' }} />
             )}
           </div>
         </div>
