@@ -40,7 +40,8 @@ const DEVELOPER_PRESETS = [
   { name: 'Emirates Dev', url: 'https://www.emiratesdevelopment.ae/projects/' },
   { name: 'One Dev', url: 'https://onedevelopment.ae/projects/' },
   { name: 'Ohana', url: 'https://ohanadevelopment.com/projects/' },
-  { name: 'SAAS', url: 'https://saasproperties.com/projects/' },
+  { name: 'SAAS', url: 'https://saasproperties.com/en/properties/abu-dhabi/' },
+  { name: 'AD Off-Plan', url: 'https://abudhabioffplan.ae/' },
 ];
 
 // Demo data for testing without API calls - Abu Dhabi off-plan projects
