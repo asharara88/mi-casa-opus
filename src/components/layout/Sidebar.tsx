@@ -42,8 +42,8 @@ interface NavItem {
   group: string;
 }
 
-// Simplified navigation: 5 groups
-// Dashboard | Marketing | Sales | Operations | Settings
+// Simplified navigation: 6 groups
+// Dashboard | Marketing | Sales | Operations | Teams | Settings
 const NAV_ITEMS: NavItem[] = [
   // === OPERATOR ===
   // Dashboard
@@ -62,6 +62,10 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'listings', label: 'Listings', icon: Building2, roles: ['Operator'], group: 'operations' },
   { id: 'documents', label: 'Documents', icon: FileText, roles: ['Operator'], group: 'operations' },
   { id: 'commissions', label: 'Commissions', icon: DollarSign, roles: ['Operator'], group: 'operations' },
+  
+  // Teams (Internal collaboration)
+  { id: 'meetings', label: 'Meetings', icon: Users, roles: ['Operator', 'LegalOwner', 'Broker'], group: 'teams' },
+  { id: 'directory', label: 'Team Directory', icon: Users, roles: ['Operator', 'LegalOwner', 'Broker'], group: 'teams' },
   
   // Settings (Users, Templates, System)
   { id: 'users', label: 'Users', icon: Users, roles: ['Operator'], group: 'settings' },
@@ -93,6 +97,8 @@ const GROUP_CONFIG: Record<string, { label: string; icon: React.ElementType }> =
   marketing: { label: 'Marketing', icon: Megaphone },
   sales: { label: 'Sales', icon: TrendingUp },
   operations: { label: 'Operations', icon: Building2 },
+  teams: { label: 'Teams', icon: Users },
+  customers: { label: 'Customers', icon: Users },
   settings: { label: 'Settings', icon: Settings },
 };
 
@@ -164,7 +170,7 @@ export function Sidebar({
   const roleBadge = getRoleBadge(currentRole);
 
   // Order groups consistently
-  const groupOrder = ['dashboard', 'marketing', 'sales', 'operations', 'settings'];
+  const groupOrder = ['dashboard', 'marketing', 'sales', 'operations', 'teams', 'customers', 'settings'];
   const orderedGroups = groupOrder.filter(g => groupedItems[g]?.length > 0);
 
   return (
