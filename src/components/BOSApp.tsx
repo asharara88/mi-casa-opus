@@ -46,10 +46,10 @@ const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   // Operator sections
   dashboard: { title: 'Control Room', subtitle: 'Brokerage operations overview' },
   marketing: { title: 'Marketing Hub', subtitle: 'Campaigns, ads, events, and referral network' },
-  leads: { title: 'Lead Pipeline', subtitle: 'Manage and qualify incoming leads' },
+  leads: { title: 'Lead Pipeline', subtitle: 'Qualified leads for sales conversion' },
   deals: { title: 'Deal Pipeline', subtitle: 'Track deals through the transaction lifecycle' },
   listings: { title: 'Listings', subtitle: 'Property inventory management' },
-  prospects: { title: 'Prospects', subtitle: 'Cold outreach and engagement tracking' },
+  prospects: { title: 'Prospects', subtitle: 'Marketing pool for campaigns and mass outreach' },
   documents: { title: 'Document Center', subtitle: 'Templates and executed documents' },
   signatures: { title: 'Signature Envelopes', subtitle: 'Track document execution status' },
   evidence: { title: 'Evidence Center', subtitle: 'Captured evidence and attachments' },

@@ -15,6 +15,8 @@ import {
   LogOut,
   X,
   Bot,
+  Megaphone,
+  TrendingUp,
 } from 'lucide-react';
 import {
   Collapsible,
@@ -41,20 +43,20 @@ interface NavItem {
 }
 
 // Simplified navigation: 5 groups
-// Dashboard | Marketing | Customers | Operations | Settings
+// Dashboard | Marketing | Sales | Operations | Settings
 const NAV_ITEMS: NavItem[] = [
   // === OPERATOR ===
   // Dashboard
   { id: 'dashboard', label: 'Control Room', icon: LayoutDashboard, roles: ['Operator'], group: 'dashboard' },
   { id: 'ai-agent', label: 'AI Agent', icon: Bot, roles: ['Operator'], group: 'dashboard' },
   
-  // Marketing (NEW)
-  { id: 'marketing', label: 'Marketing Hub', icon: Building2, roles: ['Operator'], group: 'marketing' },
+  // Marketing (Campaigns, Ads, Prospects)
+  { id: 'marketing', label: 'Marketing Hub', icon: Megaphone, roles: ['Operator'], group: 'marketing' },
+  { id: 'prospects', label: 'Prospects', icon: Users, roles: ['Operator'], group: 'marketing' },
   
-  // Customers (unified funnel: Prospects → Leads → Deals)
-  { id: 'prospects', label: 'Prospects', icon: Users, roles: ['Operator'], group: 'customers' },
-  { id: 'leads', label: 'Leads', icon: Users, roles: ['Operator'], group: 'customers' },
-  { id: 'deals', label: 'Deals', icon: Handshake, roles: ['Operator'], group: 'customers' },
+  // Sales (Leads → Deals pipeline)
+  { id: 'leads', label: 'Leads', icon: Users, roles: ['Operator'], group: 'sales' },
+  { id: 'deals', label: 'Deals', icon: Handshake, roles: ['Operator'], group: 'sales' },
   
   // Operations (Listings, Documents, Commissions)
   { id: 'listings', label: 'Listings', icon: Building2, roles: ['Operator'], group: 'operations' },
@@ -88,8 +90,8 @@ const NAV_ITEMS: NavItem[] = [
 
 const GROUP_CONFIG: Record<string, { label: string; icon: React.ElementType }> = {
   dashboard: { label: 'Dashboard', icon: LayoutDashboard },
-  marketing: { label: 'Marketing', icon: Building2 },
-  customers: { label: 'Customers', icon: Users },
+  marketing: { label: 'Marketing', icon: Megaphone },
+  sales: { label: 'Sales', icon: TrendingUp },
   operations: { label: 'Operations', icon: Building2 },
   settings: { label: 'Settings', icon: Settings },
 };
@@ -162,7 +164,7 @@ export function Sidebar({
   const roleBadge = getRoleBadge(currentRole);
 
   // Order groups consistently
-  const groupOrder = ['dashboard', 'marketing', 'customers', 'operations', 'settings'];
+  const groupOrder = ['dashboard', 'marketing', 'sales', 'operations', 'settings'];
   const orderedGroups = groupOrder.filter(g => groupedItems[g]?.length > 0);
 
   return (
