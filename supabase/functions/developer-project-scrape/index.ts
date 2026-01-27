@@ -1,9 +1,11 @@
+import { AI_MODELS } from "../_shared/models.ts";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const LOVABLE_API_URL = 'https://api.lovable.dev/v1/chat/completions';
+const LOVABLE_API_URL = 'https://ai.gateway.lovable.dev/v1/chat/completions';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -84,7 +86,7 @@ ${content.substring(0, 50000)}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: AI_MODELS.REASONING,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
