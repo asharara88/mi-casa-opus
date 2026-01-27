@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { useLeads, useUpdateLead, useCreateLead, Lead } from '@/hooks/useLeads';
 import { useCreateDeal } from '@/hooks/useDeals';
+import { usePortalInquiryStats } from '@/hooks/usePortalInquiries';
 import { LeadPipeline } from './LeadPipeline';
 import { LeadDetail } from './LeadDetail';
 import { AddLeadModal } from './AddLeadModal';
+import { PortalInquiriesPanel } from './PortalInquiriesPanel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Filter, LayoutGrid, List, Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Search, Filter, LayoutGrid, List, Loader2, Inbox } from 'lucide-react';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 import { LostReasonModal, LostReason } from '@/components/modals/LostReasonModal';
@@ -44,6 +48,7 @@ function transformLead(dbLead: Lead) {
 
 export function LeadsSection() {
   const { data: dbLeads, isLoading, error } = useLeads();
+  const { data: inquiryStats } = usePortalInquiryStats();
   const updateLead = useUpdateLead();
   const createLead = useCreateLead();
   const createDeal = useCreateDeal();
@@ -52,6 +57,7 @@ export function LeadsSection() {
   const [viewMode, setViewMode] = useState<'pipeline' | 'list'>('pipeline');
   const [searchQuery, setSearchQuery] = useState('');
   const [stateFilter, setStateFilter] = useState<LeadState | 'all'>('all');
+  const [activeTab, setActiveTab] = useState<'leads' | 'inquiries'>('leads');
   
   // Add lead modal state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -246,7 +252,7 @@ export function LeadsSection() {
     );
   }
 
-  // List view
+  // List view with tabs
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -263,125 +269,146 @@ export function LeadsSection() {
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search leads..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Select value={stateFilter} onValueChange={(v) => setStateFilter(v as LeadState | 'all')}>
-          <SelectTrigger className="w-40">
-            <Filter className="w-4 h-4 mr-2" />
-            <SelectValue placeholder="Filter by state" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All States</SelectItem>
-            <SelectItem value="New">New</SelectItem>
-            <SelectItem value="Contacted">Contacted</SelectItem>
-            <SelectItem value="Qualified">Qualified</SelectItem>
-            <SelectItem value="Disqualified">Disqualified</SelectItem>
-            <SelectItem value="Converted">Converted</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="flex items-center border rounded-lg">
-          <Button
-            variant={viewMode === 'pipeline' ? 'secondary' : 'ghost'}
-            size="icon"
-            onClick={() => setViewMode('pipeline')}
-          >
-            <LayoutGrid className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-            size="icon"
-            onClick={() => setViewMode('list')}
-          >
-            <List className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
+      {/* Main Tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'leads' | 'inquiries')}>
+        <TabsList>
+          <TabsTrigger value="leads">Pipeline</TabsTrigger>
+          <TabsTrigger value="inquiries" className="flex items-center gap-2">
+            <Inbox className="w-4 h-4" />
+            Portal Inquiries
+            {inquiryStats?.unprocessed ? (
+              <Badge variant="destructive" className="text-xs px-1.5 py-0">
+                {inquiryStats.unprocessed}
+              </Badge>
+            ) : null}
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Pipeline View */}
-      {viewMode === 'pipeline' && (
-        <LeadPipeline
-          leads={filteredLeads as any}
-          onLeadClick={handleLeadClick as any}
-          onTransition={handleTransition as any}
-          onDragTransition={handleDragTransition}
-          onSetNextAction={handleSetNextAction as any}
-        />
-      )}
+        <TabsContent value="leads" className="mt-4 space-y-4">
+          {/* Filters */}
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search leads..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={stateFilter} onValueChange={(v) => setStateFilter(v as LeadState | 'all')}>
+              <SelectTrigger className="w-40">
+                <Filter className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Filter by state" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All States</SelectItem>
+                <SelectItem value="New">New</SelectItem>
+                <SelectItem value="Contacted">Contacted</SelectItem>
+                <SelectItem value="Qualified">Qualified</SelectItem>
+                <SelectItem value="Disqualified">Disqualified</SelectItem>
+                <SelectItem value="Converted">Converted</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex items-center border rounded-lg">
+              <Button
+                variant={viewMode === 'pipeline' ? 'secondary' : 'ghost'}
+                size="icon"
+                onClick={() => setViewMode('pipeline')}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="icon"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
 
-      {/* List View */}
-      {viewMode === 'list' && (
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="text-left p-3 text-sm font-medium">Lead</th>
-                <th className="text-left p-3 text-sm font-medium">Contact</th>
-                <th className="text-left p-3 text-sm font-medium">Source</th>
-                <th className="text-left p-3 text-sm font-medium">State</th>
-                <th className="text-left p-3 text-sm font-medium">Next Action</th>
-                <th className="text-left p-3 text-sm font-medium">Created</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {filteredLeads.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                    No leads found
-                  </td>
-                </tr>
-              ) : (
-                filteredLeads.map((lead) => (
-                  <tr 
-                    key={lead.lead_id} 
-                    className="hover:bg-muted/30 cursor-pointer transition-colors"
-                    onClick={() => handleLeadClick(lead)}
-                  >
-                    <td className="p-3">
-                      <p className="font-medium">{lead.contact_identity.full_name}</p>
-                      <p className="text-xs text-muted-foreground">{lead.lead_id}</p>
-                    </td>
-                    <td className="p-3">
-                      <p className="text-sm">{lead.contact_identity.phone}</p>
-                      <p className="text-xs text-muted-foreground">{lead.contact_identity.email}</p>
-                    </td>
-                    <td className="p-3 text-sm">{lead.source}</td>
-                    <td className="p-3">
-                      <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
-                        lead.lead_state === 'New' ? 'bg-blue-500/20 text-blue-400' :
-                        lead.lead_state === 'Contacted' ? 'bg-amber-500/20 text-amber-400' :
-                        lead.lead_state === 'Qualified' ? 'bg-emerald-500/20 text-emerald-400' :
-                        lead.lead_state === 'Converted' ? 'bg-gold/20 text-gold' :
-                        'bg-slate-500/20 text-slate-400'
-                      }`}>
-                        {lead.lead_state}
-                      </span>
-                    </td>
-                    <td className="p-3 text-sm">
-                      {lead.next_action ? (
-                        <span className="text-xs">{lead.next_action}</span>
-                      ) : (
-                        <span className="text-xs text-destructive">No action</span>
-                      )}
-                    </td>
-                    <td className="p-3 text-sm text-muted-foreground">
-                      {new Date(lead.created_at).toLocaleDateString()}
-                    </td>
+          {/* Pipeline View */}
+          {viewMode === 'pipeline' && (
+            <LeadPipeline
+              leads={filteredLeads as any}
+              onLeadClick={handleLeadClick as any}
+              onTransition={handleTransition as any}
+              onDragTransition={handleDragTransition}
+              onSetNextAction={handleSetNextAction as any}
+            />
+          )}
+
+          {viewMode === 'list' && (
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="text-left p-3 text-sm font-medium">Lead</th>
+                    <th className="text-left p-3 text-sm font-medium">Contact</th>
+                    <th className="text-left p-3 text-sm font-medium">Source</th>
+                    <th className="text-left p-3 text-sm font-medium">State</th>
+                    <th className="text-left p-3 text-sm font-medium">Next Action</th>
+                    <th className="text-left p-3 text-sm font-medium">Created</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+                </thead>
+                <tbody className="divide-y">
+                  {filteredLeads.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                        No leads found
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredLeads.map((lead) => (
+                      <tr 
+                        key={lead.lead_id} 
+                        className="hover:bg-muted/30 cursor-pointer transition-colors"
+                        onClick={() => handleLeadClick(lead)}
+                      >
+                        <td className="p-3">
+                          <p className="font-medium">{lead.contact_identity.full_name}</p>
+                          <p className="text-xs text-muted-foreground">{lead.lead_id}</p>
+                        </td>
+                        <td className="p-3">
+                          <p className="text-sm">{lead.contact_identity.phone}</p>
+                          <p className="text-xs text-muted-foreground">{lead.contact_identity.email}</p>
+                        </td>
+                        <td className="p-3 text-sm">{lead.source}</td>
+                        <td className="p-3">
+                          <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                            lead.lead_state === 'New' ? 'bg-primary/20 text-primary' :
+                            lead.lead_state === 'Contacted' ? 'bg-accent/50 text-accent-foreground' :
+                            lead.lead_state === 'Qualified' ? 'bg-primary/20 text-primary' :
+                            lead.lead_state === 'Converted' ? 'bg-primary/30 text-primary' :
+                            'bg-muted text-muted-foreground'
+                          }`}>
+                            {lead.lead_state}
+                          </span>
+                        </td>
+                        <td className="p-3 text-sm">
+                          {lead.next_action ? (
+                            <span className="text-xs">{lead.next_action}</span>
+                          ) : (
+                            <span className="text-xs text-destructive">No action</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-sm text-muted-foreground">
+                          {new Date(lead.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="inquiries" className="mt-4">
+          <PortalInquiriesPanel />
+        </TabsContent>
+      </Tabs>
 
       {/* Lost Reason Modal */}
       <LostReasonModal
