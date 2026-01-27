@@ -1,66 +1,119 @@
 
 
-# Developer Catalog URL Updates
+# Fix Edge Functions for Scraping Tools
 
-## Overview
+## Problem Summary
 
-Update the Developer Catalog with the correct SAAS Properties URL and add a new Abu Dhabi off-plan aggregator site.
+The scraping edge functions have inconsistent configurations that cause failures:
 
----
-
-## Changes
-
-### 1. Fix SAAS Properties URL
-
-| Before | After |
-|--------|-------|
-| `https://saasproperties.com/projects/` | `https://saasproperties.com/en/properties/abu-dhabi/` |
-
-The new URL correctly points to their Abu Dhabi properties section.
-
-### 2. Add Abu Dhabi Off-Plan Aggregator
-
-Add a new preset for the aggregator site that consolidates all Abu Dhabi developments:
-
-| Developer | URL |
-|-----------|-----|
-| **AD Off-Plan** | `https://abudhabioffplan.ae/` |
-
-This aggregator is useful because it consolidates multiple developers in one place, providing a single scrape source for discovering new projects across all Abu Dhabi developers.
+| Function | Issue |
+|----------|-------|
+| `listing-extract` | **Wrong API URL** (`api.lovable.dev` vs `ai.gateway.lovable.dev`), unsupported `temperature` and `response_format` params |
+| `competitor-analyze` | Uses `temperature: 0.3` which may fail with certain models |
+| `developer-project-scrape` | Already fixed and working |
 
 ---
 
-## Updated Developer Presets
+## Solution
 
-```typescript
-const DEVELOPER_PRESETS = [
-  { name: 'Aldar', url: 'https://www.aldar.com/en/explore-aldar/businesses/development/residential' },
-  { name: 'Reportage', url: 'https://reportageuae.com/en/projects?emirate=abu-dhabi' },
-  { name: 'Bloom', url: 'https://bloomholding.com/properties/' },
-  { name: 'Q Properties', url: 'https://www.qproperties.ae/projects' },
-  { name: 'Imkan', url: 'https://www.imkan.ae/projects' },
-  { name: 'Modon', url: 'https://www.modon.ae/real-estate' },
-  { name: 'Emirates Dev', url: 'https://www.emiratesdevelopment.ae/projects/' },
-  { name: 'One Dev', url: 'https://onedevelopment.ae/projects/' },
-  { name: 'Ohana', url: 'https://ohanadevelopment.com/projects/' },
-  { name: 'SAAS', url: 'https://saasproperties.com/en/properties/abu-dhabi/' },  // UPDATED
-  { name: 'AD Off-Plan', url: 'https://abudhabioffplan.ae/' },  // NEW - Aggregator
-];
+Standardize all three edge functions to use:
+- Correct gateway URL: `https://ai.gateway.lovable.dev/v1/chat/completions`
+- No `temperature` parameter (use default)
+- No `response_format` parameter (unsupported)
+- Consistent JSON extraction from response content
+- Import shared AI_MODELS for model selection
+
+---
+
+## Changes Required
+
+### 1. Fix `listing-extract/index.ts`
+
+| Change | Before | After |
+|--------|--------|-------|
+| API URL | `https://api.lovable.dev/...` | `https://ai.gateway.lovable.dev/...` |
+| Model | Hardcoded `google/gemini-2.5-flash` | Use `AI_MODELS.CLASSIFICATION` |
+| Temperature | `0.1` | Remove parameter |
+| Response Format | `{ type: 'json_object' }` | Remove parameter |
+| Parsing | Direct JSON parse | Handle markdown code blocks like competitor-analyze |
+
+### 2. Fix `competitor-analyze/index.ts`
+
+| Change | Before | After |
+|--------|--------|-------|
+| Model | Hardcoded `google/gemini-3-flash-preview` | Use `AI_MODELS.REASONING` from shared models |
+| Temperature | `0.3` | Remove parameter |
+
+---
+
+## Updated File Structure
+
+```text
+supabase/functions/
+  _shared/
+    models.ts           # Already exists - shared model constants
+  competitor-analyze/
+    index.ts            # Update: import shared models, remove temperature
+  developer-project-scrape/
+    index.ts            # Already fixed - no changes needed
+  listing-extract/
+    index.ts            # Update: fix URL, import models, remove unsupported params
+  firecrawl-scrape/
+    index.ts            # No changes needed - works correctly
 ```
 
 ---
 
-## File to Modify
+## Technical Details
 
-| File | Changes |
-|------|---------|
-| `src/components/listings/DeveloperCatalog.tsx` | Update SAAS URL, add AD Off-Plan aggregator |
+### listing-extract Changes
+
+```typescript
+// Add import
+import { AI_MODELS } from "../_shared/models.ts";
+
+// Fix URL constant
+const LOVABLE_API_URL = 'https://ai.gateway.lovable.dev/v1/chat/completions';
+
+// Update API call - remove unsupported params
+body: JSON.stringify({
+  model: AI_MODELS.CLASSIFICATION,  // Use shared constant
+  messages: [...],
+  // NO temperature
+  // NO response_format
+}),
+
+// Update response parsing to handle markdown code blocks
+const jsonMatch = aiContent.match(/```json\n?([\s\S]*?)\n?```/) || 
+                  aiContent.match(/```\n?([\s\S]*?)\n?```/) ||
+                  [null, aiContent];
+const jsonStr = jsonMatch[1] || aiContent;
+result = JSON.parse(jsonStr.trim());
+```
+
+### competitor-analyze Changes
+
+```typescript
+// Add import
+import { AI_MODELS } from "../_shared/models.ts";
+
+// Update model and remove temperature
+body: JSON.stringify({
+  model: AI_MODELS.REASONING,  // Use shared constant
+  messages: [...],
+  // NO temperature - remove this line
+}),
+```
 
 ---
 
-## Summary
+## Testing
 
-- Fix SAAS Properties URL to point to Abu Dhabi properties page
-- Add Abu Dhabi Off-Plan aggregator site for consolidated developer discovery
-- Total presets: 11 (10 individual developers + 1 aggregator)
+After deploying the fixes:
+
+1. **Off Plan Development** - Scrape an Aldar project
+2. **Secondary Market Listings** - Analyze a Bayut search results page
+3. **Listing Import** (if used) - Extract a single property listing
+
+All three should complete without 500 errors.
 
