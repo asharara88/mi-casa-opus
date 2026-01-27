@@ -25,11 +25,13 @@ import {
   Shield,
   TrendingUp,
   Landmark,
+  Newspaper,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ListingDetailModal } from './ListingDetailModal';
 import { CompetitorAnalysis } from './CompetitorAnalysis';
 import { DeveloperCatalog } from './DeveloperCatalog';
+import { MarketBlogInsights } from './MarketBlogInsights';
 import { AddListingModal } from './AddListingModal';
 import { useListings } from '@/hooks/useListings';
 
@@ -153,6 +155,7 @@ export function ListingsSection() {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [competitorAnalysisOpen, setCompetitorAnalysisOpen] = useState(false);
   const [developerCatalogOpen, setDeveloperCatalogOpen] = useState(false);
+  const [marketInsightsOpen, setMarketInsightsOpen] = useState(false);
   const [addListingModalOpen, setAddListingModalOpen] = useState(false);
   
   // Fetch real listings from database
@@ -243,6 +246,14 @@ export function ListingsSection() {
           >
             <TrendingUp className="h-4 w-4 mr-2" />
             Secondary Market Listings
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setMarketInsightsOpen(true)}
+            className="hidden sm:flex"
+          >
+            <Newspaper className="h-4 w-4 mr-2" />
+            Market Insights
           </Button>
           <Button className="btn-gold" onClick={() => setAddListingModalOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -489,6 +500,12 @@ export function ListingsSection() {
       <DeveloperCatalog
         open={developerCatalogOpen}
         onOpenChange={setDeveloperCatalogOpen}
+      />
+
+      {/* Market Blog Insights Sheet */}
+      <MarketBlogInsights
+        open={marketInsightsOpen}
+        onOpenChange={setMarketInsightsOpen}
       />
 
       {/* Add Listing Modal */}

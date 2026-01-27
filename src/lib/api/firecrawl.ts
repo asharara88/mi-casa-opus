@@ -77,6 +77,29 @@ export type DeveloperScrapeResult = {
   sourceUrl: string;
 };
 
+// Blog/Insights Types
+export type ScrapedArticle = {
+  title: string;
+  summary: string;
+  category: 'Market Trend' | 'Investment' | 'Development' | 'Regulatory' | 'Community' | 'General';
+  keyInsights: string[];
+  relevantCommunities: string[];
+  sentiment: 'bullish' | 'bearish' | 'neutral';
+  publishDate: string | null;
+  author: string | null;
+  imageUrl: string | null;
+  sourceUrl: string | null;
+};
+
+export type BlogInsightsResult = {
+  articles: ScrapedArticle[];
+  marketSummary: string;
+  topTrends: string[];
+  sourceName: string;
+  scrapedAt: string;
+  sourceUrl: string;
+};
+
 // Listing Extraction Types
 export type ExtractedListing = {
   title: string;
@@ -173,6 +196,28 @@ export const firecrawlApi = {
       body: { 
         content: scrapedContent, 
         sourceUrl 
+      },
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return data;
+  },
+
+  // Extract insights from blog content
+  async scrapeBlogInsights(
+    scrapedContent: string,
+    sourceUrl: string,
+    sourceName?: string,
+    imageLinks?: string[]
+  ): Promise<FirecrawlResponse<BlogInsightsResult>> {
+    const { data, error } = await supabase.functions.invoke('blog-insights-extract', {
+      body: { 
+        content: scrapedContent, 
+        sourceUrl,
+        sourceName,
+        imageLinks 
       },
     });
 
