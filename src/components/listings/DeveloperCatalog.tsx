@@ -150,7 +150,7 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
   const [scrapeResult, setScrapeResult] = useState<DeveloperScrapeResult | null>(null);
   const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set());
   const [importingProject, setImportingProject] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('scrape');
+  const [activeTab, setActiveTab] = useState('search');
 
   const handleScrape = async (url: string, developerName?: string) => {
     if (isDemoMode) {
@@ -207,13 +207,13 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
       setActiveTab('results');
 
       toast({
-        title: 'Scrape Complete',
+        title: 'Search Complete',
         description: `Found ${extractResponse.data.projects.length} projects from ${extractResponse.data.developerInfo.name}`,
       });
     } catch (error) {
       console.error('Scrape error:', error);
       toast({
-        title: 'Scrape Failed',
+        title: 'Search Failed',
         description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive',
       });
@@ -343,13 +343,13 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
           <TabsList className="mx-6 mt-4">
-            <TabsTrigger value="scrape">Scrape</TabsTrigger>
+            <TabsTrigger value="search">Market Search</TabsTrigger>
             <TabsTrigger value="results" disabled={!scrapeResult}>
               Results {scrapeResult && `(${scrapeResult.projects.length})`}
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="scrape" className="flex-1 p-6 pt-4">
+          <TabsContent value="search" className="flex-1 p-6 pt-4">
             <div className="space-y-6">
               {/* Developer Presets */}
               <div>
@@ -397,7 +397,7 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
               {isLoading && (
                 <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                   <Loader2 className="h-8 w-8 animate-spin mb-4" />
-                  <p className="text-sm">Scraping developer website...</p>
+                  <p className="text-sm">Searching developer catalog...</p>
                   <p className="text-xs mt-1">This may take 15-30 seconds</p>
                 </div>
               )}
@@ -408,7 +408,7 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
                   <h4 className="font-medium mb-2">How it works</h4>
                   <ol className="text-sm text-muted-foreground space-y-1.5 list-decimal list-inside">
                     <li>Select a developer or enter a custom URL</li>
-                    <li>We scrape the website for project information</li>
+                    <li>We search the website for project information</li>
                     <li>AI extracts project details, pricing, and amenities</li>
                     <li>Review and import projects to your catalog</li>
                   </ol>

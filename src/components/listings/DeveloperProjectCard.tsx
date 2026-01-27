@@ -71,18 +71,18 @@ export function DeveloperProjectCard({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-lg">
-                  {TYPE_ICONS[project.projectType] || '🏠'}
+                  {TYPE_ICONS[project.projectType || 'Mixed'] || '🏠'}
                 </span>
-                <h3 className="font-semibold text-foreground">{project.name}</h3>
+                <h3 className="font-semibold text-foreground">{project.name || 'Unnamed Project'}</h3>
               </div>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <MapPin className="h-3 w-3" />
-                {project.community}, {project.location}
+                {project.community || 'Unknown'}, {project.location || 'Unknown'}
               </div>
             </div>
           </div>
-          <Badge className={cn('text-xs', STATUS_COLORS[project.status] || 'bg-muted')}>
-            {project.status}
+          <Badge className={cn('text-xs', STATUS_COLORS[project.status || ''] || 'bg-muted text-muted-foreground')}>
+            {project.status || 'Unknown'}
           </Badge>
         </div>
 
