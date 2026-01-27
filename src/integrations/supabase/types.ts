@@ -2023,6 +2023,14 @@ export type Database = {
       }
     }
     Functions: {
+      get_entity_counts: {
+        Args: never
+        Returns: {
+          by_state: Json
+          entity_type: string
+          total_count: number
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

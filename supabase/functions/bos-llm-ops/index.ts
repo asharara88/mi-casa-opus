@@ -17,9 +17,13 @@ Your role:
 - Provide guidance on BOS features and processes
 - Assist with data interpretation and decision making
 - Look up CRM records by ID, name, email, or phone when asked
+- Report on pipeline metrics and entity counts when asked
 
 When database records are provided in the context:
 - Reference them accurately with their CRM IDs
+- For count/total questions, lead with the exact number
+- Provide breakdowns by state/stage if available
+- Note that data is real-time from BOS
 - Summarize key information (name, contact, status, dates)
 - Highlight any relevant next actions or follow-ups
 - Never fabricate data - only reference what's provided
@@ -68,13 +72,54 @@ function extractEntities(message: string) {
   return entities;
 }
 
+// Detect intent patterns for smarter data fetching
+function detectIntentPatterns(message: string) {
+  const lower = message.toLowerCase();
+  
+  return {
+    // Count/aggregate questions
+    wantsCount: /\b(how many|total|count|number of|all|give me|show me|list)\b/i.test(lower),
+    
+    // Entity-specific questions
+    wantsLeads: /\b(leads?)\b/i.test(lower),
+    wantsProspects: /\b(prospects?|customers?|contacts?)\b/i.test(lower),
+    wantsDeals: /\b(deals?|transactions?|sales?)\b/i.test(lower),
+    wantsListings: /\b(listings?|properties|inventory|units?)\b/i.test(lower),
+    
+    // Pipeline/overview questions
+    wantsPipeline: /\b(pipeline|overview|summary|status|dashboard|report|metrics|kpis?)\b/i.test(lower),
+    
+    // Time-based questions
+    wantsToday: /\b(today|priorities|urgent|due|overdue|pending)\b/i.test(lower),
+    wantsRecent: /\b(recent|latest|new|this week|this month|yesterday)\b/i.test(lower),
+    
+    // Quality/tier questions
+    wantsHot: /\b(hot|warm|cold|qualified|high.?value|priority)\b/i.test(lower),
+    
+    // Breakdown questions
+    wantsBreakdown: /\b(breakdown|by stage|by state|by status|distribution|split)\b/i.test(lower),
+  };
+}
+
 // Query database for relevant records
 async function fetchDatabaseContext(supabase: any, userIntent: string) {
   const results: Record<string, unknown> = {};
   const entities = extractEntities(userIntent);
-  const lowerIntent = userIntent.toLowerCase();
+  const intent = detectIntentPatterns(userIntent);
   
-  // Query by specific identifiers
+  // Always fetch entity counts for count/aggregate or pipeline questions
+  if (intent.wantsCount || intent.wantsPipeline || intent.wantsBreakdown) {
+    try {
+      const { data: entityCounts } = await supabase.rpc('get_entity_counts');
+      if (entityCounts?.length) {
+        results.entityCounts = entityCounts;
+      }
+    } catch (e) {
+      console.log("[BOS OPS] get_entity_counts not available, using fallback queries");
+    }
+  }
+  
+  // Query by specific identifiers (CRM IDs, emails, phones)
   if (entities.crmIds?.length || entities.emails?.length || entities.phones?.length) {
     // Query prospects
     let prospectConditions: string[] = [];
@@ -151,11 +196,73 @@ async function fetchDatabaseContext(supabase: any, userIntent: string) {
     }
   }
   
+  // Fetch specific entity data based on intent
+  if (intent.wantsLeads && !results.leads) {
+    const { count: leadCount } = await supabase
+      .from('leads')
+      .select('*', { count: 'exact', head: true });
+    results.totalLeads = leadCount;
+    
+    // Get sample recent leads
+    const { data: recentLeads } = await supabase
+      .from('leads')
+      .select('id, lead_id, contact_name, lead_state, next_action, created_at')
+      .order('created_at', { ascending: false })
+      .limit(5);
+    if (recentLeads?.length) results.recentLeads = recentLeads;
+  }
+  
+  if (intent.wantsProspects && !results.prospects) {
+    const { count: prospectCount } = await supabase
+      .from('prospects')
+      .select('*', { count: 'exact', head: true });
+    results.totalProspects = prospectCount;
+    
+    // Get sample recent prospects
+    const { data: recentProspects } = await supabase
+      .from('prospects')
+      .select('id, full_name, crm_customer_id, crm_stage, outreach_status, created_at')
+      .order('created_at', { ascending: false })
+      .limit(5);
+    if (recentProspects?.length) results.recentProspects = recentProspects;
+  }
+  
+  if (intent.wantsDeals && !results.deals) {
+    const { count: dealCount } = await supabase
+      .from('deals')
+      .select('*', { count: 'exact', head: true });
+    results.totalDeals = dealCount;
+    
+    // Get sample recent deals
+    const { data: recentDeals } = await supabase
+      .from('deals')
+      .select('id, deal_id, deal_type, deal_state, pipeline, created_at')
+      .order('created_at', { ascending: false })
+      .limit(5);
+    if (recentDeals?.length) results.recentDeals = recentDeals;
+  }
+  
+  if (intent.wantsListings) {
+    const { count: listingCount } = await supabase
+      .from('listings')
+      .select('*', { count: 'exact', head: true });
+    results.totalListings = listingCount;
+    
+    // Get sample recent listings
+    const { data: recentListings } = await supabase
+      .from('listings')
+      .select('id, listing_id, listing_type, status, created_at')
+      .order('created_at', { ascending: false })
+      .limit(5);
+    if (recentListings?.length) results.recentListings = recentListings;
+  }
+  
   // Search by name patterns
   const nameKeywords = userIntent.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g);
   if (nameKeywords?.length && !results.prospects && !results.leads) {
+    const excludeWords = ['Pipeline', 'Status', 'Show', 'Find', 'Get', 'What', 'Who', 'How', 'Tell', 'About', 'Many', 'Total', 'Count', 'Give', 'List'];
     for (const name of nameKeywords.slice(0, 2)) {
-      if (name.length > 2 && !['Pipeline', 'Status', 'Show', 'Find', 'Get', 'What', 'Who', 'How', 'Tell', 'About'].includes(name)) {
+      if (name.length > 2 && !excludeWords.includes(name)) {
         const { data: prospectsByName } = await supabase
           .from('prospects')
           .select('id, full_name, email, phone, crm_customer_id, crm_stage, crm_confidence_level, outreach_status, city, notes')
@@ -179,24 +286,14 @@ async function fetchDatabaseContext(supabase: any, userIntent: string) {
     }
   }
   
-  // Pipeline/summary queries
-  if (lowerIntent.includes('pipeline') || lowerIntent.includes('overview') || lowerIntent.includes('summary') || lowerIntent.includes('status')) {
+  // Pipeline/summary queries (also triggered by general count questions)
+  if (intent.wantsPipeline) {
     const { data: kpis } = await supabase.from('pipeline_kpis').select('*');
     if (kpis?.length) results.pipelineKpis = kpis;
-    
-    const { count: prospectCount } = await supabase
-      .from('prospects')
-      .select('*', { count: 'exact', head: true });
-    results.totalProspects = prospectCount;
-    
-    const { count: leadCount } = await supabase
-      .from('leads')
-      .select('*', { count: 'exact', head: true });
-    results.totalLeads = leadCount;
   }
   
   // Today's priorities
-  if (lowerIntent.includes('today') || lowerIntent.includes('priorities') || lowerIntent.includes('urgent') || lowerIntent.includes('due')) {
+  if (intent.wantsToday) {
     const today = new Date().toISOString().split('T')[0];
     const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
     
@@ -252,7 +349,7 @@ serve(async (req) => {
     
     // Add database context first (most relevant)
     if (Object.keys(databaseContext).length > 0) {
-      contextMessage += `\n\n=== DATABASE RECORDS ===\n${JSON.stringify(databaseContext, null, 2)}`;
+      contextMessage += `\n\n=== DATABASE RECORDS (Real-time from BOS) ===\n${JSON.stringify(databaseContext, null, 2)}`;
     }
     
     if (request.bosPayload && Object.keys(request.bosPayload).length > 0) {
@@ -279,7 +376,7 @@ serve(async (req) => {
     });
 
     const latency = Date.now() - startTime;
-    console.log(`[BOS OPS] Model: ${AI_MODELS.REASONING}, Latency: ${latency}ms`);
+    console.log(`[BOS OPS] Model: ${AI_MODELS.REASONING}, Latency: ${latency}ms, Context keys: ${Object.keys(databaseContext).join(', ') || 'none'}`);
 
     if (!response.ok) {
       if (response.status === 429) {
