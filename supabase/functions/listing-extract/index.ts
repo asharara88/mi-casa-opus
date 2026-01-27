@@ -1,9 +1,11 @@
+import { AI_MODELS } from "../_shared/models.ts";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const LOVABLE_API_URL = 'https://api.lovable.dev/v1/chat/completions';
+const LOVABLE_API_URL = 'https://ai.gateway.lovable.dev/v1/chat/completions';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -90,19 +92,31 @@ ${content.substring(0, 40000)}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: AI_MODELS.CLASSIFICATION,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        response_format: { type: 'json_object' },
-        temperature: 0.1,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Lovable AI error:', errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Rate limit exceeded. Please try again later.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'AI credits depleted. Please add funds.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ success: false, error: 'AI extraction failed' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -110,11 +124,23 @@ ${content.substring(0, 40000)}`;
     }
 
     const aiResponse = await response.json();
-    const resultText = aiResponse.choices?.[0]?.message?.content || '{}';
+    const aiContent = aiResponse.choices?.[0]?.message?.content;
 
+    if (!aiContent) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'No response from AI' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse JSON from AI response (handle markdown code blocks)
     let result;
     try {
-      result = JSON.parse(resultText);
+      const jsonMatch = aiContent.match(/```json\n?([\s\S]*?)\n?```/) || 
+                        aiContent.match(/```\n?([\s\S]*?)\n?```/) ||
+                        [null, aiContent];
+      const jsonStr = jsonMatch[1] || aiContent;
+      result = JSON.parse(jsonStr.trim());
     } catch (parseError) {
       console.error('Failed to parse AI response:', parseError);
       return new Response(
