@@ -1,162 +1,257 @@
 
+# Listing Publish to Portals (PF, Bayut, Dubizzle)
 
-# Make AI Chat Data-Aware with Live BOS Context
+## Overview
 
-## Problem
+Build a listing syndication feature that enables publishing properties directly from BOS to Property Finder, Bayut, and Dubizzle using their XML feed standards. Includes portal status tracking and two-way sync for availability updates.
 
-The AI Agent chat is saying "I don't have live access to your BOS database" when asked "how many total leads we have" - but the infrastructure for database queries already exists in the `bos-llm-ops` edge function. The issue is that the keyword triggers are too narrow and don't match common reporting questions.
+---
 
 ## Current State
 
-The `bos-llm-ops` function has a `fetchDatabaseContext` function that:
-- Extracts CRM IDs, emails, phone numbers from user messages
-- Queries by specific identifiers (PR-XXX, LD-XXX, etc.)
-- Has limited keyword triggers: `pipeline`, `overview`, `summary`, `status`, `today`, `priorities`, `urgent`, `due`
-
-What's missing:
-- Questions about counts ("how many", "total", "count")
-- Questions about specific entity types ("leads", "prospects", "deals", "listings")
-- Aggregate reporting queries
-- State/status breakdowns
-
-## Solution
-
-Enhance the `bos-llm-ops` edge function to:
-1. Detect aggregate/count questions and fetch totals
-2. Detect entity-specific questions and fetch relevant data
-3. Include state breakdowns for pipeline visibility
-4. Add listing counts for inventory queries
+| Feature | Status |
+|---------|--------|
+| Listing Import from Portal URL | ✅ Exists |
+| Manual Ad Tracking (AdsManager) | ✅ Exists |
+| DARI/Madhmoun Compliance Gates | ✅ Exists |
+| XML Feed Generation | ❌ Missing |
+| Portal API Publishing | ❌ Missing |
+| Status Sync (Sold/Rented) | ❌ Missing |
 
 ---
 
-## Changes Required
+## Solution Architecture
 
-### File 1: `supabase/functions/bos-llm-ops/index.ts`
-
-Expand the `fetchDatabaseContext` function with new query patterns:
-
-**Add Count/Total Detection:**
-```typescript
-// Detect count/aggregate questions
-const wantsCount = /\b(how many|total|count|number of|all)\b/i.test(lowerIntent);
-const wantsLeads = /\b(leads?)\b/i.test(lowerIntent);
-const wantsProspects = /\b(prospects?|customers?)\b/i.test(lowerIntent);
-const wantsDeals = /\b(deals?|transactions?)\b/i.test(lowerIntent);
-const wantsListings = /\b(listings?|properties|inventory)\b/i.test(lowerIntent);
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                         BOS LISTINGS                            │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐            │
+│  │ Draft   │→ │ Active  │→ │Reserved │→ │  Sold   │            │
+│  └─────────┘  └────┬────┘  └────┬────┘  └────┬────┘            │
+│                    │            │            │                  │
+└────────────────────┼────────────┼────────────┼──────────────────┘
+                     ▼            ▼            ▼
+              ┌──────────────────────────────────────┐
+              │       PORTAL SYNDICATION ENGINE       │
+              │  ┌────────────────────────────────┐  │
+              │  │   generate-portal-xml (Edge)   │  │
+              │  │   - PF XML v3 format           │  │
+              │  │   - Bayut XML format           │  │
+              │  │   - Dubizzle format            │  │
+              │  └────────────────────────────────┘  │
+              │                                      │
+              │  ┌────────────────────────────────┐  │
+              │  │   portal_publications (Table)  │  │
+              │  │   - Tracks per-portal status   │  │
+              │  │   - External ref numbers       │  │
+              │  │   - Last sync timestamps       │  │
+              │  └────────────────────────────────┘  │
+              └──────────────────────────────────────┘
+                     │            │            │
+                     ▼            ▼            ▼
+              ┌──────────┐ ┌──────────┐ ┌──────────┐
+              │ Property │ │  Bayut   │ │ Dubizzle │
+              │  Finder  │ │          │ │          │
+              └──────────┘ └──────────┘ └──────────┘
 ```
 
-**Add Aggregate Queries:**
-```typescript
-// Leads count + breakdown
-if (wantsCount && wantsLeads || lowerIntent.includes('lead')) {
-  const { count } = await supabase.from('leads').select('*', { count: 'exact', head: true });
-  results.totalLeads = count;
-  
-  // State breakdown
-  const { data: leadStates } = await supabase
-    .from('leads')
-    .select('lead_state')
-    .then(/* group by state */);
-  results.leadsByState = leadStates;
-}
+---
 
-// Prospects count + breakdown  
-if (wantsCount && wantsProspects || lowerIntent.includes('prospect')) {
-  const { count } = await supabase.from('prospects').select('*', { count: 'exact', head: true });
-  results.totalProspects = count;
-  
-  // Stage breakdown
-  const { data: stages } = await supabase.rpc('get_prospect_stages');
-  results.prospectsByStage = stages;
-}
-```
+## Database Schema
 
-**Update System Prompt** to reference data more proactively:
-```
-When database records include totals or counts:
-- Lead with the exact number requested
-- Provide breakdown by state/stage if available
-- Note the data freshness (real-time from BOS)
-```
+### New Table: `portal_publications`
 
-### File 2: Add Database Function for Aggregates (Migration)
+Tracks the syndication status of each listing to each portal.
 
-Create a Postgres function for efficient stage/state breakdowns:
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary key |
+| listing_id | uuid | FK to listings |
+| portal | enum | PropertyFinder, Bayut, Dubizzle |
+| status | enum | pending, published, paused, removed |
+| external_ref | text | Portal's listing reference number |
+| published_at | timestamp | When first published |
+| last_synced_at | timestamp | Last XML update sent |
+| portal_url | text | Live URL on portal |
+| error_message | text | Last error if any |
 
+### New Enum: `portal_name`
 ```sql
-CREATE OR REPLACE FUNCTION get_entity_counts()
-RETURNS TABLE (
-  entity_type text,
-  total_count bigint,
-  by_state jsonb
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT 'prospects'::text, 
-    (SELECT COUNT(*) FROM prospects),
-    (SELECT jsonb_object_agg(COALESCE(crm_stage, 'Unknown'), cnt) 
-     FROM (SELECT crm_stage, COUNT(*) as cnt FROM prospects GROUP BY crm_stage) s);
-  
-  RETURN QUERY  
-  SELECT 'leads'::text,
-    (SELECT COUNT(*) FROM leads),
-    (SELECT jsonb_object_agg(COALESCE(lead_state, 'Unknown'), cnt)
-     FROM (SELECT lead_state, COUNT(*) as cnt FROM leads GROUP BY lead_state) s);
-     
-  -- Similar for deals, listings
-END;
-$$ LANGUAGE plpgsql;
+CREATE TYPE portal_name AS ENUM ('PropertyFinder', 'Bayut', 'Dubizzle');
+```
+
+### New Enum: `portal_status`
+```sql
+CREATE TYPE portal_status AS ENUM ('pending', 'published', 'paused', 'removed', 'error');
 ```
 
 ---
 
-## Enhanced Query Detection Matrix
+## Components
 
-| User Question Pattern | Data Fetched |
-|----------------------|--------------|
-| "how many leads" | Lead count + state breakdown |
-| "total prospects" | Prospect count + stage breakdown |
-| "pipeline overview" | All entity counts + KPIs |
-| "deals this month" | Deals filtered by date + totals |
-| "hot leads" | Leads filtered by qualification tier |
-| "show me [Name]" | Search by name across tables |
-| "[ID] status" | Lookup by CRM ID |
-| "today's priorities" | Due dates filtering |
-| "inventory count" | Listings count by status |
+### 1. Portal Publishing Panel (UI)
+
+**File**: `src/components/listings/PortalPublishingPanel.tsx`
+
+A panel added to the ListingDetailModal showing:
+- Toggle switches for each portal (PF, Bayut, Dubizzle)
+- Status indicators (✅ Published, ⏳ Pending, ⚠️ Error)
+- Last sync timestamp
+- Direct link to live portal listing
+- "Sync Now" button to push updates
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│ 📤 Portal Syndication                                   │
+├─────────────────────────────────────────────────────────┤
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Property Finder     ✅ Published                    │ │
+│ │ ┌─────┐  Last sync: 2h ago  [View] [Sync Now]      │ │
+│ │ │ ON  │  Ref: PF-AUH-28391                         │ │
+│ │ └─────┘                                            │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Bayut               ⏳ Pending                      │ │
+│ │ ┌─────┐  Awaiting approval                         │ │
+│ │ │ ON  │                                            │ │
+│ │ └─────┘                                            │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Dubizzle            ○ Not Published                │ │
+│ │ ┌─────┐  Toggle to enable                          │ │
+│ │ │ OFF │                                            │ │
+│ │ └─────┘                                            │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│ ⓘ Compliance: DARI permit verified ✓                   │
+│                                                         │
+│ [Sync All Portals]                                      │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 2. Portal XML Generator (Edge Function)
+
+**File**: `supabase/functions/generate-portal-xml/index.ts`
+
+Generates compliant XML feeds for each portal:
+
+- **Property Finder XML v3**: Full schema with images, agent info, features
+- **Bayut XML**: Similar structure with platform-specific fields
+- **Dubizzle XML**: Simpler format
+
+The function:
+1. Queries listings with active portal publications
+2. Joins brokerage/broker license data for compliance
+3. Generates XML per portal specification
+4. Returns XML feed URL for portal configuration
+
+### 3. Portal Status Sync (Edge Function)
+
+**File**: `supabase/functions/portal-status-sync/index.ts`
+
+Handles status synchronization:
+- When listing status changes to Sold/Rented → marks portal listings for removal
+- Receives webhook callbacks from portals (if supported)
+- Updates `portal_publications.status` accordingly
 
 ---
 
-## Result
+## Files to Create
 
-After these changes, asking "how many total leads we have" will return:
+| File | Purpose |
+|------|---------|
+| `src/components/listings/PortalPublishingPanel.tsx` | UI for portal toggle/status |
+| `src/hooks/usePortalPublications.ts` | CRUD hooks for portal_publications |
+| `supabase/functions/generate-portal-xml/index.ts` | XML feed generator |
+| `supabase/functions/portal-status-sync/index.ts` | Status sync handler |
 
-```
-Based on your BOS data:
-
-**Leads:** 0 total
-- No leads in the system yet
-
-**Prospects:** 13,538 total  
-- These are pre-qualified contacts that can be converted to leads
-
-Would you like me to show a breakdown by stage, or explain how to convert prospects to leads?
-```
-
----
-
-## Files Summary
+## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `supabase/functions/bos-llm-ops/index.ts` | Expand keyword triggers, add aggregate queries, improve entity detection |
-| New Migration | Add `get_entity_counts()` function for efficient aggregates |
+| `src/components/listings/ListingDetailModal.tsx` | Add "Portals" tab with PortalPublishingPanel |
+| `supabase/config.toml` | Register new edge functions |
+
+## Database Migration
+
+1. Create `portal_name` enum
+2. Create `portal_status` enum  
+3. Create `portal_publications` table with RLS
+4. Add trigger to auto-sync status when listing status changes
 
 ---
 
-## Additional Enhancements (Optional)
+## Portal Feed Specifications
 
-- Add date-range filtering for "this week", "this month" queries
-- Include conversion rates and trends in pipeline queries
-- Cache common aggregates in `pipeline_kpis` table
-- Add "explain" mode for data interpretation
+### Property Finder XML v3 (Sample Structure)
 
+```xml
+<properties>
+  <property>
+    <reference_number>LST-123456</reference_number>
+    <offering_type>sale</offering_type>
+    <property_type>AP</property_type>
+    <price>2500000</price>
+    <city>Abu Dhabi</city>
+    <community>Al Reem Island</community>
+    <sub_community>Sky Tower</sub_community>
+    <bedroom>3</bedroom>
+    <bathroom>3</bathroom>
+    <size unit="sqft">2100</size>
+    <title_en>Stunning 3BR with Sea View</title_en>
+    <description_en>...</description_en>
+    <permit_number>DARI-2024-78901</permit_number>
+    <agent>
+      <name>John Smith</name>
+      <license_no>BRN-12345</license_no>
+      <phone>+971501234567</phone>
+    </agent>
+    <images>
+      <image>https://storage.../image1.jpg</image>
+    </images>
+  </property>
+</properties>
+```
+
+---
+
+## Compliance Integration
+
+Before publishing to any portal, the system validates:
+
+1. **Listing Status** = Active (not Draft/Sold)
+2. **Madhmoun Status** = VERIFIED
+3. **DARI Permit** = Valid and not expired
+4. **Broker License** = Active
+
+If any gate fails, the portal toggle is disabled with an explanation.
+
+---
+
+## Implementation Phases
+
+### Phase 1: Database & UI Foundation
+- Create migration for `portal_publications` table
+- Build `PortalPublishingPanel` component
+- Add "Portals" tab to ListingDetailModal
+- Create `usePortalPublications` hook
+
+### Phase 2: XML Feed Generation
+- Build `generate-portal-xml` edge function
+- Support Property Finder XML v3 format
+- Add Bayut and Dubizzle formats
+- Generate feed URLs
+
+### Phase 3: Status Sync
+- Build `portal-status-sync` edge function
+- Auto-remove from portals when listing goes Sold/Rented
+- Handle portal webhook callbacks (future)
+
+---
+
+## Future Enhancements
+
+- **Portal Analytics Pull**: Fetch impressions/clicks from portal APIs
+- **Photo Sync**: Auto-upload images to portal CDNs
+- **Listing Boost**: Integrate with portal premium placement APIs
+- **Multi-language**: Generate Arabic descriptions for portals
