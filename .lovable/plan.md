@@ -1,296 +1,143 @@
 
-# Internal Teams Collaboration Hub
+
+# Off-Plan vs Secondary Market Sales/Marketing Setup
 
 ## Overview
 
-Create a new **Teams** section for internal collaboration between admin, agents, operators, and management. This section will provide:
-- Team meetings management
-- Calendar sync with Google/Outlook
-- Zoom call scheduling and quick join
-- Team directory with availability status
+This plan establishes a clear separation between **Off-Plan** (developer projects) and **Secondary Market** (resale/rental) sales and marketing workflows, with corrected Abu Dhabi developer URLs for the Developer Catalog.
 
 ---
 
-## Architecture
+## Part 1: Developer Catalog - Abu Dhabi Developer Presets
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                         TEAMS SECTION                           │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │ Team Meetings│  │Team Calendar │  │  Zoom Calls  │          │
-│  │    List      │  │    View      │  │  Scheduler   │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-│         │                 │                 │                   │
-│         └─────────────────┼─────────────────┘                   │
-│                           │                                     │
-│                    ┌──────────────┐                             │
-│                    │team_meetings │                             │
-│                    │  (Database)  │                             │
-│                    └──────────────┘                             │
-└─────────────────────────────────────────────────────────────────┘
+### Current Issues
+- Includes Emaar (Dubai-focused developer)
+- Missing key Abu Dhabi developers: Modon, Emirates Development, One Development, Ohana Development, SAAS Properties
+- Some URLs may be outdated or incorrect
+
+### Updated Developer List (Abu Dhabi Only)
+
+| Developer | Official Projects Page URL |
+|-----------|---------------------------|
+| **Aldar** | `https://www.aldar.com/en/explore-aldar/businesses/development/residential` |
+| **Reportage** | `https://reportageuae.com/en/projects?emirate=abu-dhabi` |
+| **Bloom Holding** | `https://bloomholding.com/properties/` |
+| **Q Properties** | `https://www.qproperties.ae/projects` |
+| **Imkan** | `https://www.imkan.ae/projects` |
+| **Modon** | `https://www.modon.ae/real-estate` |
+| **Emirates Dev** | `https://www.emiratesdevelopment.ae/projects/` |
+| **One Development** | `https://onedevelopment.ae/projects/` |
+| **Ohana Development** | `https://ohanadevelopment.com/projects/` |
+| **SAAS Properties** | `https://saasproperties.com/projects/` |
+
+### Changes to `DeveloperCatalog.tsx`
+
+**Remove:**
+- Emaar (Dubai focus - Phase 2 expansion)
+
+**Add:**
+- Modon Properties (Hudayriyat Island, major master developer)
+- Emirates Development (local Abu Dhabi developer)
+- One Development (luxury boutique developer)
+- Ohana Development (Jacob & Co partnership)
+- SAAS Properties (One Reem Island developer)
+
+**Update:**
+- Reportage URL: Change to `reportageuae.com` with Abu Dhabi filter
+- Imkan URL: Simplify to `/projects` (cleaner path)
+
+---
+
+## Part 2: Understanding Off-Plan vs Secondary Market
+
+### Current Architecture (Already Implemented)
+
+The system already has distinct pipelines defined in `src/types/pipeline.ts`:
+
+```
+Off-Plan Pipeline:
+LeadQualified → EOISubmitted → EOIPaid → SPASigned → PaymentPlan → Construction → Handover → ClosedWon
+
+Secondary Pipeline:
+RequirementsCaptured → ViewingScheduled → ViewingCompleted → OfferSubmitted → OfferAccepted → MOUSigned → NOCObtained → TransferBooked → TransferComplete → ClosedWon
 ```
 
----
+### Tool Mapping
 
-## Features
-
-### 1. Team Meetings Dashboard
-- List of upcoming and past internal meetings
-- Quick filters: Today, This Week, All
-- Meeting status: Scheduled, In Progress, Completed, Cancelled
-- Participant list with RSVP status
-- Quick actions: Join, Reschedule, Cancel
-
-### 2. Meeting Scheduler
-- Create new team meetings with title, agenda, participants
-- Select date/time with conflict detection
-- Set meeting type: Zoom, In-Person, Phone
-- Auto-generate Zoom meeting links
-- Send calendar invites via email
-
-### 3. Team Calendar
-- Monthly/weekly calendar view of all team meetings
-- Color-coded by meeting type
-- Click to view meeting details
-- Sync indicator for connected calendars
-
-### 4. Zoom Integration
-- Quick "Start Zoom Meeting" button
-- Generate instant meeting links
-- Schedule future Zoom meetings
-- Meeting recordings access (future)
+| Tool | Market Segment | Purpose |
+|------|---------------|---------|
+| **Developer Catalog** | Off-Plan | Scrape developer websites for new projects |
+| **Competitor Analysis** | Secondary | Analyze property portal listings (Bayut, PF, Dubizzle) |
+| **Listings Section** | Both | Inventory with `listing_type`: Sale, Rent, OffPlan |
 
 ---
 
-## Database Schema
+## Part 3: Demo Data Updates
 
-### New Table: `team_meetings`
+Update `DEMO_PROJECTS` in `DeveloperCatalog.tsx` to reflect actual Abu Dhabi off-plan projects:
 
-| Column | Type | Description |
-|--------|------|-------------|
-| id | uuid | Primary key |
-| meeting_id | text | Display ID (MTG-XXXXX) |
-| title | text | Meeting title |
-| description | text | Meeting agenda/notes |
-| meeting_type | enum | 'zoom', 'in_person', 'phone', 'video_call' |
-| scheduled_at | timestamp | Meeting start time |
-| duration_minutes | int | Expected duration |
-| location | text | Physical location or meeting link |
-| zoom_meeting_id | text | Zoom meeting ID if applicable |
-| zoom_join_url | text | Zoom join URL |
-| zoom_host_url | text | Zoom host URL |
-| organizer_id | uuid | User who created the meeting |
-| status | enum | 'scheduled', 'in_progress', 'completed', 'cancelled' |
-| recurrence | jsonb | Recurrence pattern if any |
-| created_at | timestamp | Record creation |
-| updated_at | timestamp | Last update |
-
-### New Table: `team_meeting_participants`
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | uuid | Primary key |
-| meeting_id | uuid | FK to team_meetings |
-| user_id | uuid | FK to profiles |
-| rsvp_status | enum | 'pending', 'accepted', 'declined', 'tentative' |
-| is_required | boolean | Required or optional attendee |
-| invited_at | timestamp | When invitation was sent |
-| responded_at | timestamp | When user responded |
-
-### New Enum Types
-- `meeting_type`: 'zoom', 'in_person', 'phone', 'video_call'
-- `meeting_status`: 'scheduled', 'in_progress', 'completed', 'cancelled'
-- `rsvp_status`: 'pending', 'accepted', 'declined', 'tentative'
+### Sample Projects
+1. **Saadiyat Lagoons** - Aldar - Villas - Q4 2027
+2. **Yas Bay Residences** - Aldar - Apartments - Q2 2026
+3. **The Dunes** - Reportage - Townhouses - Ready
+4. **Hudayriyat Views** - Modon - Villas - Q1 2028
+5. **One Reem Island** - SAAS - Apartments - Q3 2026
 
 ---
 
-## Navigation Changes
+## Implementation Summary
 
-### Updated Sidebar Structure
-
-```text
-Dashboard
-├── Control Room
-├── AI Agent
-
-Marketing
-├── Marketing Hub
-├── Prospects
-
-Sales
-├── Leads
-├── Deals
-
-Operations
-├── Listings
-├── Documents
-├── Commissions
-
-Teams                  ← NEW GROUP
-├── Meetings           ← Team meetings management
-├── Team Directory     ← User directory with status
-
-Settings
-├── Users
-├── Rules & Templates
-├── System Settings
-```
-
-### Role Access
-| Role | Access |
-|------|--------|
-| Operator | Full access (create, manage, delete) |
-| LegalOwner | View meetings, RSVP |
-| Broker | View and join meetings, RSVP |
-| Investor | No access to internal meetings |
-
----
-
-## Files to Create
-
-### Components
-| File | Purpose |
-|------|---------|
-| `src/components/teams/TeamsSection.tsx` | Main section with tabs |
-| `src/components/teams/TeamMeetingsList.tsx` | List of all meetings |
-| `src/components/teams/TeamMeetingCard.tsx` | Individual meeting card |
-| `src/components/teams/AddMeetingModal.tsx` | Create new meeting form |
-| `src/components/teams/MeetingDetailSheet.tsx` | Meeting details side panel |
-| `src/components/teams/TeamCalendarView.tsx` | Calendar visualization |
-| `src/components/teams/ZoomQuickStart.tsx` | Quick Zoom meeting button |
-| `src/components/teams/TeamDirectoryList.tsx` | Team member directory |
-| `src/components/teams/ParticipantSelector.tsx` | Multi-select participant picker |
-| `src/components/teams/index.ts` | Barrel exports |
-
-### Hooks
-| File | Purpose |
-|------|---------|
-| `src/hooks/useTeamMeetings.ts` | CRUD for team meetings |
-| `src/hooks/useMeetingParticipants.ts` | Participant management |
-
-### Edge Functions (Future - Zoom API)
-| File | Purpose |
-|------|---------|
-| `supabase/functions/zoom-create-meeting/index.ts` | Create Zoom meetings via API |
-| `supabase/functions/zoom-webhook/index.ts` | Receive Zoom events |
-
----
-
-## Files to Modify
+### Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/components/layout/Sidebar.tsx` | Add "teams" group with "meetings" and "directory" items |
-| `src/components/BOSApp.tsx` | Add section titles and render cases for teams |
-| `src/types/teams.ts` | New types file for team-related interfaces |
+| `src/components/listings/DeveloperCatalog.tsx` | Update `DEVELOPER_PRESETS` array with 10 Abu Dhabi developers and correct URLs |
 
----
+### Code Changes
 
-## Implementation Phases
+```typescript
+// BEFORE (6 presets including Dubai)
+const DEVELOPER_PRESETS = [
+  { name: 'Aldar', url: 'https://www.aldar.com/en/explore-aldar/businesses/development/residential' },
+  { name: 'Emaar', url: 'https://www.emaar.com/en/our-communities/abu-dhabi' },  // REMOVE
+  { name: 'Reportage', url: 'https://reportageproperties.com/abu-dhabi/' },
+  { name: 'Bloom', url: 'https://bloomholding.com/properties/' },
+  { name: 'Q Properties', url: 'https://www.qproperties.ae/projects' },
+  { name: 'Imkan', url: 'https://www.imkan.ae/en/projects' },
+];
 
-### Phase 1: Database & Infrastructure
-1. Create database migration for `team_meetings` and `team_meeting_participants` tables
-2. Add new enum types
-3. Set up RLS policies for role-based access
-4. Create `useTeamMeetings` hook
-
-### Phase 2: Core UI Components
-1. Build `TeamsSection.tsx` with tab layout
-2. Create `TeamMeetingsList.tsx` with filters
-3. Build `AddMeetingModal.tsx` for creating meetings
-4. Create `TeamMeetingCard.tsx` for display
-
-### Phase 3: Calendar & Directory
-1. Build `TeamCalendarView.tsx` using existing calendar patterns
-2. Create `TeamDirectoryList.tsx` using existing user data
-
-### Phase 4: Navigation Integration
-1. Update Sidebar.tsx to add teams group
-2. Update BOSApp.tsx to render TeamsSection
-3. Test role-based visibility
-
-### Phase 5: Zoom Integration (Future)
-1. Add `ZOOM_API_KEY` and `ZOOM_API_SECRET` secrets
-2. Create edge function for Zoom meeting creation
-3. Auto-generate meeting links when type is "zoom"
-
----
-
-## UI Design
-
-### Meetings List View
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  Team Meetings                                [+ New Meeting]   │
-├─────────────────────────────────────────────────────────────────┤
-│  [Today] [This Week] [All]                    🔍 Search...      │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │ 🎥 Weekly Sales Standup                    [Join Zoom]   │   │
-│  │    Today, 10:00 AM • 30 min • 5 participants            │   │
-│  │    ○ Ahmed, ○ Sarah, ○ John...                          │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │ 📍 Team Training Session                   [In Person]   │   │
-│  │    Tomorrow, 2:00 PM • 2 hrs • Conference Room A        │   │
-│  │    ○ All Agents Required                                 │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
+// AFTER (10 Abu Dhabi developers only)
+const DEVELOPER_PRESETS = [
+  { name: 'Aldar', url: 'https://www.aldar.com/en/explore-aldar/businesses/development/residential' },
+  { name: 'Reportage', url: 'https://reportageuae.com/en/projects?emirate=abu-dhabi' },
+  { name: 'Bloom', url: 'https://bloomholding.com/properties/' },
+  { name: 'Q Properties', url: 'https://www.qproperties.ae/projects' },
+  { name: 'Imkan', url: 'https://www.imkan.ae/projects' },
+  { name: 'Modon', url: 'https://www.modon.ae/real-estate' },
+  { name: 'Emirates Dev', url: 'https://www.emiratesdevelopment.ae/projects/' },
+  { name: 'One Dev', url: 'https://onedevelopment.ae/projects/' },
+  { name: 'Ohana', url: 'https://ohanadevelopment.com/projects/' },
+  { name: 'SAAS', url: 'https://saasproperties.com/projects/' },
+];
 ```
 
-### Quick Zoom Panel
-```text
-┌─────────────────────────────────┐
-│  🎥 Quick Zoom Meeting          │
-│                                 │
-│  [Start Instant Meeting]        │
-│                                 │
-│  Or schedule for later...       │
-│  [Schedule Meeting]             │
-└─────────────────────────────────┘
+### Update Section Header
+
+```typescript
+// Change the label from "UAE Developers" to "Abu Dhabi Developers"
+<h3 className="text-sm font-medium mb-3">Quick Access - Abu Dhabi Developers</h3>
 ```
-
----
-
-## Technical Notes
-
-### Calendar Sync Approach
-For calendar sync (Google/Outlook), we have two options:
-1. **Cal.com Integration** (already configured) - Use the existing Cal.com webhook for bi-directional sync
-2. **Direct Google/Outlook OAuth** - More complex, requires additional secrets
-
-Recommendation: Start with internal meetings stored in our database, with optional "Add to Calendar" button that generates .ics files users can import.
-
-### Zoom Integration
-- Requires `ZOOM_API_KEY`, `ZOOM_API_SECRET`, and OAuth setup
-- For MVP: Use manual Zoom link entry
-- Future: Full API integration with auto-generated meeting links
-
-### Real-time Updates
-- Enable realtime on `team_meetings` table for live status updates
-- Show "Meeting in Progress" badge when meeting is happening
-
----
-
-## Required Secrets (Future)
-
-| Secret | Service | Required |
-|--------|---------|----------|
-| `ZOOM_API_KEY` | Zoom | Optional (for full integration) |
-| `ZOOM_API_SECRET` | Zoom | Optional (for full integration) |
-| `ZOOM_ACCOUNT_ID` | Zoom | Optional (for server-to-server) |
-
-Note: MVP will work without Zoom API keys using manual link entry.
 
 ---
 
 ## Summary
 
-This implementation creates a dedicated internal collaboration space for the brokerage team with:
-- Meeting scheduling and management
-- Team calendar view
-- Directory of team members
-- Placeholder for Zoom integration
+This update:
+1. Removes Dubai developer (Emaar) from the catalog - future Phase 2
+2. Adds 4 new Abu Dhabi developers (Modon, Emirates Dev, One Dev, Ohana, SAAS)
+3. Corrects URLs for better scraping accuracy
+4. Maintains clear separation between Off-Plan (Developer Catalog) and Secondary Market (Competitor Analysis) tools
+5. Updates the section label to accurately reflect "Abu Dhabi Developers"
 
-The design follows existing patterns from ViewingScheduler and MarketingEvents, ensuring consistency across the application.
+The existing pipeline architecture (`OffPlan` vs `Secondary` deal states) already provides proper separation for sales tracking.
+
