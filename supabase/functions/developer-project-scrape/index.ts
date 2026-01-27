@@ -171,11 +171,17 @@ ${content.substring(0, 50000)}`;
 
     console.log(`Extracted ${result.projects?.length || 0} projects`);
 
+    // Normalize projects to ensure all arrays are not null
+    const normalizedProjects = (result.projects || []).map((project: any) => ({
+      ...project,
+      amenities: Array.isArray(project.amenities) ? project.amenities : [],
+    }));
+
     return new Response(
       JSON.stringify({
         success: true,
         data: {
-          projects: result.projects || [],
+          projects: normalizedProjects,
           developerInfo: result.developerInfo || { name: developerName, website: sourceUrl },
           scrapedAt: new Date().toISOString(),
           sourceUrl,
