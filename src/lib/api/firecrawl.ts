@@ -64,6 +64,7 @@ export type ScrapedProject = {
   brochureUrl: string | null;
   floorPlansUrl: string | null;
   description: string | null;
+  imageUrl: string | null;
 };
 
 export type DeveloperScrapeResult = {
@@ -145,13 +146,15 @@ export const firecrawlApi = {
   async scrapeDeveloperProjects(
     scrapedContent: string,
     sourceUrl: string,
-    developerName?: string
+    developerName?: string,
+    imageLinks?: string[]
   ): Promise<FirecrawlResponse<DeveloperScrapeResult>> {
     const { data, error } = await supabase.functions.invoke('developer-project-scrape', {
       body: { 
         content: scrapedContent, 
         sourceUrl,
-        developerName 
+        developerName,
+        imageLinks 
       },
     });
 

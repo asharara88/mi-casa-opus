@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { content, sourceUrl, developerName } = await req.json();
+    const { content, sourceUrl, developerName, imageLinks } = await req.json();
 
     if (!content) {
       return new Response(
@@ -21,6 +21,14 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Filter image links for project matching
+    const imageUrls = (imageLinks || []).filter((link: string) => 
+      /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(link) ||
+      link.includes('/images/') ||
+      link.includes('/media/') ||
+      link.includes('/uploads/')
+    );
 
     const apiKey = Deno.env.get('LOVABLE_API_KEY');
     if (!apiKey) {
@@ -42,13 +50,20 @@ Rules:
 - Parse handover dates into "Q1/Q2/Q3/Q4 YYYY" format
 - Extract amenities as an array of strings
 - If information is not available, use null
-- Be precise with numbers, don't guess`;
+- Be precise with numbers, don't guess
+- Match each project with a hero/thumbnail image URL from the provided image links
+- Prefer high-quality render images, property photos over logos or icons
+- Image URLs should be full URLs starting with http:// or https://`;
+
+    const imageLinksSection = imageUrls.length > 0 
+      ? `\n\nAvailable Image URLs (match to projects):\n${imageUrls.slice(0, 100).join('\n')}`
+      : '';
 
     const userPrompt = `Extract all off-plan real estate projects from this ${developerName || 'developer'} website content.
 Source URL: ${sourceUrl}
 
 Website Content:
-${content.substring(0, 50000)}`;
+${content.substring(0, 45000)}${imageLinksSection}`;
 
     console.log('Calling Lovable AI for developer project extraction...');
 
@@ -93,7 +108,8 @@ ${content.substring(0, 50000)}`;
                         amenities: { type: 'array', items: { type: 'string' } },
                         brochureUrl: { type: 'string', nullable: true },
                         floorPlansUrl: { type: 'string', nullable: true },
-                        description: { type: 'string', nullable: true }
+                        description: { type: 'string', nullable: true },
+                        imageUrl: { type: 'string', nullable: true, description: 'Direct URL to project hero/thumbnail image from the provided image links' }
                       },
                       required: ['name', 'community', 'location', 'projectType', 'status']
                     }
@@ -171,10 +187,11 @@ ${content.substring(0, 50000)}`;
 
     console.log(`Extracted ${result.projects?.length || 0} projects`);
 
-    // Normalize projects to ensure all arrays are not null
+    // Normalize projects to ensure all arrays are not null and imageUrl is included
     const normalizedProjects = (result.projects || []).map((project: any) => ({
       ...project,
       amenities: Array.isArray(project.amenities) ? project.amenities : [],
+      imageUrl: project.imageUrl || null,
     }));
 
     return new Response(

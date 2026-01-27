@@ -63,6 +63,7 @@ const DEMO_PROJECTS: ScrapedProject[] = [
     brochureUrl: null,
     floorPlansUrl: null,
     description: 'Luxury waterfront villas on Saadiyat Island with stunning lagoon views.',
+    imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop',
   },
   {
     name: 'Yas Bay Residences',
@@ -81,6 +82,7 @@ const DEMO_PROJECTS: ScrapedProject[] = [
     brochureUrl: null,
     floorPlansUrl: null,
     description: 'Contemporary apartments overlooking Yas Bay entertainment district.',
+    imageUrl: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop',
   },
   {
     name: 'The Dunes',
@@ -99,6 +101,7 @@ const DEMO_PROJECTS: ScrapedProject[] = [
     brochureUrl: null,
     floorPlansUrl: null,
     description: 'Family-friendly townhouses with modern design and community amenities.',
+    imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop',
   },
   {
     name: 'Hudayriyat Views',
@@ -117,6 +120,7 @@ const DEMO_PROJECTS: ScrapedProject[] = [
     brochureUrl: null,
     floorPlansUrl: null,
     description: 'Premium villas on Hudayriyat Island with exclusive beach and sports facilities.',
+    imageUrl: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&auto=format&fit=crop',
   },
   {
     name: 'One Reem Island',
@@ -134,7 +138,8 @@ const DEMO_PROJECTS: ScrapedProject[] = [
     amenities: ['Sky Lounge', 'Infinity Pool', 'Smart Home', 'Concierge'],
     brochureUrl: null,
     floorPlansUrl: null,
-    description: 'Iconic residential tower on Reem Island with panoramic city and sea views.',
+    description: 'Iconic high-rise living with panoramic views of the Arabian Gulf.',
+    imageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop',
   },
 ];
 
@@ -174,10 +179,10 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
     setSelectedProjects(new Set());
 
     try {
-      // Step 1: Scrape the URL using Firecrawl
+      // Step 1: Scrape the URL using Firecrawl (request markdown + links for images)
       const scrapeResponse = await firecrawlApi.scrape(url, {
-        formats: ['markdown'],
-        onlyMainContent: true,
+        formats: ['markdown', 'links'],
+        onlyMainContent: false,
         waitFor: 5000,
       });
 
@@ -186,17 +191,20 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
       }
 
       // Handle nested data structure from Firecrawl API
-      const scrapedContent = scrapeResponse.data?.markdown || scrapeResponse.data?.data?.markdown || '';
+      const responseData = scrapeResponse.data?.data || scrapeResponse.data || {};
+      const scrapedContent = responseData.markdown || '';
+      const scrapedLinks = responseData.links || [];
       
       if (!scrapedContent) {
         throw new Error('No content found on the page');
       }
 
-      // Step 2: Extract projects using AI
+      // Step 2: Extract projects using AI (pass links for image matching)
       const extractResponse = await firecrawlApi.scrapeDeveloperProjects(
         scrapedContent,
         url,
-        developerName
+        developerName,
+        scrapedLinks
       );
 
       if (!extractResponse.success || !extractResponse.data) {
