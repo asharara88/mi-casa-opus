@@ -352,7 +352,7 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
           </SheetTitle>
         </SheetHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
           <TabsList className="mx-6 mt-4">
             <TabsTrigger value="search">Market Search</TabsTrigger>
             <TabsTrigger value="results" disabled={!scrapeResult}>
@@ -428,11 +428,11 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
             </div>
           </TabsContent>
 
-          <TabsContent value="results" className="flex-1 flex flex-col p-0">
+          <TabsContent value="results" className="flex-1 flex flex-col p-0 overflow-hidden">
             {scrapeResult && (
               <>
                 {/* Results header */}
-                <div className="px-6 py-4 border-b bg-muted/30">
+                <div className="px-6 py-4 border-b bg-muted/30 flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-medium">{scrapeResult.developerInfo.name}</h3>
@@ -450,8 +450,8 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
                 </div>
 
                 {/* Project cards */}
-                <ScrollArea className="flex-1 p-6">
-                  <div className="space-y-4">
+                <ScrollArea className="flex-1 min-h-0">
+                  <div className="p-6 space-y-4">
                     {scrapeResult.projects.map((project) => (
                       <DeveloperProjectCard
                         key={project.name}
