@@ -2,23 +2,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
-import { useDemoMode } from '@/contexts/DemoContext';
-import { DEMO_LISTINGS } from '@/data/demoData';
 
 export type Listing = Tables<'listings'>;
 export type ListingInsert = TablesInsert<'listings'>;
 export type ListingUpdate = TablesUpdate<'listings'>;
 
 export function useListings() {
-  const { isDemoMode } = useDemoMode();
-
   return useQuery({
-    queryKey: ['listings', isDemoMode],
+    queryKey: ['listings'],
     queryFn: async () => {
-      if (isDemoMode) {
-        return DEMO_LISTINGS as unknown as Listing[];
-      }
-
       const { data, error } = await supabase
         .from('listings')
         .select('*')
@@ -93,6 +85,28 @@ export function useUpdateListing() {
     },
     onError: (error) => {
       toast.error('Failed to update listing', { description: error.message });
+    },
+  });
+}
+
+export function useDeleteListing() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('listings')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['listings'] });
+      toast.success('Listing deleted successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to delete listing', { description: error.message });
     },
   });
 }

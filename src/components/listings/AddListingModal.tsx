@@ -223,6 +223,7 @@ export function AddListingModal({ open, onOpenChange, onSuccess }: AddListingMod
           community: formData.community,
           building: formData.building,
           description: formData.description,
+          images: extractResult?.listing.imageUrls || [],
         },
         asking_terms: {
           price: formData.price,

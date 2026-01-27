@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { 
   Building2, 
   Search, 
@@ -26,6 +42,7 @@ import {
   TrendingUp,
   Landmark,
   Newspaper,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ListingDetailModal } from './ListingDetailModal';
@@ -33,7 +50,7 @@ import { CompetitorAnalysis } from './CompetitorAnalysis';
 import { DeveloperCatalog } from './DeveloperCatalog';
 import { MarketBlogInsights } from './MarketBlogInsights';
 import { AddListingModal } from './AddListingModal';
-import { useListings } from '@/hooks/useListings';
+import { useListings, useDeleteListing } from '@/hooks/useListings';
 
 interface Listing {
   id: string;
@@ -53,85 +70,10 @@ interface Listing {
   sqft: number;
   images: string[];
   created_at: string;
+  madhmoun_listing_id?: string | null;
+  madhmoun_status?: string | null;
+  compliance_status?: string | null;
 }
-
-const DEMO_LISTINGS: Listing[] = [
-  {
-    id: '1',
-    listing_id: 'LST-2024-001',
-    property_type: 'Apartment',
-    listing_type: 'Sale',
-    status: 'Active',
-    location: { community: 'Al Reem Island', building: 'Sky Tower', city: 'Abu Dhabi' },
-    price: 2500000,
-    currency: 'AED',
-    bedrooms: 3,
-    bathrooms: 3,
-    sqft: 2100,
-    images: ['https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop'],
-    created_at: '2024-01-10',
-  },
-  {
-    id: '2',
-    listing_id: 'LST-2024-002',
-    property_type: 'Villa',
-    listing_type: 'Sale',
-    status: 'Reserved',
-    location: { community: 'Saadiyat Island', city: 'Abu Dhabi' },
-    price: 8500000,
-    currency: 'AED',
-    bedrooms: 5,
-    bathrooms: 6,
-    sqft: 6500,
-    images: ['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop'],
-    created_at: '2024-01-08',
-  },
-  {
-    id: '3',
-    listing_id: 'LST-2024-003',
-    property_type: 'Apartment',
-    listing_type: 'Rent',
-    status: 'Active',
-    location: { community: 'Corniche Area', building: 'Nation Towers', city: 'Abu Dhabi' },
-    price: 180000,
-    currency: 'AED',
-    bedrooms: 2,
-    bathrooms: 2,
-    sqft: 1450,
-    images: ['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop'],
-    created_at: '2024-01-12',
-  },
-  {
-    id: '4',
-    listing_id: 'LST-2024-004',
-    property_type: 'Townhouse',
-    listing_type: 'OffPlan',
-    status: 'Active',
-    location: { community: 'Yas Island', city: 'Abu Dhabi' },
-    price: 3200000,
-    currency: 'AED',
-    bedrooms: 4,
-    bathrooms: 4,
-    sqft: 3200,
-    images: ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop'],
-    created_at: '2024-01-05',
-  },
-  {
-    id: '5',
-    listing_id: 'LST-2024-005',
-    property_type: 'Penthouse',
-    listing_type: 'Sale',
-    status: 'Draft',
-    location: { community: 'Al Raha Beach', building: 'Al Muneera', city: 'Abu Dhabi' },
-    price: 12000000,
-    currency: 'AED',
-    bedrooms: 4,
-    bathrooms: 5,
-    sqft: 5800,
-    images: ['https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop'],
-    created_at: '2024-01-15',
-  },
-];
 
 const STATUS_COLORS: Record<string, string> = {
   Draft: 'bg-muted text-muted-foreground',
@@ -157,40 +99,56 @@ export function ListingsSection() {
   const [developerCatalogOpen, setDeveloperCatalogOpen] = useState(false);
   const [marketInsightsOpen, setMarketInsightsOpen] = useState(false);
   const [addListingModalOpen, setAddListingModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
   
   // Fetch real listings from database
-  const { data: dbListings, refetch: refetchListings } = useListings();
+  const { data: dbListings, refetch: refetchListings, isLoading } = useListings();
+  const { mutate: deleteListing, isPending: isDeleting } = useDeleteListing();
 
-  // Convert DB listings to display format, merge with demo data
-  const allListings: Listing[] = [
-    ...DEMO_LISTINGS,
-    ...(dbListings || []).map(dbListing => ({
-      id: dbListing.id,
-      listing_id: dbListing.listing_id,
-      property_type: (dbListing.listing_attributes as any)?.propertyType || 'Property',
-      listing_type: dbListing.listing_type as 'Sale' | 'Rent' | 'OffPlan',
-      status: dbListing.status as 'Draft' | 'Active' | 'Reserved' | 'Sold' | 'Withdrawn',
-      location: {
-        community: (dbListing.listing_attributes as any)?.community || 'Abu Dhabi',
-        building: (dbListing.listing_attributes as any)?.building,
-        city: 'Abu Dhabi',
-      },
-      price: (dbListing.asking_terms as any)?.price || 0,
-      currency: 'AED',
-      bedrooms: (dbListing.listing_attributes as any)?.bedrooms || 0,
-      bathrooms: (dbListing.listing_attributes as any)?.bathrooms || 0,
-      sqft: (dbListing.listing_attributes as any)?.sqft || 0,
-      images: [],
-      created_at: dbListing.created_at,
-      madhmoun_listing_id: dbListing.madhmoun_listing_id,
-      madhmoun_status: dbListing.madhmoun_status,
-      compliance_status: dbListing.compliance_status,
-    })),
-  ];
+  // Convert DB listings to display format - only use real data
+  const allListings: Listing[] = (dbListings || []).map(dbListing => ({
+    id: dbListing.id,
+    listing_id: dbListing.listing_id,
+    property_type: (dbListing.listing_attributes as any)?.propertyType || 'Property',
+    listing_type: dbListing.listing_type as 'Sale' | 'Rent' | 'OffPlan',
+    status: dbListing.status as 'Draft' | 'Active' | 'Reserved' | 'Sold' | 'Withdrawn',
+    location: {
+      community: (dbListing.listing_attributes as any)?.community || 'Abu Dhabi',
+      building: (dbListing.listing_attributes as any)?.building,
+      city: 'Abu Dhabi',
+    },
+    price: (dbListing.asking_terms as any)?.price || 0,
+    currency: 'AED',
+    bedrooms: (dbListing.listing_attributes as any)?.bedrooms || 0,
+    bathrooms: (dbListing.listing_attributes as any)?.bathrooms || 0,
+    sqft: (dbListing.listing_attributes as any)?.sqft || 0,
+    images: (dbListing.listing_attributes as any)?.images || [],
+    created_at: dbListing.created_at,
+    madhmoun_listing_id: dbListing.madhmoun_listing_id,
+    madhmoun_status: dbListing.madhmoun_status,
+    compliance_status: dbListing.compliance_status,
+  }));
 
   const handleViewListing = (listing: Listing) => {
     setSelectedListing(listing);
     setDetailModalOpen(true);
+  };
+
+  const handleDeleteClick = (listing: Listing) => {
+    setListingToDelete(listing);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (listingToDelete) {
+      deleteListing(listingToDelete.id, {
+        onSuccess: () => {
+          setDeleteDialogOpen(false);
+          setListingToDelete(null);
+        },
+      });
+    }
   };
 
   const filteredListings = allListings.filter((listing) => {
@@ -352,118 +310,174 @@ export function ListingsSection() {
         </CardContent>
       </Card>
 
-      {/* Listings Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredListings.map((listing) => (
-          <Card key={listing.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            {/* Image */}
-            <div className="h-40 bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
-              {listing.images && listing.images.length > 0 ? (
-                <img
-                  src={listing.images[0]}
-                  alt={`${listing.property_type} in ${listing.location.community}`}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="flex items-center justify-center w-full h-full">
-                  <Building2 className="h-12 w-12 text-muted-foreground/50" />
-                </div>
-              )}
-            </div>
-
-            <CardContent className="p-4">
-              {/* Badges */}
-              <div className="flex items-center gap-2 mb-2">
-                <Badge className={cn('text-xs', STATUS_COLORS[listing.status])}>
-                  {listing.status}
-                </Badge>
-                <Badge variant="outline" className={cn('text-xs', TYPE_COLORS[listing.listing_type])}>
-                  {listing.listing_type}
-                </Badge>
-              </div>
-
-              {/* Price */}
-              <div className="text-lg font-bold text-primary mb-1">
-                {formatPrice(listing.price, listing.currency)}
-                {listing.listing_type === 'Rent' && <span className="text-sm font-normal">/yr</span>}
-              </div>
-
-              {/* Property Type */}
-              <div className="text-sm font-medium text-foreground mb-1">
-                {listing.property_type}
-              </div>
-
-              {/* Location */}
-              <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
-                <MapPin className="h-3 w-3" />
-                {listing.location.community}
-                {listing.location.building && `, ${listing.location.building}`}
-              </div>
-
-              {/* Specs */}
-              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                <div className="flex items-center gap-1">
-                  <Bed className="h-4 w-4" />
-                  {listing.bedrooms}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Bath className="h-4 w-4" />
-                  {listing.bathrooms}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Maximize className="h-4 w-4" />
-                  {listing.sqft.toLocaleString()} sqft
-                </div>
-              </div>
-
-              {/* Compliance Badge */}
-              {listing.status === 'Draft' && (
-                <div className="flex items-center gap-1 mb-2">
-                  <Shield className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
-                    {(listing as any).compliance_status === 'APPROVED' 
-                      ? 'Compliance Approved' 
-                      : 'Compliance Check Required'}
-                  </span>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex items-center gap-2">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex-1"
-                  onClick={() => handleViewListing(listing)}
-                >
-                  <Eye className="h-4 w-4 mr-1" />
-                  View
-                </Button>
-                <Button size="sm" variant="ghost">
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button size="sm" variant="ghost">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* ID */}
-              <div className="mt-2 text-xs text-muted-foreground font-mono">
-                {listing.listing_id}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredListings.length === 0 && (
+      {/* Loading State */}
+      {isLoading && (
         <Card>
           <CardContent className="p-8 text-center">
-            <Building2 className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground">No listings found</p>
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-3" />
+            <p className="text-muted-foreground">Loading listings...</p>
           </CardContent>
         </Card>
       )}
+
+      {/* Listings Grid */}
+      {!isLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredListings.map((listing) => (
+            <Card key={listing.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              {/* Image */}
+              <div className="h-40 bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
+                {listing.images && listing.images.length > 0 ? (
+                  <img
+                    src={listing.images[0]}
+                    alt={`${listing.property_type} in ${listing.location.community}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center w-full h-full">
+                    <Building2 className="h-12 w-12 text-muted-foreground/50" />
+                  </div>
+                )}
+              </div>
+
+              <CardContent className="p-4">
+                {/* Badges */}
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge className={cn('text-xs', STATUS_COLORS[listing.status])}>
+                    {listing.status}
+                  </Badge>
+                  <Badge variant="outline" className={cn('text-xs', TYPE_COLORS[listing.listing_type])}>
+                    {listing.listing_type}
+                  </Badge>
+                </div>
+
+                {/* Price */}
+                <div className="text-lg font-bold text-primary mb-1">
+                  {formatPrice(listing.price, listing.currency)}
+                  {listing.listing_type === 'Rent' && <span className="text-sm font-normal">/yr</span>}
+                </div>
+
+                {/* Property Type */}
+                <div className="text-sm font-medium text-foreground mb-1">
+                  {listing.property_type}
+                </div>
+
+                {/* Location */}
+                <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
+                  <MapPin className="h-3 w-3" />
+                  {listing.location.community}
+                  {listing.location.building && `, ${listing.location.building}`}
+                </div>
+
+                {/* Specs */}
+                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                  <div className="flex items-center gap-1">
+                    <Bed className="h-4 w-4" />
+                    {listing.bedrooms}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Bath className="h-4 w-4" />
+                    {listing.bathrooms}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Maximize className="h-4 w-4" />
+                    {listing.sqft.toLocaleString()} sqft
+                  </div>
+                </div>
+
+                {/* Compliance Badge */}
+                {listing.status === 'Draft' && (
+                  <div className="flex items-center gap-1 mb-2">
+                    <Shield className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">
+                      {listing.compliance_status === 'APPROVED' 
+                        ? 'Compliance Approved' 
+                        : 'Compliance Check Required'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => handleViewListing(listing)}
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    View
+                  </Button>
+                  <Button size="sm" variant="ghost">
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="ghost">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleViewListing(listing)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => handleDeleteClick(listing)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {/* ID */}
+                <div className="mt-2 text-xs text-muted-foreground font-mono">
+                  {listing.listing_id}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {!isLoading && filteredListings.length === 0 && (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Building2 className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground mb-4">No listings found</p>
+            <Button onClick={() => setAddListingModalOpen(true)} className="btn-gold">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Your First Listing
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Listing</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete listing "{listingToDelete?.listing_id}"? 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Listing Detail Modal with Compliance */}
       <ListingDetailModal
@@ -479,40 +493,27 @@ export function ListingsSection() {
           bedrooms: selectedListing.bedrooms,
           bathrooms: selectedListing.bathrooms,
           sqft: selectedListing.sqft,
-          madhmoun_listing_id: (selectedListing as any).madhmoun_listing_id,
-          madhmoun_status: (selectedListing as any).madhmoun_status,
-          compliance_status: (selectedListing as any).compliance_status,
+          madhmoun_listing_id: selectedListing.madhmoun_listing_id,
+          madhmoun_status: selectedListing.madhmoun_status,
+          compliance_status: selectedListing.compliance_status,
         } : null}
         open={detailModalOpen}
         onOpenChange={setDetailModalOpen}
-        onPublishSuccess={() => {
-          refetchListings();
-          setSelectedListing(null);
-        }}
       />
 
-      {/* Competitor Analysis Sheet */}
+      {/* Competitor Analysis Modal */}
       <CompetitorAnalysis
         open={competitorAnalysisOpen}
         onOpenChange={setCompetitorAnalysisOpen}
-        ownListings={allListings
-          .filter(l => l.status === 'Active')
-          .map(l => ({
-            id: l.listing_id,
-            price: l.price,
-            community: l.location.community,
-            bedrooms: l.bedrooms,
-          }))
-        }
       />
 
-      {/* Developer Catalog Sheet */}
+      {/* Developer Catalog Modal */}
       <DeveloperCatalog
         open={developerCatalogOpen}
         onOpenChange={setDeveloperCatalogOpen}
       />
 
-      {/* Market Blog Insights Sheet */}
+      {/* Market Insights Modal */}
       <MarketBlogInsights
         open={marketInsightsOpen}
         onOpenChange={setMarketInsightsOpen}
