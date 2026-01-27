@@ -129,7 +129,7 @@ export function DeveloperProjectCard({
         </div>
 
         {/* Amenities */}
-        {project.amenities.length > 0 && (
+        {project.amenities && project.amenities.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
             {project.amenities.slice(0, 4).map((amenity, idx) => (
               <Badge key={idx} variant="outline" className="text-xs">
