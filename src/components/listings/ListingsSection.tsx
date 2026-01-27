@@ -68,7 +68,7 @@ const DEMO_LISTINGS: Listing[] = [
     bedrooms: 3,
     bathrooms: 3,
     sqft: 2100,
-    images: [],
+    images: ['https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop'],
     created_at: '2024-01-10',
   },
   {
@@ -83,7 +83,7 @@ const DEMO_LISTINGS: Listing[] = [
     bedrooms: 5,
     bathrooms: 6,
     sqft: 6500,
-    images: [],
+    images: ['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop'],
     created_at: '2024-01-08',
   },
   {
@@ -98,7 +98,7 @@ const DEMO_LISTINGS: Listing[] = [
     bedrooms: 2,
     bathrooms: 2,
     sqft: 1450,
-    images: [],
+    images: ['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop'],
     created_at: '2024-01-12',
   },
   {
@@ -113,7 +113,7 @@ const DEMO_LISTINGS: Listing[] = [
     bedrooms: 4,
     bathrooms: 4,
     sqft: 3200,
-    images: [],
+    images: ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop'],
     created_at: '2024-01-05',
   },
   {
@@ -128,7 +128,7 @@ const DEMO_LISTINGS: Listing[] = [
     bedrooms: 4,
     bathrooms: 5,
     sqft: 5800,
-    images: [],
+    images: ['https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop'],
     created_at: '2024-01-15',
   },
 ];
@@ -356,9 +356,19 @@ export function ListingsSection() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredListings.map((listing) => (
           <Card key={listing.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            {/* Image Placeholder */}
-            <div className="h-40 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-              <Building2 className="h-12 w-12 text-muted-foreground/50" />
+            {/* Image */}
+            <div className="h-40 bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
+              {listing.images && listing.images.length > 0 ? (
+                <img
+                  src={listing.images[0]}
+                  alt={`${listing.property_type} in ${listing.location.community}`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="flex items-center justify-center w-full h-full">
+                  <Building2 className="h-12 w-12 text-muted-foreground/50" />
+                </div>
+              )}
             </div>
 
             <CardContent className="p-4">
