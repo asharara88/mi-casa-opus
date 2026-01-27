@@ -33,34 +33,7 @@ Deno.serve(async (req) => {
 
     const systemPrompt = `You are a real estate data extraction specialist for the UAE market. 
 Extract off-plan project information from developer website content.
-
-Return a JSON object with this exact structure:
-{
-  "projects": [
-    {
-      "name": "Project Name",
-      "community": "Area/Community name",
-      "location": "Abu Dhabi or Dubai",
-      "projectType": "Villa|Apartment|Townhouse|Penthouse|Mixed",
-      "status": "Launching|Under Construction|Ready|Sold Out",
-      "totalUnits": number or null,
-      "availableUnits": number or null,
-      "priceFrom": number in AED or null,
-      "priceTo": number in AED or null,
-      "expectedHandover": "Q1 2027" format or null,
-      "commissionPercent": number or null,
-      "paymentPlan": "60/40" or description or null,
-      "amenities": ["amenity1", "amenity2"],
-      "brochureUrl": "URL or null",
-      "floorPlansUrl": "URL or null",
-      "description": "Brief project description"
-    }
-  ],
-  "developerInfo": {
-    "name": "Developer Name",
-    "website": "URL"
-  }
-}
+Use the extract_projects tool to return structured data.
 
 Rules:
 - Extract ALL projects found on the page
@@ -91,14 +64,75 @@ ${content.substring(0, 50000)}`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        response_format: { type: 'json_object' },
-        temperature: 0.1,
+        tools: [
+          {
+            type: 'function',
+            function: {
+              name: 'extract_projects',
+              description: 'Extract off-plan real estate projects from developer website content',
+              parameters: {
+                type: 'object',
+                properties: {
+                  projects: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        name: { type: 'string', description: 'Project name' },
+                        community: { type: 'string', description: 'Area/Community name' },
+                        location: { type: 'string', description: 'Abu Dhabi or Dubai' },
+                        projectType: { type: 'string', enum: ['Villa', 'Apartment', 'Townhouse', 'Penthouse', 'Mixed'] },
+                        status: { type: 'string', enum: ['Launching', 'Under Construction', 'Ready', 'Sold Out'] },
+                        totalUnits: { type: 'number', nullable: true },
+                        availableUnits: { type: 'number', nullable: true },
+                        priceFrom: { type: 'number', nullable: true, description: 'Price in AED' },
+                        priceTo: { type: 'number', nullable: true, description: 'Price in AED' },
+                        expectedHandover: { type: 'string', nullable: true, description: 'Q1/Q2/Q3/Q4 YYYY format' },
+                        commissionPercent: { type: 'number', nullable: true },
+                        paymentPlan: { type: 'string', nullable: true, description: 'e.g. 60/40' },
+                        amenities: { type: 'array', items: { type: 'string' } },
+                        brochureUrl: { type: 'string', nullable: true },
+                        floorPlansUrl: { type: 'string', nullable: true },
+                        description: { type: 'string', nullable: true }
+                      },
+                      required: ['name', 'community', 'location', 'projectType', 'status']
+                    }
+                  },
+                  developerInfo: {
+                    type: 'object',
+                    properties: {
+                      name: { type: 'string' },
+                      website: { type: 'string' }
+                    },
+                    required: ['name', 'website']
+                  }
+                },
+                required: ['projects', 'developerInfo']
+              }
+            }
+          }
+        ],
+        tool_choice: { type: 'function', function: { name: 'extract_projects' } },
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Lovable AI error:', errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Rate limit exceeded. Please try again later.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'AI credits depleted. Please add funds.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ success: false, error: 'AI analysis failed' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -106,17 +140,33 @@ ${content.substring(0, 50000)}`;
     }
 
     const aiResponse = await response.json();
-    const resultText = aiResponse.choices?.[0]?.message?.content || '{}';
-
+    
+    // Extract tool call result
+    const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
     let result;
-    try {
-      result = JSON.parse(resultText);
-    } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Failed to parse extraction results' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    
+    if (toolCall?.function?.arguments) {
+      try {
+        result = JSON.parse(toolCall.function.arguments);
+      } catch (parseError) {
+        console.error('Failed to parse tool call arguments:', parseError);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to parse extraction results' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      // Fallback to content parsing
+      const resultText = aiResponse.choices?.[0]?.message?.content || '{}';
+      try {
+        result = JSON.parse(resultText);
+      } catch (parseError) {
+        console.error('Failed to parse AI response:', parseError);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to parse extraction results' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     console.log(`Extracted ${result.projects?.length || 0} projects`);
