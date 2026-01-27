@@ -242,7 +242,7 @@ export function ListingsSection() {
             className="hidden sm:flex"
           >
             <TrendingUp className="h-4 w-4 mr-2" />
-            Competitor Analysis
+            Secondary Market Listings
           </Button>
           <Button className="btn-gold" onClick={() => setAddListingModalOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />

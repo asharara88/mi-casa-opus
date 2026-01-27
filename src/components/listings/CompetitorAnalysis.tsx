@@ -228,14 +228,14 @@ export function CompetitorAnalysis({ open, onOpenChange, ownListings }: Competit
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
-            Competitor Analysis
+            Secondary Market Listings
           </SheetTitle>
         </SheetHeader>
 
         <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
           {/* Description */}
           <p className="text-sm text-muted-foreground">
-            Analyze competitor listings from property portals to get market insights and pricing recommendations.
+            Analyze secondary market listings from property portals to get market insights and pricing recommendations.
           </p>
 
           {/* Portal Presets */}
