@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, HelpCircle, Map } from 'lucide-react';
+import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, HelpCircle, Map, Upload } from 'lucide-react';
 import { CompliancePanel } from '@/components/compliance/CompliancePanel';
 import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
 import { useUpdateListing } from '@/hooks/useListings';
@@ -16,6 +16,7 @@ import { ListingAudioTour } from '@/components/voice/ListingAudioTour';
 import { PropertyMap } from '@/components/maps/PropertyMap';
 import { NeighborhoodInsights } from '@/components/maps/NeighborhoodInsights';
 import { CommuteCalculator } from '@/components/maps/CommuteCalculator';
+import { PortalPublishingPanel } from '@/components/listings/PortalPublishingPanel';
 
 interface ListingDisplayData {
   id: string;
@@ -164,7 +165,7 @@ export function ListingDetailModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="location">
               <Map className="h-4 w-4 mr-1" />
@@ -173,6 +174,10 @@ export function ListingDetailModal({
             <TabsTrigger value="ai">
               <Sparkles className="h-4 w-4 mr-1" />
               AI
+            </TabsTrigger>
+            <TabsTrigger value="portals">
+              <Upload className="h-4 w-4 mr-1" />
+              Portals
             </TabsTrigger>
             <TabsTrigger value="compliance">Compliance</TabsTrigger>
           </TabsList>
@@ -320,6 +325,17 @@ export function ListingDetailModal({
                 bedrooms: listing.bedrooms,
                 bathrooms: listing.bathrooms,
                 sqft: listing.sqft,
+                madhmoun_status: listing.madhmoun_status,
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="portals" className="mt-4">
+            <PortalPublishingPanel
+              listing={{
+                id: listing.id,
+                listing_id: listing.listing_id,
+                status: listing.status,
                 madhmoun_status: listing.madhmoun_status,
               }}
             />

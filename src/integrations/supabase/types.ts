@@ -1499,6 +1499,56 @@ export type Database = {
           },
         ]
       }
+      portal_publications: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          external_ref: string | null
+          id: string
+          last_synced_at: string | null
+          listing_id: string
+          portal: Database["public"]["Enums"]["portal_name"]
+          portal_url: string | null
+          published_at: string | null
+          status: Database["public"]["Enums"]["portal_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          external_ref?: string | null
+          id?: string
+          last_synced_at?: string | null
+          listing_id: string
+          portal: Database["public"]["Enums"]["portal_name"]
+          portal_url?: string | null
+          published_at?: string | null
+          status?: Database["public"]["Enums"]["portal_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          external_ref?: string | null
+          id?: string
+          last_synced_at?: string | null
+          listing_id?: string
+          portal?: Database["public"]["Enums"]["portal_name"]
+          portal_url?: string | null
+          published_at?: string | null
+          status?: Database["public"]["Enums"]["portal_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_publications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2230,6 +2280,8 @@ export type Database = {
         | "Approved"
         | "Expired"
         | "Rejected"
+      portal_name: "PropertyFinder" | "Bayut" | "Dubizzle"
+      portal_status: "pending" | "published" | "paused" | "removed" | "error"
       referral_type:
         | "Broker"
         | "Developer"
@@ -2601,6 +2653,8 @@ export const Constants = {
         "Expired",
         "Rejected",
       ],
+      portal_name: ["PropertyFinder", "Bayut", "Dubizzle"],
+      portal_status: ["pending", "published", "paused", "removed", "error"],
       referral_type: [
         "Broker",
         "Developer",
