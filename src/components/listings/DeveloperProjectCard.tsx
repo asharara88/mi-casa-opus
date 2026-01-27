@@ -54,12 +54,31 @@ export function DeveloperProjectCard({
     return `${(price / 1000).toFixed(0)}K AED`;
   };
 
+  const [imageError, setImageError] = React.useState(false);
+
   return (
     <Card className={cn(
       'transition-all hover:shadow-md',
       isSelected && 'ring-2 ring-primary'
     )}>
       <CardContent className="p-4">
+        {/* Project Image */}
+        {project.imageUrl && !imageError ? (
+          <div className="aspect-video rounded-lg overflow-hidden mb-3 bg-muted">
+            <img 
+              src={project.imageUrl} 
+              alt={project.name || 'Project image'}
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+              loading="lazy"
+            />
+          </div>
+        ) : (
+          <div className="aspect-video rounded-lg mb-3 bg-muted flex items-center justify-center">
+            <Building2 className="h-12 w-12 text-muted-foreground/50" />
+          </div>
+        )}
+
         {/* Header with checkbox */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
