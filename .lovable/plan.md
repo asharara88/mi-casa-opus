@@ -1,131 +1,153 @@
 
+# Add Project Images to Developer Catalog Cards
 
-# Fix Developer Catalog: Rename to Market Search and Fix Import Flow
+## Overview
 
-## Issues Identified
+Enhance the Market Search feature to capture and display project images on each developer project card. The images will be extracted from the developer websites during the scraping process.
 
-| Issue | Location | Problem |
-|-------|----------|---------|
-| Tab naming | `DeveloperCatalog.tsx` | Uses "Scrape" instead of "Market Search" |
-| Loading text | `DeveloperCatalog.tsx` | Says "Scraping developer website..." |
-| Toast messages | `DeveloperCatalog.tsx` | References "Scrape Complete" / "Scrape Failed" |
-| How it works | `DeveloperCatalog.tsx` | Uses "scrape the website" terminology |
-| Developer ID mismatch | `handleImportProject()` | `developer_projects.developer_id` expects `uuid`, code uses string `developerId` correctly but the developer lookup may fail |
-| Null safety | `DeveloperProjectCard.tsx` | Need additional null guards for edge cases |
+## Architecture
+
+The solution leverages Firecrawl's ability to extract links (including image URLs) from pages, combined with AI-powered matching to associate the right image with each project.
+
+```text
++------------------+     +-----------------+     +--------------------+
+|  Firecrawl API   | --> | Edge Function   | --> | DeveloperProject   |
+|  (markdown +     |     | (AI extracts    |     | Card with Image    |
+|   links format)  |     |  imageUrl)      |     |                    |
++------------------+     +-----------------+     +--------------------+
+```
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/lib/api/firecrawl.ts` | Add `imageUrl` field to `ScrapedProject` type |
+| `src/components/listings/DeveloperCatalog.tsx` | Request `links` format, pass to AI |
+| `supabase/functions/developer-project-scrape/index.ts` | Extract `imageUrl` in AI prompt |
+| `src/components/listings/DeveloperProjectCard.tsx` | Display image at top of card |
+| Demo data | Add sample image URLs |
 
 ---
 
-## Solution
+## Detailed Changes
 
-### 1. Rename "Scrape" to "Market Search"
+### 1. Update `ScrapedProject` Type
 
-Update all user-facing labels:
-
-| Current | New |
-|---------|-----|
-| Tab: "Scrape" | Tab: "Market Search" |
-| "Scraping developer website..." | "Searching developer catalog..." |
-| "Scrape Complete" | "Search Complete" |
-| "Scrape Failed" | "Search Failed" |
-| "We scrape the website" | "We search the website" |
-
-### 2. Fix Import Functionality
-
-The import flow has these issues:
-
-1. **State initialization**: `activeTab` starts as `'scrape'` - needs to be `'search'`
-2. **Developer lookup**: Currently case-insensitive which is good, but should handle edge cases
-3. **Error handling**: Import errors should be more descriptive
-
-### 3. Add Defensive Null Checks
-
-Both components need additional guards:
+Add optional `imageUrl` field:
 
 ```typescript
-// DeveloperProjectCard - add guards for all optional fields
-{project.community || 'Unknown'}, {project.location || 'Unknown'}
+export type ScrapedProject = {
+  name: string;
+  // ... existing fields
+  imageUrl: string | null;  // NEW: Project hero image URL
+};
+```
 
-// Handle undefined projectType
-{TYPE_ICONS[project.projectType] || TYPE_ICONS['Mixed'] || '🏠'}
+### 2. Modify Firecrawl Scrape Request
+
+Update `DeveloperCatalog.tsx` to request both markdown and links:
+
+```typescript
+const scrapeResponse = await firecrawlApi.scrape(url, {
+  formats: ['markdown', 'links'],  // Add 'links' format
+  onlyMainContent: false,  // Get full page for more images
+  waitFor: 5000,
+});
+```
+
+Pass the links array to the AI extraction function so it can match images to projects.
+
+### 3. Update AI Extraction Prompt
+
+Modify the `developer-project-scrape` edge function to:
+
+1. Accept image links in the request body
+2. Add `imageUrl` to the extraction schema
+3. Update the system prompt to instruct AI to match project names with relevant image URLs
+
+```typescript
+// In extraction schema
+imageUrl: { 
+  type: 'string', 
+  nullable: true, 
+  description: 'Direct URL to project hero/thumbnail image' 
+}
+
+// Enhanced prompt
+"- Match each project with its hero image URL from the provided links"
+"- Prefer high-quality render images over logos or icons"
+```
+
+### 4. Update Card Component
+
+Add image display at the top of each card:
+
+```typescript
+<Card>
+  <CardContent>
+    {/* NEW: Project Image */}
+    {project.imageUrl ? (
+      <div className="aspect-video rounded-lg overflow-hidden mb-3 bg-muted">
+        <img 
+          src={project.imageUrl} 
+          alt={project.name}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
+        />
+      </div>
+    ) : (
+      <div className="aspect-video rounded-lg mb-3 bg-muted flex items-center justify-center">
+        <Building2 className="h-12 w-12 text-muted-foreground/50" />
+      </div>
+    )}
+    {/* Existing content */}
+  </CardContent>
+</Card>
+```
+
+### 5. Update Demo Data
+
+Add sample image URLs to the demo projects for testing:
+
+```typescript
+{
+  name: 'Saadiyat Lagoons',
+  imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
+  // ...
+}
 ```
 
 ---
 
-## Files to Modify
+## Technical Details
 
-### `src/components/listings/DeveloperCatalog.tsx`
+### Image Extraction Strategy
 
-1. **Line 153**: Change state initialization
-   ```typescript
-   const [activeTab, setActiveTab] = useState('search');
-   ```
+The AI will receive:
+1. **Markdown content** - Contains project names and descriptions
+2. **Links array** - All URLs from the page including images
 
-2. **Line 209-211**: Update toast title
-   ```typescript
-   toast({
-     title: 'Search Complete',
-     description: `Found ${extractResponse.data.projects.length} projects from ${extractResponse.data.developerInfo.name}`,
-   });
-   ```
+The AI will match images to projects by:
+- Looking for image URLs containing project name keywords
+- Identifying render/hero images (typically larger, .jpg/.webp)
+- Avoiding logos, icons, and UI elements
 
-3. **Line 215-218**: Update error toast
-   ```typescript
-   toast({
-     title: 'Search Failed',
-     description: error instanceof Error ? error.message : 'Unknown error',
-     variant: 'destructive',
-   });
-   ```
+### Fallback Behavior
 
-4. **Lines 345-349**: Rename tabs
-   ```typescript
-   <TabsList className="mx-6 mt-4">
-     <TabsTrigger value="search">Market Search</TabsTrigger>
-     <TabsTrigger value="results" disabled={!scrapeResult}>
-       Results {scrapeResult && `(${scrapeResult.projects.length})`}
-     </TabsTrigger>
-   </TabsList>
-   ```
+- If no image is found: Show a placeholder with Building2 icon
+- If image fails to load: Hide the broken image gracefully
+- Demo mode: Use high-quality Unsplash real estate images
 
-5. **Line 352**: Update TabsContent value
-   ```typescript
-   <TabsContent value="search" className="flex-1 p-6 pt-4">
-   ```
+### Performance Considerations
 
-6. **Lines 398-401**: Update loading text
-   ```typescript
-   <p className="text-sm">Searching developer catalog...</p>
-   <p className="text-xs mt-1">This may take 15-30 seconds</p>
-   ```
-
-7. **Lines 409-413**: Update "How it works" text
-   ```typescript
-   <li>We search the website for project information</li>
-   ```
-
-### `src/components/listings/DeveloperProjectCard.tsx`
-
-1. **Add null safety throughout**:
-   - Line 74: Guard for `projectType`
-   - Line 80: Guard for `community` and `location`
-   - Line 84: Guard for `status`
-
-2. **Improve STATUS_COLORS fallback**:
-   ```typescript
-   const statusClass = STATUS_COLORS[project.status || ''] || 'bg-muted text-muted-foreground';
-   ```
+- Images are loaded lazily by the browser
+- Failed images don't break the card layout
+- Placeholder maintains aspect ratio for consistent grid
 
 ---
 
-## Summary of Changes
+## Summary
 
-| File | Changes |
-|------|---------|
-| `DeveloperCatalog.tsx` | 8 text changes, 1 state variable update |
-| `DeveloperProjectCard.tsx` | 5 null-safety guards |
-
-These changes will:
-- Rename "Scrape" to "Market Search" for professional terminology
-- Ensure stable rendering with proper null guards
-- Maintain the existing import functionality while making it more robust
-
+This enhancement will make the Developer Catalog more visually appealing and professional by showing actual project renders alongside the extracted data. The implementation leverages existing Firecrawl capabilities and adds minimal overhead to the scraping process.
