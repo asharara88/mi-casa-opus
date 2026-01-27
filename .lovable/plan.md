@@ -1,119 +1,131 @@
 
 
-# Fix Edge Functions for Scraping Tools
+# Fix Developer Catalog: Rename to Market Search and Fix Import Flow
 
-## Problem Summary
+## Issues Identified
 
-The scraping edge functions have inconsistent configurations that cause failures:
-
-| Function | Issue |
-|----------|-------|
-| `listing-extract` | **Wrong API URL** (`api.lovable.dev` vs `ai.gateway.lovable.dev`), unsupported `temperature` and `response_format` params |
-| `competitor-analyze` | Uses `temperature: 0.3` which may fail with certain models |
-| `developer-project-scrape` | Already fixed and working |
+| Issue | Location | Problem |
+|-------|----------|---------|
+| Tab naming | `DeveloperCatalog.tsx` | Uses "Scrape" instead of "Market Search" |
+| Loading text | `DeveloperCatalog.tsx` | Says "Scraping developer website..." |
+| Toast messages | `DeveloperCatalog.tsx` | References "Scrape Complete" / "Scrape Failed" |
+| How it works | `DeveloperCatalog.tsx` | Uses "scrape the website" terminology |
+| Developer ID mismatch | `handleImportProject()` | `developer_projects.developer_id` expects `uuid`, code uses string `developerId` correctly but the developer lookup may fail |
+| Null safety | `DeveloperProjectCard.tsx` | Need additional null guards for edge cases |
 
 ---
 
 ## Solution
 
-Standardize all three edge functions to use:
-- Correct gateway URL: `https://ai.gateway.lovable.dev/v1/chat/completions`
-- No `temperature` parameter (use default)
-- No `response_format` parameter (unsupported)
-- Consistent JSON extraction from response content
-- Import shared AI_MODELS for model selection
+### 1. Rename "Scrape" to "Market Search"
 
----
+Update all user-facing labels:
 
-## Changes Required
+| Current | New |
+|---------|-----|
+| Tab: "Scrape" | Tab: "Market Search" |
+| "Scraping developer website..." | "Searching developer catalog..." |
+| "Scrape Complete" | "Search Complete" |
+| "Scrape Failed" | "Search Failed" |
+| "We scrape the website" | "We search the website" |
 
-### 1. Fix `listing-extract/index.ts`
+### 2. Fix Import Functionality
 
-| Change | Before | After |
-|--------|--------|-------|
-| API URL | `https://api.lovable.dev/...` | `https://ai.gateway.lovable.dev/...` |
-| Model | Hardcoded `google/gemini-2.5-flash` | Use `AI_MODELS.CLASSIFICATION` |
-| Temperature | `0.1` | Remove parameter |
-| Response Format | `{ type: 'json_object' }` | Remove parameter |
-| Parsing | Direct JSON parse | Handle markdown code blocks like competitor-analyze |
+The import flow has these issues:
 
-### 2. Fix `competitor-analyze/index.ts`
+1. **State initialization**: `activeTab` starts as `'scrape'` - needs to be `'search'`
+2. **Developer lookup**: Currently case-insensitive which is good, but should handle edge cases
+3. **Error handling**: Import errors should be more descriptive
 
-| Change | Before | After |
-|--------|--------|-------|
-| Model | Hardcoded `google/gemini-3-flash-preview` | Use `AI_MODELS.REASONING` from shared models |
-| Temperature | `0.3` | Remove parameter |
+### 3. Add Defensive Null Checks
 
----
-
-## Updated File Structure
-
-```text
-supabase/functions/
-  _shared/
-    models.ts           # Already exists - shared model constants
-  competitor-analyze/
-    index.ts            # Update: import shared models, remove temperature
-  developer-project-scrape/
-    index.ts            # Already fixed - no changes needed
-  listing-extract/
-    index.ts            # Update: fix URL, import models, remove unsupported params
-  firecrawl-scrape/
-    index.ts            # No changes needed - works correctly
-```
-
----
-
-## Technical Details
-
-### listing-extract Changes
+Both components need additional guards:
 
 ```typescript
-// Add import
-import { AI_MODELS } from "../_shared/models.ts";
+// DeveloperProjectCard - add guards for all optional fields
+{project.community || 'Unknown'}, {project.location || 'Unknown'}
 
-// Fix URL constant
-const LOVABLE_API_URL = 'https://ai.gateway.lovable.dev/v1/chat/completions';
-
-// Update API call - remove unsupported params
-body: JSON.stringify({
-  model: AI_MODELS.CLASSIFICATION,  // Use shared constant
-  messages: [...],
-  // NO temperature
-  // NO response_format
-}),
-
-// Update response parsing to handle markdown code blocks
-const jsonMatch = aiContent.match(/```json\n?([\s\S]*?)\n?```/) || 
-                  aiContent.match(/```\n?([\s\S]*?)\n?```/) ||
-                  [null, aiContent];
-const jsonStr = jsonMatch[1] || aiContent;
-result = JSON.parse(jsonStr.trim());
-```
-
-### competitor-analyze Changes
-
-```typescript
-// Add import
-import { AI_MODELS } from "../_shared/models.ts";
-
-// Update model and remove temperature
-body: JSON.stringify({
-  model: AI_MODELS.REASONING,  // Use shared constant
-  messages: [...],
-  // NO temperature - remove this line
-}),
+// Handle undefined projectType
+{TYPE_ICONS[project.projectType] || TYPE_ICONS['Mixed'] || '🏠'}
 ```
 
 ---
 
-## Testing
+## Files to Modify
 
-After deploying the fixes:
+### `src/components/listings/DeveloperCatalog.tsx`
 
-1. **Off Plan Development** - Scrape an Aldar project
-2. **Secondary Market Listings** - Analyze a Bayut search results page
-3. **Listing Import** (if used) - Extract a single property listing
+1. **Line 153**: Change state initialization
+   ```typescript
+   const [activeTab, setActiveTab] = useState('search');
+   ```
 
-All three should complete without 500 errors.
+2. **Line 209-211**: Update toast title
+   ```typescript
+   toast({
+     title: 'Search Complete',
+     description: `Found ${extractResponse.data.projects.length} projects from ${extractResponse.data.developerInfo.name}`,
+   });
+   ```
+
+3. **Line 215-218**: Update error toast
+   ```typescript
+   toast({
+     title: 'Search Failed',
+     description: error instanceof Error ? error.message : 'Unknown error',
+     variant: 'destructive',
+   });
+   ```
+
+4. **Lines 345-349**: Rename tabs
+   ```typescript
+   <TabsList className="mx-6 mt-4">
+     <TabsTrigger value="search">Market Search</TabsTrigger>
+     <TabsTrigger value="results" disabled={!scrapeResult}>
+       Results {scrapeResult && `(${scrapeResult.projects.length})`}
+     </TabsTrigger>
+   </TabsList>
+   ```
+
+5. **Line 352**: Update TabsContent value
+   ```typescript
+   <TabsContent value="search" className="flex-1 p-6 pt-4">
+   ```
+
+6. **Lines 398-401**: Update loading text
+   ```typescript
+   <p className="text-sm">Searching developer catalog...</p>
+   <p className="text-xs mt-1">This may take 15-30 seconds</p>
+   ```
+
+7. **Lines 409-413**: Update "How it works" text
+   ```typescript
+   <li>We search the website for project information</li>
+   ```
+
+### `src/components/listings/DeveloperProjectCard.tsx`
+
+1. **Add null safety throughout**:
+   - Line 74: Guard for `projectType`
+   - Line 80: Guard for `community` and `location`
+   - Line 84: Guard for `status`
+
+2. **Improve STATUS_COLORS fallback**:
+   ```typescript
+   const statusClass = STATUS_COLORS[project.status || ''] || 'bg-muted text-muted-foreground';
+   ```
+
+---
+
+## Summary of Changes
+
+| File | Changes |
+|------|---------|
+| `DeveloperCatalog.tsx` | 8 text changes, 1 state variable update |
+| `DeveloperProjectCard.tsx` | 5 null-safety guards |
+
+These changes will:
+- Rename "Scrape" to "Market Search" for professional terminology
+- Ensure stable rendering with proper null guards
+- Maintain the existing import functionality while making it more robust
 
