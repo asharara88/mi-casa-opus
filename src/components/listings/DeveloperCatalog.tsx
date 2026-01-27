@@ -330,7 +330,7 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
         <SheetHeader className="p-6 pb-4 border-b">
           <SheetTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5 text-primary" />
-            Developer Project Catalog
+            Off Plan Development
           </SheetTitle>
         </SheetHeader>
 
