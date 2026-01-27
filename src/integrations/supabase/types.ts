@@ -1549,6 +1549,184 @@ export type Database = {
           },
         ]
       }
+      price_alerts: {
+        Row: {
+          alert_id: string
+          alert_type: Database["public"]["Enums"]["price_alert_type"]
+          created_at: string
+          current_price: number | null
+          external_ref: string | null
+          id: string
+          image_url: string | null
+          is_dismissed: boolean
+          is_read: boolean
+          portal: Database["public"]["Enums"]["portal_name"]
+          previous_price: number | null
+          price_change_percent: number | null
+          title: string | null
+          url: string | null
+          watch_id: string
+        }
+        Insert: {
+          alert_id: string
+          alert_type: Database["public"]["Enums"]["price_alert_type"]
+          created_at?: string
+          current_price?: number | null
+          external_ref?: string | null
+          id?: string
+          image_url?: string | null
+          is_dismissed?: boolean
+          is_read?: boolean
+          portal: Database["public"]["Enums"]["portal_name"]
+          previous_price?: number | null
+          price_change_percent?: number | null
+          title?: string | null
+          url?: string | null
+          watch_id: string
+        }
+        Update: {
+          alert_id?: string
+          alert_type?: Database["public"]["Enums"]["price_alert_type"]
+          created_at?: string
+          current_price?: number | null
+          external_ref?: string | null
+          id?: string
+          image_url?: string | null
+          is_dismissed?: boolean
+          is_read?: boolean
+          portal?: Database["public"]["Enums"]["portal_name"]
+          previous_price?: number | null
+          price_change_percent?: number | null
+          title?: string | null
+          url?: string | null
+          watch_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_alerts_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "price_watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      price_snapshots: {
+        Row: {
+          bathrooms: number | null
+          bedrooms: number | null
+          captured_at: string
+          currency: string | null
+          external_ref: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          portal: Database["public"]["Enums"]["portal_name"]
+          price: number
+          sqft: number | null
+          title: string | null
+          url: string | null
+          watch_id: string
+        }
+        Insert: {
+          bathrooms?: number | null
+          bedrooms?: number | null
+          captured_at?: string
+          currency?: string | null
+          external_ref: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          portal: Database["public"]["Enums"]["portal_name"]
+          price: number
+          sqft?: number | null
+          title?: string | null
+          url?: string | null
+          watch_id: string
+        }
+        Update: {
+          bathrooms?: number | null
+          bedrooms?: number | null
+          captured_at?: string
+          currency?: string | null
+          external_ref?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          portal?: Database["public"]["Enums"]["portal_name"]
+          price?: number
+          sqft?: number | null
+          title?: string | null
+          url?: string | null
+          watch_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_snapshots_watch_id_fkey"
+            columns: ["watch_id"]
+            isOneToOne: false
+            referencedRelation: "price_watches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      price_watches: {
+        Row: {
+          bedrooms: number | null
+          city: string
+          community: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          last_checked_at: string | null
+          listing_type: string | null
+          max_price: number | null
+          min_price: number | null
+          name: string
+          portals: Database["public"]["Enums"]["portal_name"][]
+          property_type: string | null
+          updated_at: string
+          watch_id: string
+        }
+        Insert: {
+          bedrooms?: number | null
+          city?: string
+          community: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          last_checked_at?: string | null
+          listing_type?: string | null
+          max_price?: number | null
+          min_price?: number | null
+          name: string
+          portals?: Database["public"]["Enums"]["portal_name"][]
+          property_type?: string | null
+          updated_at?: string
+          watch_id: string
+        }
+        Update: {
+          bedrooms?: number | null
+          city?: string
+          community?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          last_checked_at?: string | null
+          listing_type?: string | null
+          max_price?: number | null
+          min_price?: number | null
+          name?: string
+          portals?: Database["public"]["Enums"]["portal_name"][]
+          property_type?: string | null
+          updated_at?: string
+          watch_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2282,6 +2460,11 @@ export type Database = {
         | "Rejected"
       portal_name: "PropertyFinder" | "Bayut" | "Dubizzle"
       portal_status: "pending" | "published" | "paused" | "removed" | "error"
+      price_alert_type:
+        | "new_listing"
+        | "price_drop"
+        | "price_increase"
+        | "listing_removed"
       referral_type:
         | "Broker"
         | "Developer"
@@ -2655,6 +2838,12 @@ export const Constants = {
       ],
       portal_name: ["PropertyFinder", "Bayut", "Dubizzle"],
       portal_status: ["pending", "published", "paused", "removed", "error"],
+      price_alert_type: [
+        "new_listing",
+        "price_drop",
+        "price_increase",
+        "listing_removed",
+      ],
       referral_type: [
         "Broker",
         "Developer",
