@@ -1,175 +1,146 @@
 
-# Connect Listings Section to Real Database Data
 
-## Overview
+# Make AI Chat Data-Aware with Live BOS Context
 
-Remove all demo/dummy listings and connect the Listings section to use real data from the Supabase database with full CRUD operations (Create, Read, Update, Delete).
+## Problem
 
----
+The AI Agent chat is saying "I don't have live access to your BOS database" when asked "how many total leads we have" - but the infrastructure for database queries already exists in the `bos-llm-ops` edge function. The issue is that the keyword triggers are too narrow and don't match common reporting questions.
 
 ## Current State
 
-The Listings section has two sources of data that are merged together:
-1. **Hardcoded `DEMO_LISTINGS` array** in `ListingsSection.tsx` (lines 58-134) - 5 fake listings
-2. **Demo mode fallback** in `useListings.ts` - returns `DEMO_LISTINGS` from `demoData.ts` when demo mode is on
-3. **Real database query** - only used when demo mode is off
+The `bos-llm-ops` function has a `fetchDatabaseContext` function that:
+- Extracts CRM IDs, emails, phone numbers from user messages
+- Queries by specific identifiers (PR-XXX, LD-XXX, etc.)
+- Has limited keyword triggers: `pipeline`, `overview`, `summary`, `status`, `today`, `priorities`, `urgent`, `due`
 
-This creates confusion and always shows dummy data mixed with real data.
+What's missing:
+- Questions about counts ("how many", "total", "count")
+- Questions about specific entity types ("leads", "prospects", "deals", "listings")
+- Aggregate reporting queries
+- State/status breakdowns
+
+## Solution
+
+Enhance the `bos-llm-ops` edge function to:
+1. Detect aggregate/count questions and fetch totals
+2. Detect entity-specific questions and fetch relevant data
+3. Include state breakdowns for pipeline visibility
+4. Add listing counts for inventory queries
 
 ---
 
 ## Changes Required
 
-### File 1: `src/hooks/useListings.ts`
+### File 1: `supabase/functions/bos-llm-ops/index.ts`
 
-**Remove demo mode fallback** and always fetch from database:
-- Remove import of `useDemoMode` and `DEMO_LISTINGS`
-- Remove the `isDemoMode` check in the query
-- Simplify to always query the real `listings` table
+Expand the `fetchDatabaseContext` function with new query patterns:
 
-**Add `useDeleteListing` hook** for full CRUD support:
-- Follow existing pattern from `useLeads.ts` and `useDeals.ts`
-- Invalidate cache on success
-- Show success/error toasts
-
-### File 2: `src/components/listings/ListingsSection.tsx`
-
-**Remove hardcoded `DEMO_LISTINGS`** array (lines 58-134):
-- Delete the entire static array of 5 dummy listings
-
-**Update data transformation** to only use database listings:
-- Remove the spread of `DEMO_LISTINGS` 
-- Properly extract images from `listing_attributes.images`
-- Map database fields correctly to display format
-
-**Add delete functionality**:
-- Import `useDeleteListing` hook
-- Add delete option to the "more" menu on each listing card
-- Show confirmation dialog before deletion
-
-### File 3: `src/components/listings/AddListingModal.tsx`
-
-**Save extracted images** when creating listings from URL import:
-- Include `imageUrls` from extraction result in `listing_attributes`
-- This ensures scraped listings display their photos
-
----
-
-## Technical Details
-
-### Updated useListings Hook
-
+**Add Count/Total Detection:**
 ```typescript
-// Remove demo mode - always use real data
-export function useListings() {
-  return useQuery({
-    queryKey: ['listings'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('listings')
-        .select('*')
-        .order('created_at', { ascending: false });
+// Detect count/aggregate questions
+const wantsCount = /\b(how many|total|count|number of|all)\b/i.test(lowerIntent);
+const wantsLeads = /\b(leads?)\b/i.test(lowerIntent);
+const wantsProspects = /\b(prospects?|customers?)\b/i.test(lowerIntent);
+const wantsDeals = /\b(deals?|transactions?)\b/i.test(lowerIntent);
+const wantsListings = /\b(listings?|properties|inventory)\b/i.test(lowerIntent);
+```
 
-      if (error) throw error;
-      return data as Listing[];
-    },
-  });
+**Add Aggregate Queries:**
+```typescript
+// Leads count + breakdown
+if (wantsCount && wantsLeads || lowerIntent.includes('lead')) {
+  const { count } = await supabase.from('leads').select('*', { count: 'exact', head: true });
+  results.totalLeads = count;
+  
+  // State breakdown
+  const { data: leadStates } = await supabase
+    .from('leads')
+    .select('lead_state')
+    .then(/* group by state */);
+  results.leadsByState = leadStates;
 }
 
-// Add delete mutation
-export function useDeleteListing() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('listings')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['listings'] });
-      toast.success('Listing deleted successfully');
-    },
-    onError: (error) => {
-      toast.error('Failed to delete listing', { description: error.message });
-    },
-  });
+// Prospects count + breakdown  
+if (wantsCount && wantsProspects || lowerIntent.includes('prospect')) {
+  const { count } = await supabase.from('prospects').select('*', { count: 'exact', head: true });
+  results.totalProspects = count;
+  
+  // Stage breakdown
+  const { data: stages } = await supabase.rpc('get_prospect_stages');
+  results.prospectsByStage = stages;
 }
 ```
 
-### Updated ListingsSection Data Mapping
-
-```typescript
-// Only use real database listings - no demo data
-const allListings: Listing[] = (dbListings || []).map(dbListing => ({
-  id: dbListing.id,
-  listing_id: dbListing.listing_id,
-  property_type: (dbListing.listing_attributes as any)?.propertyType || 'Property',
-  listing_type: dbListing.listing_type as 'Sale' | 'Rent' | 'OffPlan',
-  status: dbListing.status as 'Draft' | 'Active' | 'Reserved' | 'Sold' | 'Withdrawn',
-  location: {
-    community: (dbListing.listing_attributes as any)?.community || 'Abu Dhabi',
-    building: (dbListing.listing_attributes as any)?.building,
-    city: 'Abu Dhabi',
-  },
-  price: (dbListing.asking_terms as any)?.price || 0,
-  currency: 'AED',
-  bedrooms: (dbListing.listing_attributes as any)?.bedrooms || 0,
-  bathrooms: (dbListing.listing_attributes as any)?.bathrooms || 0,
-  sqft: (dbListing.listing_attributes as any)?.sqft || 0,
-  images: (dbListing.listing_attributes as any)?.images || [],  // Extract images
-  created_at: dbListing.created_at,
-  // Include compliance fields
-  madhmoun_listing_id: dbListing.madhmoun_listing_id,
-  madhmoun_status: dbListing.madhmoun_status,
-  compliance_status: dbListing.compliance_status,
-}));
+**Update System Prompt** to reference data more proactively:
+```
+When database records include totals or counts:
+- Lead with the exact number requested
+- Provide breakdown by state/stage if available
+- Note the data freshness (real-time from BOS)
 ```
 
-### Save Images on Creation
+### File 2: Add Database Function for Aggregates (Migration)
 
-```typescript
-await createListing({
-  listing_id: `LST-${Date.now()}`,
-  listing_type: formData.listingType as 'Sale' | 'Lease' | 'OffPlan',
-  status: 'Draft',
-  listing_attributes: {
-    propertyType: formData.propertyType,
-    bedrooms: formData.bedrooms,
-    bathrooms: formData.bathrooms,
-    sqft: formData.sqft,
-    community: formData.community,
-    building: formData.building,
-    description: formData.description,
-    images: extractResult?.listing.imageUrls || [],  // Save scraped images
-  },
-  asking_terms: {
-    price: formData.price,
-    currency: 'AED',
-  },
-});
+Create a Postgres function for efficient stage/state breakdowns:
+
+```sql
+CREATE OR REPLACE FUNCTION get_entity_counts()
+RETURNS TABLE (
+  entity_type text,
+  total_count bigint,
+  by_state jsonb
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 'prospects'::text, 
+    (SELECT COUNT(*) FROM prospects),
+    (SELECT jsonb_object_agg(COALESCE(crm_stage, 'Unknown'), cnt) 
+     FROM (SELECT crm_stage, COUNT(*) as cnt FROM prospects GROUP BY crm_stage) s);
+  
+  RETURN QUERY  
+  SELECT 'leads'::text,
+    (SELECT COUNT(*) FROM leads),
+    (SELECT jsonb_object_agg(COALESCE(lead_state, 'Unknown'), cnt)
+     FROM (SELECT lead_state, COUNT(*) as cnt FROM leads GROUP BY lead_state) s);
+     
+  -- Similar for deals, listings
+END;
+$$ LANGUAGE plpgsql;
 ```
 
 ---
 
-## UI Enhancements
+## Enhanced Query Detection Matrix
 
-### Delete Confirmation
+| User Question Pattern | Data Fetched |
+|----------------------|--------------|
+| "how many leads" | Lead count + state breakdown |
+| "total prospects" | Prospect count + stage breakdown |
+| "pipeline overview" | All entity counts + KPIs |
+| "deals this month" | Deals filtered by date + totals |
+| "hot leads" | Leads filtered by qualification tier |
+| "show me [Name]" | Search by name across tables |
+| "[ID] status" | Lookup by CRM ID |
+| "today's priorities" | Due dates filtering |
+| "inventory count" | Listings count by status |
 
-Add a dropdown menu to each listing card with:
-- **View** - Open detail modal (existing)
-- **Edit** - Edit listing (existing button)
-- **Delete** - Delete with confirmation dialog
+---
 
-### Empty State
+## Result
 
-When no listings exist in the database, users see:
-- Building icon
-- "No listings found" message
-- Call-to-action buttons visible in header
+After these changes, asking "how many total leads we have" will return:
+
+```
+Based on your BOS data:
+
+**Leads:** 0 total
+- No leads in the system yet
+
+**Prospects:** 13,538 total  
+- These are pre-qualified contacts that can be converted to leads
+
+Would you like me to show a breakdown by stage, or explain how to convert prospects to leads?
+```
 
 ---
 
@@ -177,17 +148,15 @@ When no listings exist in the database, users see:
 
 | File | Changes |
 |------|---------|
-| `src/hooks/useListings.ts` | Remove demo mode, add `useDeleteListing` |
-| `src/components/listings/ListingsSection.tsx` | Remove `DEMO_LISTINGS`, fix image extraction, add delete functionality |
-| `src/components/listings/AddListingModal.tsx` | Save extracted images to database |
+| `supabase/functions/bos-llm-ops/index.ts` | Expand keyword triggers, add aggregate queries, improve entity detection |
+| New Migration | Add `get_entity_counts()` function for efficient aggregates |
 
 ---
 
-## Result
+## Additional Enhancements (Optional)
 
-After these changes:
-- Only real listings from the database will display
-- Empty state shows when no listings exist
-- Scraped listings include their extracted images
-- Full CRUD operations available (Create, Read, Update, Delete)
-- Delete confirmation prevents accidental deletions
+- Add date-range filtering for "this week", "this month" queries
+- Include conversion rates and trends in pipeline queries
+- Cache common aggregates in `pipeline_kpis` table
+- Add "explain" mode for data interpretation
+
