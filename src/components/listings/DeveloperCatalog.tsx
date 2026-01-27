@@ -39,9 +39,11 @@ const DEVELOPER_PRESETS = [
   { name: 'Modon', url: 'https://www.modon.ae/real-estate' },
   { name: 'Emirates Dev', url: 'https://www.emiratesdevelopment.ae/projects/' },
   { name: 'One Dev', url: 'https://onedevelopment.ae/projects/' },
+  { name: 'ONE Residence', url: 'https://oneuae.com/development-detail?title=ONE%20Residence' },
   { name: 'Ohana', url: 'https://ohanadevelopment.com/projects/' },
   { name: 'SAAS', url: 'https://saasproperties.com/en/properties/abu-dhabi/' },
   { name: 'AD Off-Plan', url: 'https://abudhabioffplan.ae/' },
+  { name: 'PF Off Plan', url: 'https://www.propertyfinder.ae/en/search?l=6&c=1&fu=0&cs=off_plan&ob=mr' },
 ];
 
 // Demo data for testing without API calls - Abu Dhabi off-plan projects
