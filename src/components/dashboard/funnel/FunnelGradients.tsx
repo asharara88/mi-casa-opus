@@ -1,34 +1,34 @@
 export function FunnelGradients() {
   return (
     <defs>
-      {/* Prospects - Teal gradient */}
+      {/* Prospects - Deep Teal gradient */}
       <linearGradient id="funnel-gradient-prospects" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity="1" />
-        <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity="0.7" />
+        <stop offset="0%" stopColor="hsl(173 58% 35%)" stopOpacity="1" />
+        <stop offset="100%" stopColor="hsl(173 58% 28%)" stopOpacity="1" />
       </linearGradient>
       
-      {/* Leads - Green gradient */}
+      {/* Leads - Deep Green gradient */}
       <linearGradient id="funnel-gradient-leads" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stopColor="hsl(var(--chart-2))" stopOpacity="1" />
-        <stop offset="100%" stopColor="hsl(var(--chart-2))" stopOpacity="0.7" />
+        <stop offset="0%" stopColor="hsl(160 60% 35%)" stopOpacity="1" />
+        <stop offset="100%" stopColor="hsl(160 60% 28%)" stopOpacity="1" />
       </linearGradient>
       
-      {/* Qualified - Cyan gradient */}
+      {/* Qualified - Deep Amber/Orange gradient for contrast */}
       <linearGradient id="funnel-gradient-qualified" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stopColor="hsl(var(--chart-3))" stopOpacity="1" />
-        <stop offset="100%" stopColor="hsl(var(--chart-3))" stopOpacity="0.7" />
+        <stop offset="0%" stopColor="hsl(35 80% 45%)" stopOpacity="1" />
+        <stop offset="100%" stopColor="hsl(30 80% 38%)" stopOpacity="1" />
       </linearGradient>
       
-      {/* Deals - Lime gradient */}
+      {/* Deals - Deep Coral/Rose gradient */}
       <linearGradient id="funnel-gradient-deals" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stopColor="hsl(var(--chart-4))" stopOpacity="1" />
-        <stop offset="100%" stopColor="hsl(var(--chart-4))" stopOpacity="0.7" />
+        <stop offset="0%" stopColor="hsl(350 65% 45%)" stopOpacity="1" />
+        <stop offset="100%" stopColor="hsl(350 65% 38%)" stopOpacity="1" />
       </linearGradient>
       
-      {/* Won - Gold gradient */}
+      {/* Won - Deep Gold gradient */}
       <linearGradient id="funnel-gradient-won" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stopColor="hsl(var(--gold))" stopOpacity="1" />
-        <stop offset="100%" stopColor="hsl(var(--gold))" stopOpacity="0.7" />
+        <stop offset="0%" stopColor="hsl(43 80% 42%)" stopOpacity="1" />
+        <stop offset="100%" stopColor="hsl(40 80% 35%)" stopOpacity="1" />
       </linearGradient>
 
       {/* Glow filter */}
