@@ -10,10 +10,11 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Phone, Mail, MapPin, Calendar, User, Building, Hash, MessageSquare, 
   Zap, Target, TrendingUp, CheckCircle, XCircle, AlertCircle,
-  DollarSign, Clock, FileText, Download, RotateCw, Bot, Volume2, Mic, ChevronDown
+  DollarSign, Clock, FileText, Download, RotateCw, Bot, Volume2, Mic, ChevronDown, Send
 } from 'lucide-react';
 import type { Prospect } from '@/hooks/useProspects';
 import { format } from 'date-fns';
@@ -29,6 +30,9 @@ import { getGateStatus, type ProspectData } from '@/lib/qualification-gates';
 import { useFunnelProcessor } from '@/hooks/useFunnelProcessor';
 import { ProspectVoiceMessage } from '@/components/voice/ProspectVoiceMessage';
 import { LiveCallNotes } from '@/components/voice/LiveCallNotes';
+import { WhatsAppMessagePanel } from '@/components/communication/WhatsAppMessagePanel';
+import { SMSNotificationButton } from '@/components/communication/SMSNotificationButton';
+import { CommunicationHistory } from '@/components/communication/CommunicationHistory';
 
 interface Props {
   prospect: Prospect | null;
@@ -352,15 +356,44 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
               <Phone className="h-4 w-4 mr-2" />
               Call
             </Button>
-            <Button variant="outline" size="sm" onClick={handleWhatsApp} disabled={!extProspect.phone} className="flex-1">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              WhatsApp
-            </Button>
+            <SMSNotificationButton
+              entityType="prospect"
+              entityId={extProspect.id}
+              recipientName={extProspect.full_name}
+              recipientPhone={extProspect.phone}
+              variant="outline"
+              size="sm"
+            />
             <Button variant="outline" size="sm" onClick={handleEmail} disabled={!extProspect.email} className="flex-1">
               <Mail className="h-4 w-4 mr-2" />
               Email
             </Button>
           </div>
+
+          {/* Communication Tools */}
+          <Collapsible defaultOpen={false}>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" className="w-full justify-between">
+                <span className="flex items-center gap-2">
+                  <Send className="h-4 w-4" />
+                  Communication Tools
+                </span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-3 pt-3">
+              <WhatsAppMessagePanel
+                entityType="prospect"
+                entityId={extProspect.id}
+                recipientName={extProspect.full_name}
+                recipientPhone={extProspect.phone}
+              />
+              <CommunicationHistory
+                entityType="prospect"
+                entityId={extProspect.id}
+              />
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Voice Tools Section */}
           <Collapsible>

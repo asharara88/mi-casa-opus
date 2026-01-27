@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, HelpCircle } from 'lucide-react';
+import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, HelpCircle, Map } from 'lucide-react';
 import { CompliancePanel } from '@/components/compliance/CompliancePanel';
 import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
 import { useUpdateListing } from '@/hooks/useListings';
@@ -13,6 +13,9 @@ import type { OverridePayload } from '@/types/compliance';
 import { AIGenerateDescription } from '@/components/ai/AIGenerateDescription';
 import { AIListingFAQ } from '@/components/ai/AIListingFAQ';
 import { ListingAudioTour } from '@/components/voice/ListingAudioTour';
+import { PropertyMap } from '@/components/maps/PropertyMap';
+import { NeighborhoodInsights } from '@/components/maps/NeighborhoodInsights';
+import { CommuteCalculator } from '@/components/maps/CommuteCalculator';
 
 interface ListingDisplayData {
   id: string;
@@ -161,8 +164,12 @@ export function ListingDetailModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="location">
+              <Map className="h-4 w-4 mr-1" />
+              Location
+            </TabsTrigger>
             <TabsTrigger value="ai">
               <Sparkles className="h-4 w-4 mr-1" />
               AI
@@ -231,6 +238,32 @@ export function ListingDetailModal({
                   <span className="text-sm font-mono">{listing.madhmoun_listing_id}</span>
                 )}
               </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="location" className="space-y-4 mt-4">
+            {/* Property Map */}
+            <PropertyMap
+              propertyName={listing.listing_id}
+              address={listing.location ? `${listing.location.community}, ${listing.location.city}` : undefined}
+              // Demo coordinates for Dubai Marina area
+              latitude={25.0808}
+              longitude={55.1385}
+              height="250px"
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Neighborhood Insights */}
+              <NeighborhoodInsights
+                latitude={25.0808}
+                longitude={55.1385}
+              />
+
+              {/* Commute Calculator */}
+              <CommuteCalculator
+                originLatitude={25.0808}
+                originLongitude={55.1385}
+              />
             </div>
           </TabsContent>
 
