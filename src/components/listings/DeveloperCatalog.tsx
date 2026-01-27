@@ -32,14 +32,18 @@ interface DeveloperCatalogProps {
 
 const DEVELOPER_PRESETS = [
   { name: 'Aldar', url: 'https://www.aldar.com/en/explore-aldar/businesses/development/residential' },
-  { name: 'Emaar', url: 'https://www.emaar.com/en/our-communities/abu-dhabi' },
-  { name: 'Reportage', url: 'https://reportageproperties.com/abu-dhabi/' },
+  { name: 'Reportage', url: 'https://reportageuae.com/en/projects?emirate=abu-dhabi' },
   { name: 'Bloom', url: 'https://bloomholding.com/properties/' },
   { name: 'Q Properties', url: 'https://www.qproperties.ae/projects' },
-  { name: 'Imkan', url: 'https://www.imkan.ae/en/projects' },
+  { name: 'Imkan', url: 'https://www.imkan.ae/projects' },
+  { name: 'Modon', url: 'https://www.modon.ae/real-estate' },
+  { name: 'Emirates Dev', url: 'https://www.emiratesdevelopment.ae/projects/' },
+  { name: 'One Dev', url: 'https://onedevelopment.ae/projects/' },
+  { name: 'Ohana', url: 'https://ohanadevelopment.com/projects/' },
+  { name: 'SAAS', url: 'https://saasproperties.com/projects/' },
 ];
 
-// Demo data for testing without API calls
+// Demo data for testing without API calls - Abu Dhabi off-plan projects
 const DEMO_PROJECTS: ScrapedProject[] = [
   {
     name: 'Saadiyat Lagoons',
@@ -79,7 +83,7 @@ const DEMO_PROJECTS: ScrapedProject[] = [
   },
   {
     name: 'The Dunes',
-    community: 'Reem Island',
+    community: 'Al Raha Beach',
     location: 'Abu Dhabi',
     projectType: 'Townhouse',
     status: 'Ready',
@@ -94,6 +98,42 @@ const DEMO_PROJECTS: ScrapedProject[] = [
     brochureUrl: null,
     floorPlansUrl: null,
     description: 'Family-friendly townhouses with modern design and community amenities.',
+  },
+  {
+    name: 'Hudayriyat Views',
+    community: 'Hudayriyat Island',
+    location: 'Abu Dhabi',
+    projectType: 'Villa',
+    status: 'Launching',
+    totalUnits: 320,
+    availableUnits: 280,
+    priceFrom: 4200000,
+    priceTo: 15000000,
+    expectedHandover: 'Q1 2028',
+    commissionPercent: 5,
+    paymentPlan: '70/30',
+    amenities: ['Private Beach', 'Sports Complex', 'Cycling Tracks', 'Marina'],
+    brochureUrl: null,
+    floorPlansUrl: null,
+    description: 'Premium villas on Hudayriyat Island with exclusive beach and sports facilities.',
+  },
+  {
+    name: 'One Reem Island',
+    community: 'Al Reem Island',
+    location: 'Abu Dhabi',
+    projectType: 'Apartment',
+    status: 'Under Construction',
+    totalUnits: 500,
+    availableUnits: 180,
+    priceFrom: 1100000,
+    priceTo: 4800000,
+    expectedHandover: 'Q3 2026',
+    commissionPercent: 4,
+    paymentPlan: '60/40',
+    amenities: ['Sky Lounge', 'Infinity Pool', 'Smart Home', 'Concierge'],
+    brochureUrl: null,
+    floorPlansUrl: null,
+    description: 'Iconic residential tower on Reem Island with panoramic city and sea views.',
   },
 ];
 
@@ -305,7 +345,7 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
             <div className="space-y-6">
               {/* Developer Presets */}
               <div>
-                <h3 className="text-sm font-medium mb-3">Quick Access - UAE Developers</h3>
+                <h3 className="text-sm font-medium mb-3">Quick Access - Abu Dhabi Developers</h3>
                 <div className="flex flex-wrap gap-2">
                   {DEVELOPER_PRESETS.map((preset) => (
                     <Button
