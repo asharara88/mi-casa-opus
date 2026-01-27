@@ -1809,6 +1809,101 @@ export type Database = {
           },
         ]
       }
+      team_meeting_participants: {
+        Row: {
+          id: string
+          invited_at: string
+          is_required: boolean
+          meeting_id: string
+          responded_at: string | null
+          rsvp_status: Database["public"]["Enums"]["rsvp_status"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          invited_at?: string
+          is_required?: boolean
+          meeting_id: string
+          responded_at?: string | null
+          rsvp_status?: Database["public"]["Enums"]["rsvp_status"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          invited_at?: string
+          is_required?: boolean
+          meeting_id?: string
+          responded_at?: string | null
+          rsvp_status?: Database["public"]["Enums"]["rsvp_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_meeting_participants_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "team_meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_meetings: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          location: string | null
+          meeting_id: string
+          meeting_type: Database["public"]["Enums"]["meeting_type"]
+          organizer_id: string
+          recurrence: Json | null
+          scheduled_at: string
+          status: Database["public"]["Enums"]["meeting_status"]
+          title: string
+          updated_at: string
+          zoom_host_url: string | null
+          zoom_join_url: string | null
+          zoom_meeting_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          location?: string | null
+          meeting_id: string
+          meeting_type?: Database["public"]["Enums"]["meeting_type"]
+          organizer_id: string
+          recurrence?: Json | null
+          scheduled_at: string
+          status?: Database["public"]["Enums"]["meeting_status"]
+          title: string
+          updated_at?: string
+          zoom_host_url?: string | null
+          zoom_join_url?: string | null
+          zoom_meeting_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          location?: string | null
+          meeting_id?: string
+          meeting_type?: Database["public"]["Enums"]["meeting_type"]
+          organizer_id?: string
+          recurrence?: Json | null
+          scheduled_at?: string
+          status?: Database["public"]["Enums"]["meeting_status"]
+          title?: string
+          updated_at?: string
+          zoom_host_url?: string | null
+          zoom_join_url?: string | null
+          zoom_meeting_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -2077,6 +2172,8 @@ export type Database = {
         | "DuplicateLead"
         | "Other"
       madhmoun_status: "DRAFT" | "PENDING" | "VERIFIED" | "REJECTED"
+      meeting_status: "scheduled" | "in_progress" | "completed" | "cancelled"
+      meeting_type: "zoom" | "in_person" | "phone" | "video_call"
       message_direction: "outbound" | "inbound"
       message_status: "pending" | "sent" | "delivered" | "failed" | "read"
       next_action_type:
@@ -2133,6 +2230,7 @@ export type Database = {
         | "Individual"
         | "Corporate"
         | "Other"
+      rsvp_status: "pending" | "accepted" | "declined" | "tentative"
       secondary_dead_reason:
         | "NoSuitableProperty"
         | "BudgetMismatch"
@@ -2439,6 +2537,8 @@ export const Constants = {
         "Other",
       ],
       madhmoun_status: ["DRAFT", "PENDING", "VERIFIED", "REJECTED"],
+      meeting_status: ["scheduled", "in_progress", "completed", "cancelled"],
+      meeting_type: ["zoom", "in_person", "phone", "video_call"],
       message_direction: ["outbound", "inbound"],
       message_status: ["pending", "sent", "delivered", "failed", "read"],
       next_action_type: [
@@ -2502,6 +2602,7 @@ export const Constants = {
         "Corporate",
         "Other",
       ],
+      rsvp_status: ["pending", "accepted", "declined", "tentative"],
       secondary_dead_reason: [
         "NoSuitableProperty",
         "BudgetMismatch",

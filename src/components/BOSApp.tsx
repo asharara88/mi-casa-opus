@@ -23,6 +23,7 @@ import { ListingsSection } from '@/components/listings/ListingsSection';
 import { TemplatesSection } from '@/components/templates/TemplatesSection';
 import { ProspectsSection } from '@/components/prospects/ProspectsSection';
 import { MarketingSection } from '@/components/marketing/MarketingSection';
+import { TeamsSection } from '@/components/teams/TeamsSection';
 import { AIAgentChat } from '@/components/ai/AIAgentChat';
 import { FloatingAIChat } from '@/components/ai/FloatingAIChat';
 import { useBrokerageContext } from '@/hooks/useBrokerage';
@@ -62,6 +63,10 @@ const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   'ai-agent': { title: 'AI Agent', subtitle: 'Your BOS operations assistant' },
   users: { title: 'User Management', subtitle: 'Manage users and broker profiles' },
   settings: { title: 'System Settings', subtitle: 'Brokerage context and configuration' },
+  
+  // Teams sections
+  meetings: { title: 'Team Meetings', subtitle: 'Schedule and manage team meetings' },
+  directory: { title: 'Team Directory', subtitle: 'Internal team contacts and info' },
   
   // LegalOwner sections
   oversight: { title: 'Oversight Dashboard', subtitle: 'Compliance posture and approvals' },
@@ -178,6 +183,12 @@ export function BOSApp() {
       
       case 'marketing':
         return <MarketingSection />;
+      
+      case 'meetings':
+        return <TeamsSection initialTab="meetings" />;
+      
+      case 'directory':
+        return <TeamsSection initialTab="directory" />;
       
       case 'settings':
         return <SettingsSection brokerage={brokerage} isLoading={isLoadingBrokerage} />;
