@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutDashboard, Megaphone, Calendar, Users, BarChart3 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { LayoutDashboard, Megaphone, Calendar, Users, BarChart3, Bell } from 'lucide-react';
 import { MarketingDashboard } from './MarketingDashboard';
 import { CampaignsList } from './CampaignsList';
 import { AdsManager } from './AdsManager';
 import { EventsCalendar } from './EventsCalendar';
 import { NetworkDirectory } from './NetworkDirectory';
+import { PriceAlertsSection } from './PriceAlertsSection';
+import { useUnreadAlertCount } from '@/hooks/usePriceAlerts';
 
 export function MarketingSection() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const { data: unreadCount = 0 } = useUnreadAlertCount();
 
   return (
     <div className="space-y-6">
@@ -41,6 +45,15 @@ export function MarketingSection() {
             <Users className="w-4 h-4" />
             <span className="hidden sm:inline">Network</span>
           </TabsTrigger>
+          <TabsTrigger value="price-alerts" className="flex items-center gap-2">
+            <Bell className="w-4 h-4" />
+            <span className="hidden sm:inline">Price Alerts</span>
+            {unreadCount > 0 && (
+              <Badge variant="destructive" className="h-5 w-5 p-0 text-xs flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </Badge>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard" className="mt-4">
@@ -61,6 +74,10 @@ export function MarketingSection() {
 
         <TabsContent value="network" className="mt-4">
           <NetworkDirectory />
+        </TabsContent>
+
+        <TabsContent value="price-alerts" className="mt-4">
+          <PriceAlertsSection />
         </TabsContent>
       </Tabs>
     </div>

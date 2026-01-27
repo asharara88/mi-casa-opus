@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.portal-status-sync]
 verify_jwt = false
+
+[functions.price-watch-check]
+verify_jwt = false
