@@ -38,3 +38,21 @@ verify_jwt = false
 
 [functions.elevenlabs-conversation-token]
 verify_jwt = false
+
+[functions.twilio-messaging]
+verify_jwt = false
+
+[functions.twilio-webhook]
+verify_jwt = false
+
+[functions.sendgrid-email]
+verify_jwt = false
+
+[functions.cal-webhook]
+verify_jwt = false
+
+[functions.docusign-envelope]
+verify_jwt = false
+
+[functions.docusign-webhook]
+verify_jwt = false

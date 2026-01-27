@@ -1,0 +1,195 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+interface MessageRequest {
+  channel: 'whatsapp' | 'sms';
+  to: string;
+  template?: string;
+  content?: string;
+  variables?: Record<string, string>;
+  entityType: 'prospect' | 'lead' | 'deal';
+  entityId: string;
+  subject?: string;
+}
+
+// Predefined message templates
+const messageTemplates: Record<string, { whatsapp: string; sms: string }> = {
+  new_listing_alert: {
+    whatsapp: "Hi {{name}}! 🏠 We have a new property that matches your preferences: *{{property}}*. Would you like to schedule a viewing? Reply YES to learn more.",
+    sms: "Hi {{name}}! New property match: {{property}}. Interested? Reply YES for details.",
+  },
+  viewing_reminder: {
+    whatsapp: "Hi {{name}}! 📅 Reminder: Your property viewing for *{{property}}* is scheduled for {{datetime}}. Location: {{location}}. See you there!",
+    sms: "Reminder: Viewing for {{property}} on {{datetime}} at {{location}}.",
+  },
+  follow_up: {
+    whatsapp: "Hi {{name}}! 👋 Following up on our conversation about *{{property}}*. Do you have any questions? I'm happy to help!",
+    sms: "Hi {{name}}, following up on {{property}}. Any questions? Let me know!",
+  },
+  document_request: {
+    whatsapp: "Hi {{name}}! 📄 To proceed with your booking, we need the following documents: {{documents}}. Please share at your earliest convenience.",
+    sms: "Hi {{name}}, please share required documents: {{documents}}. Thanks!",
+  },
+  booking_confirmation: {
+    whatsapp: "🎉 Congratulations {{name}}! Your booking for *{{property}}* is confirmed. Our team will be in touch with next steps.",
+    sms: "Congrats {{name}}! Booking confirmed for {{property}}. We'll be in touch soon.",
+  },
+};
+
+function applyTemplate(template: string, variables: Record<string, string>): string {
+  let result = template;
+  for (const [key, value] of Object.entries(variables)) {
+    result = result.replace(new RegExp(`{{${key}}}`, 'g'), value);
+  }
+  return result;
+}
+
+function formatPhoneNumber(phone: string, channel: 'whatsapp' | 'sms'): string {
+  // Remove any non-digit characters except +
+  let formatted = phone.replace(/[^\d+]/g, '');
+  
+  // Ensure it starts with +
+  if (!formatted.startsWith('+')) {
+    formatted = '+' + formatted;
+  }
+  
+  // For WhatsApp, prefix with whatsapp:
+  if (channel === 'whatsapp') {
+    return `whatsapp:${formatted}`;
+  }
+  
+  return formatted;
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID');
+    const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN');
+    const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER');
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+      throw new Error('Twilio credentials not configured');
+    }
+
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+    const body: MessageRequest = await req.json();
+    const { channel, to, template, content, variables = {}, entityType, entityId, subject } = body;
+
+    // Determine message content
+    let messageContent: string;
+    if (template && messageTemplates[template]) {
+      messageContent = applyTemplate(messageTemplates[template][channel], variables);
+    } else if (content) {
+      messageContent = applyTemplate(content, variables);
+    } else {
+      throw new Error('Either template or content must be provided');
+    }
+
+    // Format phone number
+    const formattedTo = formatPhoneNumber(to, channel);
+    const formattedFrom = channel === 'whatsapp' 
+      ? `whatsapp:${TWILIO_PHONE_NUMBER}` 
+      : TWILIO_PHONE_NUMBER;
+
+    // Send message via Twilio
+    const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
+    
+    const formData = new URLSearchParams();
+    formData.append('To', formattedTo);
+    formData.append('From', formattedFrom);
+    formData.append('Body', messageContent);
+
+    const twilioResponse = await fetch(twilioUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`),
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString(),
+    });
+
+    const twilioResult = await twilioResponse.json();
+
+    if (!twilioResponse.ok) {
+      console.error('Twilio error:', twilioResult);
+      
+      // Log failed message
+      await supabase.from('communication_logs').insert({
+        entity_type: entityType,
+        entity_id: entityId,
+        channel: channel,
+        direction: 'outbound',
+        template_used: template || null,
+        subject: subject || null,
+        content: messageContent,
+        status: 'failed',
+        error_message: twilioResult.message || 'Unknown error',
+        metadata: { twilio_error: twilioResult },
+      });
+
+      throw new Error(twilioResult.message || 'Failed to send message');
+    }
+
+    // Log successful message
+    const { data: logData, error: logError } = await supabase
+      .from('communication_logs')
+      .insert({
+        entity_type: entityType,
+        entity_id: entityId,
+        channel: channel,
+        direction: 'outbound',
+        template_used: template || null,
+        subject: subject || null,
+        content: messageContent,
+        status: 'sent',
+        external_id: twilioResult.sid,
+        sent_at: new Date().toISOString(),
+        metadata: { 
+          twilio_sid: twilioResult.sid,
+          to: to,
+        },
+      })
+      .select()
+      .single();
+
+    if (logError) {
+      console.error('Error logging message:', logError);
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        messageSid: twilioResult.sid,
+        status: twilioResult.status,
+        logId: logData?.id,
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+
+  } catch (error) {
+    console.error('Error in twilio-messaging:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: 'Failed to send message', 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+});
