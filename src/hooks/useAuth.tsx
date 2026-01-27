@@ -135,43 +135,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName: string, requestedRole: AppRole) => {
+    // SECURITY: Role assignment is handled by database trigger (handle_new_user_role)
+    // The requested role is stored as metadata for operator review
     const { data, error } = await supabase.auth.signUp({ 
       email, 
       password,
       options: {
         data: {
           full_name: fullName,
-          requested_role: requestedRole,
+          requested_role: requestedRole, // Stored as metadata only - trigger assigns default role
         }
       }
     });
     
-    if (!error && data.user) {
-      // Create profile
-      await supabase.from('profiles').insert({
+    if (error) {
+      return { error };
+    }
+    
+    if (data.user) {
+      // Create profile - RLS allows users to insert their own profile
+      const { error: profileError } = await supabase.from('profiles').insert({
         user_id: data.user.id,
         full_name: fullName,
         email: email,
         status: 'active',
       });
+      
+      if (profileError) {
+        console.error('Failed to create profile:', profileError);
+        return { error: new Error('Account created but profile setup failed. Please contact support.') };
+      }
 
-      // Create user role
-      await supabase.from('user_roles').insert({
-        user_id: data.user.id,
-        role: requestedRole,
-      });
+      // Note: Role is automatically assigned by database trigger (handle_new_user_role)
+      // First user becomes Operator, subsequent users become Broker
+      // Special role requests (Operator, LegalOwner, Investor) require operator approval
 
-      // If Broker role, create broker profile
+      // If Broker role requested, create broker profile (will be pending until ICA verification)
       if (requestedRole === 'Broker') {
-        await supabase.from('broker_profiles').insert({
+        const { error: brokerError } = await supabase.from('broker_profiles').insert({
           broker_id: `BRK-${Date.now().toString(36).toUpperCase()}`,
           user_id: data.user.id,
           broker_status: 'Pending',
         });
+        
+        if (brokerError) {
+          console.error('Failed to create broker profile:', brokerError);
+          // Non-fatal - operator can create this later
+        }
       }
     }
 
-    return { error };
+    return { error: null };
   };
 
   const signOut = async () => {
