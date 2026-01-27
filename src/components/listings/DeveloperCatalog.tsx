@@ -44,6 +44,7 @@ const DEVELOPER_PRESETS = [
   { name: 'SAAS', url: 'https://saasproperties.com/en/properties/abu-dhabi/' },
   { name: 'AD Off-Plan', url: 'https://abudhabioffplan.ae/' },
   { name: 'PF Off Plan', url: 'https://www.propertyfinder.ae/en/search?l=6&c=1&fu=0&cs=off_plan&ob=mr' },
+  { name: 'PF New Projects', url: 'https://www.propertyfinder.ae/en/new-projects' },
 ];
 
 // Demo data for testing without API calls - Abu Dhabi off-plan projects
