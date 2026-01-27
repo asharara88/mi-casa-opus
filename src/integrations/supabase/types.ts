@@ -1499,6 +1499,78 @@ export type Database = {
           },
         ]
       }
+      portal_inquiries: {
+        Row: {
+          created_at: string
+          external_listing_ref: string | null
+          id: string
+          inquirer_email: string | null
+          inquirer_name: string
+          inquirer_phone: string | null
+          inquiry_id: string
+          inquiry_type: string | null
+          lead_id: string | null
+          listing_id: string | null
+          message: string | null
+          portal: Database["public"]["Enums"]["portal_name"]
+          processed_at: string | null
+          raw_payload: Json | null
+          received_at: string
+          source_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          external_listing_ref?: string | null
+          id?: string
+          inquirer_email?: string | null
+          inquirer_name: string
+          inquirer_phone?: string | null
+          inquiry_id: string
+          inquiry_type?: string | null
+          lead_id?: string | null
+          listing_id?: string | null
+          message?: string | null
+          portal: Database["public"]["Enums"]["portal_name"]
+          processed_at?: string | null
+          raw_payload?: Json | null
+          received_at?: string
+          source_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          external_listing_ref?: string | null
+          id?: string
+          inquirer_email?: string | null
+          inquirer_name?: string
+          inquirer_phone?: string | null
+          inquiry_id?: string
+          inquiry_type?: string | null
+          lead_id?: string | null
+          listing_id?: string | null
+          message?: string | null
+          portal?: Database["public"]["Enums"]["portal_name"]
+          processed_at?: string | null
+          raw_payload?: Json | null
+          received_at?: string
+          source_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_inquiries_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_inquiries_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portal_publications: {
         Row: {
           created_at: string
@@ -2388,6 +2460,9 @@ export type Database = {
         | "SocialMedia"
         | "Event"
         | "Other"
+        | "PropertyFinder"
+        | "Bayut"
+        | "Dubizzle"
       lead_state:
         | "New"
         | "Contacted"
@@ -2757,6 +2832,9 @@ export const Constants = {
         "SocialMedia",
         "Event",
         "Other",
+        "PropertyFinder",
+        "Bayut",
+        "Dubizzle",
       ],
       lead_state: [
         "New",
