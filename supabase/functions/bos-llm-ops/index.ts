@@ -286,10 +286,14 @@ async function fetchDatabaseContext(supabase: any, userIntent: string) {
     }
   }
   
-  // Pipeline/summary queries (also triggered by general count questions)
-  if (intent.wantsPipeline) {
-    const { data: kpis } = await supabase.from('pipeline_kpis').select('*');
-    if (kpis?.length) results.pipelineKpis = kpis;
+  // Pipeline/summary queries - use entity counts (pipeline_kpis table doesn't exist)
+  if (intent.wantsPipeline && !results.entityCounts) {
+    try {
+      const { data: entityCounts } = await supabase.rpc('get_entity_counts');
+      if (entityCounts?.length) results.entityCounts = entityCounts;
+    } catch (e) {
+      console.log("[BOS OPS] Pipeline query fallback - get_entity_counts not available");
+    }
   }
   
   // Today's priorities
