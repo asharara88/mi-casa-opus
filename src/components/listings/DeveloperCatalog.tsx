@@ -197,17 +197,21 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
       const responseData = scrapeResponse.data?.data || scrapeResponse.data || {};
       const scrapedContent = responseData.markdown || '';
       const scrapedLinks = responseData.links || [];
+      const extractedImages = responseData.extractedImages || [];
       
       if (!scrapedContent) {
         throw new Error('No content found on the page');
       }
+
+      // Combine links and extracted images for AI matching
+      const allImageLinks = [...extractedImages, ...scrapedLinks];
 
       // Step 2: Extract projects using AI (pass links for image matching)
       const extractResponse = await firecrawlApi.scrapeDeveloperProjects(
         scrapedContent,
         url,
         developerName,
-        scrapedLinks
+        allImageLinks
       );
 
       if (!extractResponse.success || !extractResponse.data) {
