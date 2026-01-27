@@ -174,20 +174,27 @@ export function DeveloperCatalog({ open, onOpenChange }: DeveloperCatalogProps) 
     setSelectedProjects(new Set());
 
     try {
-      // Step 1: Scrape the URL
+      // Step 1: Scrape the URL using Firecrawl
       const scrapeResponse = await firecrawlApi.scrape(url, {
         formats: ['markdown'],
         onlyMainContent: true,
         waitFor: 5000,
       });
 
-      if (!scrapeResponse.success || !scrapeResponse.data?.markdown) {
+      if (!scrapeResponse.success) {
         throw new Error(scrapeResponse.error || 'Failed to scrape website');
+      }
+
+      // Handle nested data structure from Firecrawl API
+      const scrapedContent = scrapeResponse.data?.markdown || scrapeResponse.data?.data?.markdown || '';
+      
+      if (!scrapedContent) {
+        throw new Error('No content found on the page');
       }
 
       // Step 2: Extract projects using AI
       const extractResponse = await firecrawlApi.scrapeDeveloperProjects(
-        scrapeResponse.data.markdown,
+        scrapedContent,
         url,
         developerName
       );
