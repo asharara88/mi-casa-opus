@@ -3,6 +3,44 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Extract image URLs from markdown content
+function extractImageUrls(markdown: string, baseUrl: string): string[] {
+  const imageUrls: Set<string> = new Set();
+  
+  // Match markdown image syntax: ![alt](url)
+  const markdownImageRegex = /!\[.*?\]\((https?:\/\/[^)\s]+)\)/gi;
+  let match;
+  while ((match = markdownImageRegex.exec(markdown)) !== null) {
+    imageUrls.add(match[1]);
+  }
+  
+  // Match HTML img tags: <img src="url">
+  const htmlImgRegex = /<img[^>]+src=["'](https?:\/\/[^"']+)["']/gi;
+  while ((match = htmlImgRegex.exec(markdown)) !== null) {
+    imageUrls.add(match[1]);
+  }
+  
+  // Match standalone URLs that look like images
+  const urlRegex = /https?:\/\/[^\s)"'<>]+\.(?:jpg|jpeg|png|webp|gif|avif)(?:\?[^\s)"'<>]*)?/gi;
+  while ((match = urlRegex.exec(markdown)) !== null) {
+    imageUrls.add(match[0]);
+  }
+  
+  // Filter to only actual image URLs and deduplicate
+  const filteredUrls = Array.from(imageUrls).filter(url => {
+    // Must be a valid image URL
+    return /\.(jpg|jpeg|png|webp|gif|avif)(\?|$)/i.test(url) &&
+      !url.includes('placeholder') &&
+      !url.includes('loading') &&
+      !url.includes('icon') &&
+      !url.includes('logo') &&
+      !url.includes('avatar') &&
+      url.length < 500; // Avoid malformed URLs
+  });
+  
+  return filteredUrls;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -59,9 +97,23 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Scrape successful');
+    // Extract image URLs from markdown content
+    const markdown = data.data?.markdown || data.markdown || '';
+    const extractedImages = extractImageUrls(markdown, formattedUrl);
+    
+    console.log(`Scrape successful. Found ${extractedImages.length} images.`);
+    
+    // Add extracted images to the response
+    const enrichedData = {
+      ...data,
+      data: {
+        ...data.data,
+        extractedImages,
+      },
+    };
+
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify(enrichedData),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
