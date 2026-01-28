@@ -1,257 +1,217 @@
 
-# Listing Publish to Portals (PF, Bayut, Dubizzle)
+
+# Security Hardening Plan for Production Deployment
 
 ## Overview
 
-Build a listing syndication feature that enables publishing properties directly from BOS to Property Finder, Bayut, and Dubizzle using their XML feed standards. Includes portal status tracking and two-way sync for availability updates.
+This plan addresses 10 security findings identified in the pre-deployment audit. We will harden RLS policies, implement webhook authentication, and ensure proper access scoping before publishing.
 
 ---
 
-## Current State
+## Security Fixes
 
-| Feature | Status |
-|---------|--------|
-| Listing Import from Portal URL | ✅ Exists |
-| Manual Ad Tracking (AdsManager) | ✅ Exists |
-| DARI/Madhmoun Compliance Gates | ✅ Exists |
-| XML Feed Generation | ❌ Missing |
-| Portal API Publishing | ❌ Missing |
-| Status Sync (Sold/Rented) | ❌ Missing |
+### 1. Portal Publications RLS (HIGH Priority)
 
----
+**Issue**: Current policies allow unrestricted INSERT/UPDATE/DELETE with `true` condition.
 
-## Solution Architecture
+**Fix**: Restrict write operations to Operators only; allow authenticated reads.
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                         BOS LISTINGS                            │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐            │
-│  │ Draft   │→ │ Active  │→ │Reserved │→ │  Sold   │            │
-│  └─────────┘  └────┬────┘  └────┬────┘  └────┬────┘            │
-│                    │            │            │                  │
-└────────────────────┼────────────┼────────────┼──────────────────┘
-                     ▼            ▼            ▼
-              ┌──────────────────────────────────────┐
-              │       PORTAL SYNDICATION ENGINE       │
-              │  ┌────────────────────────────────┐  │
-              │  │   generate-portal-xml (Edge)   │  │
-              │  │   - PF XML v3 format           │  │
-              │  │   - Bayut XML format           │  │
-              │  │   - Dubizzle format            │  │
-              │  └────────────────────────────────┘  │
-              │                                      │
-              │  ┌────────────────────────────────┐  │
-              │  │   portal_publications (Table)  │  │
-              │  │   - Tracks per-portal status   │  │
-              │  │   - External ref numbers       │  │
-              │  │   - Last sync timestamps       │  │
-              │  └────────────────────────────────┘  │
-              └──────────────────────────────────────┘
-                     │            │            │
-                     ▼            ▼            ▼
-              ┌──────────┐ ┌──────────┐ ┌──────────┐
-              │ Property │ │  Bayut   │ │ Dubizzle │
-              │  Finder  │ │          │ │          │
-              └──────────┘ └──────────┘ └──────────┘
-```
-
----
-
-## Database Schema
-
-### New Table: `portal_publications`
-
-Tracks the syndication status of each listing to each portal.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | uuid | Primary key |
-| listing_id | uuid | FK to listings |
-| portal | enum | PropertyFinder, Bayut, Dubizzle |
-| status | enum | pending, published, paused, removed |
-| external_ref | text | Portal's listing reference number |
-| published_at | timestamp | When first published |
-| last_synced_at | timestamp | Last XML update sent |
-| portal_url | text | Live URL on portal |
-| error_message | text | Last error if any |
-
-### New Enum: `portal_name`
 ```sql
-CREATE TYPE portal_name AS ENUM ('PropertyFinder', 'Bayut', 'Dubizzle');
+-- Drop overly permissive policies
+DROP POLICY IF EXISTS "Allow insert for authenticated users" ON portal_publications;
+DROP POLICY IF EXISTS "Allow update for authenticated users" ON portal_publications;
+DROP POLICY IF EXISTS "Allow delete for authenticated users" ON portal_publications;
+
+-- New policies: Operators can manage, all authenticated can read
+CREATE POLICY "Operators can manage portal publications"
+  ON portal_publications FOR ALL
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'Operator'))
+  WITH CHECK (public.has_role(auth.uid(), 'Operator'));
+
+CREATE POLICY "Authenticated users can view portal publications"
+  ON portal_publications FOR SELECT
+  TO authenticated
+  USING (true);
 ```
 
-### New Enum: `portal_status`
+---
+
+### 2. Portal Inquiries RLS (HIGH Priority)
+
+**Issue**: INSERT policy uses `true`, allowing potential spoofing. DELETE/UPDATE too permissive.
+
+**Fix**: 
+- INSERT restricted to service role (webhook) or Operators
+- SELECT/UPDATE for assigned broker or Operator
+- DELETE for Operators only
+
 ```sql
-CREATE TYPE portal_status AS ENUM ('pending', 'published', 'paused', 'removed', 'error');
+-- Drop permissive policies
+DROP POLICY IF EXISTS "Allow insert for webhooks" ON portal_inquiries;
+DROP POLICY IF EXISTS "Allow select for authenticated" ON portal_inquiries;
+DROP POLICY IF EXISTS "Allow update for authenticated" ON portal_inquiries;
+
+-- New scoped policies
+CREATE POLICY "Operators can manage all inquiries"
+  ON portal_inquiries FOR ALL
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'Operator'))
+  WITH CHECK (public.has_role(auth.uid(), 'Operator'));
+
+CREATE POLICY "Brokers can view linked inquiries"
+  ON portal_inquiries FOR SELECT
+  TO authenticated
+  USING (
+    lead_id IN (
+      SELECT id FROM leads WHERE assigned_broker_id = auth.uid()
+    )
+    OR public.has_role(auth.uid(), 'Operator')
+  );
 ```
 
 ---
 
-## Components
+### 3. Price Watches RLS (MEDIUM Priority)
 
-### 1. Portal Publishing Panel (UI)
+**Issue**: Policies use `true` instead of scoping to user who created the watch.
 
-**File**: `src/components/listings/PortalPublishingPanel.tsx`
+**Fix**: Add `user_id` column and scope access.
 
-A panel added to the ListingDetailModal showing:
-- Toggle switches for each portal (PF, Bayut, Dubizzle)
-- Status indicators (✅ Published, ⏳ Pending, ⚠️ Error)
-- Last sync timestamp
-- Direct link to live portal listing
-- "Sync Now" button to push updates
+```sql
+-- Add user_id column
+ALTER TABLE price_watches ADD COLUMN IF NOT EXISTS user_id uuid REFERENCES auth.users(id);
 
-```text
-┌─────────────────────────────────────────────────────────┐
-│ 📤 Portal Syndication                                   │
-├─────────────────────────────────────────────────────────┤
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ Property Finder     ✅ Published                    │ │
-│ │ ┌─────┐  Last sync: 2h ago  [View] [Sync Now]      │ │
-│ │ │ ON  │  Ref: PF-AUH-28391                         │ │
-│ │ └─────┘                                            │ │
-│ └─────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ Bayut               ⏳ Pending                      │ │
-│ │ ┌─────┐  Awaiting approval                         │ │
-│ │ │ ON  │                                            │ │
-│ │ └─────┘                                            │ │
-│ └─────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ Dubizzle            ○ Not Published                │ │
-│ │ ┌─────┐  Toggle to enable                          │ │
-│ │ │ OFF │                                            │ │
-│ │ └─────┘                                            │ │
-│ └─────────────────────────────────────────────────────┘ │
-│                                                         │
-│ ⓘ Compliance: DARI permit verified ✓                   │
-│                                                         │
-│ [Sync All Portals]                                      │
-└─────────────────────────────────────────────────────────┘
+-- Update existing records to current user (migration)
+UPDATE price_watches SET user_id = (SELECT id FROM auth.users LIMIT 1) WHERE user_id IS NULL;
+
+-- Make non-nullable
+ALTER TABLE price_watches ALTER COLUMN user_id SET NOT NULL;
+
+-- Drop permissive policies
+DROP POLICY IF EXISTS "Allow all for authenticated" ON price_watches;
+
+-- New user-scoped policies
+CREATE POLICY "Users can manage their own price watches"
+  ON price_watches FOR ALL
+  TO authenticated
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Operators can view all price watches"
+  ON price_watches FOR SELECT
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'Operator'));
 ```
-
-### 2. Portal XML Generator (Edge Function)
-
-**File**: `supabase/functions/generate-portal-xml/index.ts`
-
-Generates compliant XML feeds for each portal:
-
-- **Property Finder XML v3**: Full schema with images, agent info, features
-- **Bayut XML**: Similar structure with platform-specific fields
-- **Dubizzle XML**: Simpler format
-
-The function:
-1. Queries listings with active portal publications
-2. Joins brokerage/broker license data for compliance
-3. Generates XML per portal specification
-4. Returns XML feed URL for portal configuration
-
-### 3. Portal Status Sync (Edge Function)
-
-**File**: `supabase/functions/portal-status-sync/index.ts`
-
-Handles status synchronization:
-- When listing status changes to Sold/Rented → marks portal listings for removal
-- Receives webhook callbacks from portals (if supported)
-- Updates `portal_publications.status` accordingly
 
 ---
 
-## Files to Create
+### 4. Price Alerts & Snapshots RLS (MEDIUM Priority)
 
-| File | Purpose |
-|------|---------|
-| `src/components/listings/PortalPublishingPanel.tsx` | UI for portal toggle/status |
-| `src/hooks/usePortalPublications.ts` | CRUD hooks for portal_publications |
-| `supabase/functions/generate-portal-xml/index.ts` | XML feed generator |
-| `supabase/functions/portal-status-sync/index.ts` | Status sync handler |
+**Issue**: Related tables need similar user scoping via watch ownership.
+
+**Fix**: Scope via join to price_watches.user_id.
+
+```sql
+-- Price Alerts: scope via watch ownership
+DROP POLICY IF EXISTS "Allow all for authenticated" ON price_alerts;
+
+CREATE POLICY "Users can view their own alerts"
+  ON price_alerts FOR SELECT
+  TO authenticated
+  USING (
+    watch_id IN (SELECT id FROM price_watches WHERE user_id = auth.uid())
+    OR public.has_role(auth.uid(), 'Operator')
+  );
+
+CREATE POLICY "System can insert alerts"
+  ON price_alerts FOR INSERT
+  TO authenticated
+  WITH CHECK (true); -- Edge function uses service role
+
+-- Price Snapshots: same pattern
+DROP POLICY IF EXISTS "Allow all for authenticated" ON price_snapshots;
+
+CREATE POLICY "Users can view their own snapshots"
+  ON price_snapshots FOR SELECT
+  TO authenticated
+  USING (
+    watch_id IN (SELECT id FROM price_watches WHERE user_id = auth.uid())
+    OR public.has_role(auth.uid(), 'Operator')
+  );
+```
+
+---
+
+### 5. Webhook Secret Validation (MEDIUM Priority)
+
+**Issue**: `portal-lead-sync` accepts requests without authentication, enabling spoofed inquiries.
+
+**Fix**: Validate `x-webhook-secret` header against stored secret.
+
+```typescript
+// In portal-lead-sync/index.ts
+const webhookSecret = Deno.env.get("PORTAL_WEBHOOK_SECRET");
+const providedSecret = req.headers.get("x-webhook-secret");
+
+// For webhook requests (not email parsing), validate secret
+if (!providedSecret || providedSecret !== webhookSecret) {
+  return new Response(
+    JSON.stringify({ error: "Invalid webhook secret" }),
+    { status: 401, headers: corsHeaders }
+  );
+}
+```
+
+---
 
 ## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/components/listings/ListingDetailModal.tsx` | Add "Portals" tab with PortalPublishingPanel |
-| `supabase/config.toml` | Register new edge functions |
-
-## Database Migration
-
-1. Create `portal_name` enum
-2. Create `portal_status` enum  
-3. Create `portal_publications` table with RLS
-4. Add trigger to auto-sync status when listing status changes
+| `supabase/migrations/[new]_security_hardening.sql` | All RLS policy updates |
+| `supabase/functions/portal-lead-sync/index.ts` | Add webhook secret validation |
+| `src/hooks/usePriceAlerts.ts` | Include user_id when creating watches |
+| `src/components/marketing/AddPriceWatchModal.tsx` | Pass user_id to mutation |
 
 ---
 
-## Portal Feed Specifications
+## Database Migration Summary
 
-### Property Finder XML v3 (Sample Structure)
-
-```xml
-<properties>
-  <property>
-    <reference_number>LST-123456</reference_number>
-    <offering_type>sale</offering_type>
-    <property_type>AP</property_type>
-    <price>2500000</price>
-    <city>Abu Dhabi</city>
-    <community>Al Reem Island</community>
-    <sub_community>Sky Tower</sub_community>
-    <bedroom>3</bedroom>
-    <bathroom>3</bathroom>
-    <size unit="sqft">2100</size>
-    <title_en>Stunning 3BR with Sea View</title_en>
-    <description_en>...</description_en>
-    <permit_number>DARI-2024-78901</permit_number>
-    <agent>
-      <name>John Smith</name>
-      <license_no>BRN-12345</license_no>
-      <phone>+971501234567</phone>
-    </agent>
-    <images>
-      <image>https://storage.../image1.jpg</image>
-    </images>
-  </property>
-</properties>
+```sql
+-- 1. Portal Publications: Operator-only writes
+-- 2. Portal Inquiries: Scoped to assigned broker
+-- 3. Price Watches: Add user_id, scope to owner
+-- 4. Price Alerts/Snapshots: Scope via watch ownership
+-- 5. Add index for performance
+CREATE INDEX idx_price_watches_user_id ON price_watches(user_id);
 ```
 
 ---
 
-## Compliance Integration
+## Secret Required
 
-Before publishing to any portal, the system validates:
-
-1. **Listing Status** = Active (not Draft/Sold)
-2. **Madhmoun Status** = VERIFIED
-3. **DARI Permit** = Valid and not expired
-4. **Broker License** = Active
-
-If any gate fails, the portal toggle is disabled with an explanation.
+Add `PORTAL_WEBHOOK_SECRET` to Supabase secrets for webhook validation. This will be provided to portal integrations.
 
 ---
 
-## Implementation Phases
+## Post-Fix Verification
 
-### Phase 1: Database & UI Foundation
-- Create migration for `portal_publications` table
-- Build `PortalPublishingPanel` component
-- Add "Portals" tab to ListingDetailModal
-- Create `usePortalPublications` hook
-
-### Phase 2: XML Feed Generation
-- Build `generate-portal-xml` edge function
-- Support Property Finder XML v3 format
-- Add Bayut and Dubizzle formats
-- Generate feed URLs
-
-### Phase 3: Status Sync
-- Build `portal-status-sync` edge function
-- Auto-remove from portals when listing goes Sold/Rented
-- Handle portal webhook callbacks (future)
+After applying fixes:
+1. Run security scan to confirm 0 HIGH/MEDIUM findings
+2. Test portal toggle as Broker (should fail) and Operator (should succeed)
+3. Test price watch creation scopes to current user
+4. Test webhook endpoint rejects requests without valid secret
 
 ---
 
-## Future Enhancements
+## Implementation Order
 
-- **Portal Analytics Pull**: Fetch impressions/clicks from portal APIs
-- **Photo Sync**: Auto-upload images to portal CDNs
-- **Listing Boost**: Integrate with portal premium placement APIs
-- **Multi-language**: Generate Arabic descriptions for portals
+1. Create database migration with all RLS policy updates
+2. Add `user_id` column to `price_watches` with backfill
+3. Update `portal-lead-sync` with webhook secret validation
+4. Update hooks to pass `user_id` for price watches
+5. Add `PORTAL_WEBHOOK_SECRET` secret
+6. Re-run security scan
+7. Publish to production
+
