@@ -75,6 +75,9 @@ export interface ProspectInsert {
   whatsapp_started?: boolean;
   brochure_downloaded?: boolean;
   repeat_visit_7d?: boolean;
+  // Ownership tracking
+  created_by?: string;
+  assigned_broker_id?: string | null;
 }
 
 export function useProspects(filters?: {
@@ -195,9 +198,13 @@ export function useCreateProspect() {
 
   return useMutation({
     mutationFn: async (prospect: ProspectInsert) => {
+      // Get current user to set created_by for RLS
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User must be authenticated to create prospects');
+      
       const { data, error } = await supabase
         .from('prospects')
-        .insert(prospect)
+        .insert({ ...prospect, created_by: user.id })
         .select()
         .single();
       
