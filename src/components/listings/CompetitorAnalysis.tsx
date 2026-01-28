@@ -117,6 +117,9 @@ const DEMO_ANALYSIS_RESULT: AnalysisResult = {
 };
 
 const PORTAL_PRESETS = [
+  // Mi Casa - Abu Dhabi
+  { name: 'Mi Casa Sale', url: 'https://micasa.ae/buy/' },
+  { name: 'Mi Casa Rent', url: 'https://micasa.ae/rent/' },
   // Property Finder - Abu Dhabi
   { name: 'PF Sale', url: 'https://www.propertyfinder.ae/en/search?c=1&fu=0&ob=nd&tt[]=70030076155545783,24.459227,54.381018,driving,15,1#' },
   { name: 'PF Rent', url: 'https://www.propertyfinder.ae/en/search?c=2&fu=0&rp=y&ob=nd&tt[]=70030076155545783,24.459227,54.381018,driving,45,1' },

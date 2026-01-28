@@ -31,6 +31,7 @@ interface DeveloperCatalogProps {
 }
 
 const DEVELOPER_PRESETS = [
+  { name: 'Mi Casa', url: 'https://micasa.ae/off-plan/' },
   { name: 'Aldar', url: 'https://www.aldar.com/en/explore-aldar/businesses/development/residential' },
   { name: 'Reportage', url: 'https://reportageuae.com/en/projects?emirate=abu-dhabi' },
   { name: 'Bloom', url: 'https://bloomholding.com/properties/' },
