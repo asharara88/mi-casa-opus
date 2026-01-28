@@ -79,9 +79,32 @@ Deno.serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || Deno.env.get('SUPABASE_PUBLISHABLE_KEY')!;
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
-    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // SECURITY: Validate authentication
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('[price-watch-check] Auth validation failed:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[price-watch-check] Authenticated user: ${user.id}`);
 
     const { watch_id, action } = await req.json();
 

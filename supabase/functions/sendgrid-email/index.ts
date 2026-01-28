@@ -125,14 +125,36 @@ Deno.serve(async (req) => {
 
   try {
     const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY');
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+    const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') || Deno.env.get('SUPABASE_PUBLISHABLE_KEY')!;
 
     if (!SENDGRID_API_KEY) {
       throw new Error('SendGrid API key not configured');
     }
 
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    // SECURITY: Validate authentication
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('[sendgrid-email] Auth validation failed:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[sendgrid-email] Authenticated user: ${user.id}`);
 
     const body: EmailRequest = await req.json();
     const { 
@@ -204,6 +226,7 @@ Deno.serve(async (req) => {
             status: 'failed',
             error_message: errorText,
             metadata: { to: email, type },
+            created_by: user.id,
           });
         }
       }
@@ -227,6 +250,7 @@ Deno.serve(async (req) => {
             status: 'sent',
             sent_at: new Date().toISOString(),
             metadata: { to: email, type },
+            created_by: user.id,
           })
         );
       }

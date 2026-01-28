@@ -74,14 +74,36 @@ Deno.serve(async (req) => {
     const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID');
     const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN');
     const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER');
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+    const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') || Deno.env.get('SUPABASE_PUBLISHABLE_KEY')!;
 
     if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
       throw new Error('Twilio credentials not configured');
     }
 
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    // SECURITY: Validate authentication
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('[twilio-messaging] Auth validation failed:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[twilio-messaging] Authenticated user: ${user.id}`);
 
     const body: MessageRequest = await req.json();
     const { channel, to, template, content, variables = {}, entityType, entityId, subject } = body;
@@ -136,6 +158,7 @@ Deno.serve(async (req) => {
         status: 'failed',
         error_message: twilioResult.message || 'Unknown error',
         metadata: { twilio_error: twilioResult },
+        created_by: user.id,
       });
 
       throw new Error(twilioResult.message || 'Failed to send message');
@@ -159,6 +182,7 @@ Deno.serve(async (req) => {
           twilio_sid: twilioResult.sid,
           to: to,
         },
+        created_by: user.id,
       })
       .select()
       .single();
