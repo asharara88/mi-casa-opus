@@ -120,11 +120,16 @@ export function useCreatePriceWatch() {
 
   return useMutation({
     mutationFn: async (watch: PriceWatchInsert) => {
+      // Get current user for user_id
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const { data, error } = await supabase
         .from('price_watches')
         .insert({
           ...watch,
           watch_id: generateWatchId(),
+          user_id: user.id,
         })
         .select()
         .single();

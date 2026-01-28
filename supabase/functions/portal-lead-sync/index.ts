@@ -185,10 +185,12 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const webhookSecret = Deno.env.get("PORTAL_WEBHOOK_SECRET");
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const contentType = req.headers.get("content-type") || "";
     const portalSource = req.headers.get("x-portal-source");
+    const providedSecret = req.headers.get("x-webhook-secret");
     
     let inquiryData: Partial<PortalWebhookPayload>;
     let sourceType: "webhook" | "email_parse" = "webhook";
@@ -213,7 +215,17 @@ Deno.serve(async (req) => {
         
         inquiryData = parseEmailContent(portal, emailData.body);
       } else {
-        // Direct webhook payload
+        // Direct webhook payload - validate webhook secret
+        if (webhookSecret) {
+          if (!providedSecret || providedSecret !== webhookSecret) {
+            console.error("Invalid webhook secret provided");
+            return new Response(
+              JSON.stringify({ error: "Invalid webhook secret" }),
+              { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+        }
+        
         inquiryData = rawPayload as PortalWebhookPayload;
         
         // Validate portal source
