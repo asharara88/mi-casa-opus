@@ -1840,6 +1840,7 @@ export type Database = {
       }
       prospects: {
         Row: {
+          assigned_broker_id: string | null
           brochure_downloaded: boolean | null
           budget_max: number | null
           budget_min: number | null
@@ -1849,6 +1850,7 @@ export type Database = {
           contact_attempts: number | null
           country: string | null
           created_at: string
+          created_by: string | null
           crm_confidence_level: string | null
           crm_created_date: string | null
           crm_customer_id: string | null
@@ -1882,6 +1884,7 @@ export type Database = {
           whatsapp_started: boolean | null
         }
         Insert: {
+          assigned_broker_id?: string | null
           brochure_downloaded?: boolean | null
           budget_max?: number | null
           budget_min?: number | null
@@ -1891,6 +1894,7 @@ export type Database = {
           contact_attempts?: number | null
           country?: string | null
           created_at?: string
+          created_by?: string | null
           crm_confidence_level?: string | null
           crm_created_date?: string | null
           crm_customer_id?: string | null
@@ -1924,6 +1928,7 @@ export type Database = {
           whatsapp_started?: boolean | null
         }
         Update: {
+          assigned_broker_id?: string | null
           brochure_downloaded?: boolean | null
           budget_max?: number | null
           budget_min?: number | null
@@ -1933,6 +1938,7 @@ export type Database = {
           contact_attempts?: number | null
           country?: string | null
           created_at?: string
+          created_by?: string | null
           crm_confidence_level?: string | null
           crm_created_date?: string | null
           crm_customer_id?: string | null
@@ -1966,6 +1972,13 @@ export type Database = {
           whatsapp_started?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "prospects_assigned_broker_id_fkey"
+            columns: ["assigned_broker_id"]
+            isOneToOne: false
+            referencedRelation: "broker_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "prospects_campaign_id_fkey"
             columns: ["campaign_id"]
