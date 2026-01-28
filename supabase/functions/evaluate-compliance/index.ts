@@ -193,21 +193,31 @@ Deno.serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
 
-    // Get authorization header for user context
+    // SECURITY: Validate authentication (now required)
     const authHeader = req.headers.get("authorization");
-    let userId: string | null = null;
-
-    if (authHeader) {
-      const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
-      const userClient = createClient(supabaseUrl, anonKey!, {
-        global: { headers: { Authorization: authHeader } },
-      });
-      const { data: { user } } = await userClient.auth.getUser();
-      userId = user?.id || null;
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('[evaluate-compliance] Auth validation failed:', authError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid authentication token' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[evaluate-compliance] Authenticated user: ${user.id}`);
 
     const body = await req.json();
     const { contextType, entityType, entityId, payload } = body;
@@ -338,7 +348,7 @@ Deno.serve(async (req) => {
         escalation_reason: escalationReason,
         modules_detail: moduleResults,
         payload_snapshot: payload,
-        evaluated_by: userId,
+        evaluated_by: user.id,
       })
       .select()
       .single();
@@ -371,7 +381,7 @@ Deno.serve(async (req) => {
         entityId,
         contextType,
         evaluatedAt: new Date().toISOString(),
-        evaluatedBy: userId,
+        evaluatedBy: user.id,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

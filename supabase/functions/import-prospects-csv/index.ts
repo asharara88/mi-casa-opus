@@ -59,9 +59,31 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // SECURITY: Validate authentication
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('[import-prospects-csv] Auth validation failed:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication token' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[import-prospects-csv] Authenticated user: ${user.id}`);
     
     const { csvContent, batchSize = 500 } = await req.json();
     
@@ -84,6 +106,7 @@ serve(async (req) => {
     }
     
     // Transform rows to match prospects table schema
+    // Include created_by to track who imported the records
     const prospects = rows.map(row => ({
       first_name: cleanField(row.first_name),
       last_name: cleanField(row.last_name),
@@ -98,6 +121,7 @@ serve(async (req) => {
       crm_confidence_level: cleanField(row.crm_confidence_level),
       outreach_status: 'not_contacted',
       contact_attempts: 0,
+      created_by: user.id, // Track who imported this prospect
     }));
     
     console.log(`Transformed ${prospects.length} prospects`);
