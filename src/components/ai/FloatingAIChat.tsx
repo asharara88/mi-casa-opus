@@ -111,15 +111,16 @@ export function FloatingAIChat() {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - Hidden on mobile to avoid conflict with MobileBottomNav FAB */}
       <button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center",
+          "fixed z-50 w-14 h-14 rounded-full shadow-lg items-center justify-center",
           "bg-primary text-primary-foreground hover:bg-primary/90",
           "transition-all duration-300 hover:scale-105 active:scale-95",
-          "bottom-24 right-4 lg:bottom-6 lg:right-6", // Above mobile nav on small screens
-          isOpen && "scale-0 opacity-0"
+          "bottom-6 right-6",
+          "hidden lg:flex", // Only show on desktop
+          isOpen && "lg:scale-0 lg:opacity-0"
         )}
         aria-label="Open AI Assistant"
       >
