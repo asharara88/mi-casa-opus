@@ -71,3 +71,12 @@ verify_jwt = false
 
 [functions.portal-lead-sync]
 verify_jwt = false
+
+[functions.portal-listing-feed]
+verify_jwt = false
+
+[functions.portal-listing-webhook]
+verify_jwt = false
+
+[functions.portal-inquiry-receive]
+verify_jwt = false
