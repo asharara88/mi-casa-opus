@@ -1759,6 +1759,7 @@ export type Database = {
           portals: Database["public"]["Enums"]["portal_name"][]
           property_type: string | null
           updated_at: string
+          user_id: string
           watch_id: string
         }
         Insert: {
@@ -1777,6 +1778,7 @@ export type Database = {
           portals?: Database["public"]["Enums"]["portal_name"][]
           property_type?: string | null
           updated_at?: string
+          user_id: string
           watch_id: string
         }
         Update: {
@@ -1795,6 +1797,7 @@ export type Database = {
           portals?: Database["public"]["Enums"]["portal_name"][]
           property_type?: string | null
           updated_at?: string
+          user_id?: string
           watch_id?: string
         }
         Relationships: []
