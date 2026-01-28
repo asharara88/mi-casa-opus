@@ -172,96 +172,110 @@ export function ListingsSection() {
     .reduce((sum, l) => sum + l.price, 0);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Building2 className="h-6 w-6 text-primary" />
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Building2 className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg md:text-xl font-bold text-foreground">Listings</h2>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                Property inventory management
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-foreground">Listings</h2>
-            <p className="text-sm text-muted-foreground">
-              Property inventory management
-            </p>
-          </div>
+          <Button 
+            size="sm" 
+            className="btn-gold h-9 md:h-10" 
+            onClick={() => setAddListingModalOpen(true)}
+          >
+            <Plus className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Add Listing</span>
+          </Button>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Scraping Tools - Responsive Grid */}
+        <div className="grid grid-cols-3 md:flex md:flex-wrap gap-2">
           <Button 
             variant="outline" 
+            size="sm"
             onClick={() => setDeveloperCatalogOpen(true)}
-            className="hidden sm:flex"
+            className="h-9 text-xs md:text-sm px-2 md:px-4"
           >
-            <Landmark className="h-4 w-4 mr-2" />
-            Developer Catalog
+            <Landmark className="h-4 w-4 md:mr-2 shrink-0" />
+            <span className="hidden sm:inline">Developer Catalog</span>
+            <span className="sm:hidden">Off-Plan</span>
           </Button>
           <Button 
             variant="outline" 
+            size="sm"
             onClick={() => setCompetitorAnalysisOpen(true)}
-            className="hidden sm:flex"
+            className="h-9 text-xs md:text-sm px-2 md:px-4"
           >
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Secondary Market Listings
+            <TrendingUp className="h-4 w-4 md:mr-2 shrink-0" />
+            <span className="hidden sm:inline">Secondary Market</span>
+            <span className="sm:hidden">Secondary</span>
           </Button>
           <Button 
             variant="outline" 
+            size="sm"
             onClick={() => setMarketInsightsOpen(true)}
-            className="hidden sm:flex"
+            className="h-9 text-xs md:text-sm px-2 md:px-4"
           >
-            <Newspaper className="h-4 w-4 mr-2" />
-            Market Insights
-          </Button>
-          <Button className="btn-gold" onClick={() => setAddListingModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Listing
+            <Newspaper className="h-4 w-4 md:mr-2 shrink-0" />
+            <span className="hidden sm:inline">Market Insights</span>
+            <span className="sm:hidden">Insights</span>
           </Button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Building2 className="h-6 w-6 text-primary" />
-              <div>
-                <div className="text-xl font-bold text-foreground">{allListings.length}</div>
-                <div className="text-xs text-muted-foreground">Total Listings</div>
+          <CardContent className="p-3 md:p-4">
+            <div className="flex items-center gap-2 md:gap-3">
+              <Building2 className="h-5 w-5 md:h-6 md:w-6 text-primary shrink-0" />
+              <div className="min-w-0">
+                <div className="text-lg md:text-xl font-bold text-foreground">{allListings.length}</div>
+                <div className="text-[10px] md:text-xs text-muted-foreground truncate">Total Listings</div>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Eye className="h-6 w-6 text-emerald" />
-              <div>
-                <div className="text-xl font-bold text-foreground">{activeCount}</div>
-                <div className="text-xs text-muted-foreground">Active</div>
+          <CardContent className="p-3 md:p-4">
+            <div className="flex items-center gap-2 md:gap-3">
+              <Eye className="h-5 w-5 md:h-6 md:w-6 text-emerald shrink-0" />
+              <div className="min-w-0">
+                <div className="text-lg md:text-xl font-bold text-foreground">{activeCount}</div>
+                <div className="text-[10px] md:text-xs text-muted-foreground">Active</div>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <DollarSign className="h-6 w-6 text-primary" />
-              <div>
-                <div className="text-xl font-bold text-foreground">
+          <CardContent className="p-3 md:p-4">
+            <div className="flex items-center gap-2 md:gap-3">
+              <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-primary shrink-0" />
+              <div className="min-w-0">
+                <div className="text-lg md:text-xl font-bold text-foreground">
                   {(totalValue / 1000000).toFixed(0)}M
                 </div>
-                <div className="text-xs text-muted-foreground">Active Value</div>
+                <div className="text-[10px] md:text-xs text-muted-foreground truncate">Active Value</div>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <MapPin className="h-6 w-6 text-amber-500" />
-              <div>
-                <div className="text-xl font-bold text-foreground">Abu Dhabi</div>
-                <div className="text-xs text-muted-foreground">Primary Market</div>
+          <CardContent className="p-3 md:p-4">
+            <div className="flex items-center gap-2 md:gap-3">
+              <MapPin className="h-5 w-5 md:h-6 md:w-6 text-amber-500 shrink-0" />
+              <div className="min-w-0">
+                <div className="text-lg md:text-xl font-bold text-foreground truncate">Abu Dhabi</div>
+                <div className="text-[10px] md:text-xs text-muted-foreground truncate">Primary Market</div>
               </div>
             </div>
           </CardContent>
@@ -270,40 +284,42 @@ export function ListingsSection() {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
+        <CardContent className="p-3 md:p-4">
+          <div className="flex flex-col sm:flex-row gap-2 md:gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search listings..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 h-9 md:h-10 text-sm"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-36">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Draft">Draft</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Reserved">Reserved</SelectItem>
-                <SelectItem value="Sold">Sold</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-36">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="Sale">Sale</SelectItem>
-                <SelectItem value="Rent">Rent</SelectItem>
-                <SelectItem value="OffPlan">Off-Plan</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="flex-1 sm:w-28 md:w-36 h-9 md:h-10 text-sm">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="Draft">Draft</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Reserved">Reserved</SelectItem>
+                  <SelectItem value="Sold">Sold</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="flex-1 sm:w-28 md:w-36 h-9 md:h-10 text-sm">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="Sale">Sale</SelectItem>
+                  <SelectItem value="Rent">Rent</SelectItem>
+                  <SelectItem value="OffPlan">Off-Plan</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
