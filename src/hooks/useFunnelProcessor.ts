@@ -8,19 +8,19 @@
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { 
   runAllGates, 
   validateMinimumData,
   type DisqualificationReason,
   type ProspectData 
 } from '@/lib/qualification-gates';
-import { 
-  calculateTotalScore, 
-  determineLeadStage, 
-  shouldCreateDeal,
-  type LeadStage 
-} from '@/lib/scoring-engine';
+import { shouldCreateDeal } from '@/lib/scoring-engine';
+import {
+  MIN_UNIT_PRICE_AED,
+  qualifyLead,
+  type LeadQualificationResult,
+  type LeadStatus,
+} from '@/utils/bosScoring';
 
 export interface ProcessResult {
   success: boolean;
@@ -28,11 +28,26 @@ export interface ProcessResult {
   message: string;
   leadId?: string;
   dealId?: string;
-  leadStage?: LeadStage;
+  leadStage?: LeadStatus;
 }
 
 export function useFunnelProcessor() {
   const queryClient = useQueryClient();
+  const getDisqualificationMessage = useCallback((
+    qualification: LeadQualificationResult,
+    budgetMax?: number | null
+  ) => {
+    if (qualification.disqualificationReason === 'BROKER') {
+      return 'Brokers are automatically disqualified from the sales pipeline';
+    }
+
+    if (qualification.disqualificationReason === 'BELOW_BUDGET') {
+      const formattedBudget = budgetMax ? `AED ${budgetMax.toLocaleString()}` : 'the provided amount';
+      return `Budget (${formattedBudget}) is below minimum unit price (AED ${MIN_UNIT_PRICE_AED.toLocaleString()})`;
+    }
+
+    return 'Prospect is disqualified.';
+  }, []);
 
   /**
    * Update prospect status to DISQUALIFIED
@@ -64,7 +79,7 @@ export function useFunnelProcessor() {
       action: 'disqualified', 
       message: message || `Prospect disqualified: ${reason}` 
     };
-  }, [queryClient]);
+  }, [disqualifyProspect, getDisqualificationMessage, queryClient]);
 
   /**
    * Update prospect status to INCOMPLETE
@@ -91,7 +106,7 @@ export function useFunnelProcessor() {
       action: 'incomplete', 
       message: `Missing: ${missingFields}` 
     };
-  }, [queryClient]);
+  }, [disqualifyProspect, getDisqualificationMessage, queryClient]);
 
   /**
    * Generate unique Lead ID
@@ -129,8 +144,18 @@ export function useFunnelProcessor() {
     }
   ): Promise<ProcessResult> => {
     // Calculate scores
-    const { fitScore, intentScore, totalScore } = calculateTotalScore(prospect);
-    const leadStage = determineLeadStage(totalScore, prospect.timeframe);
+    const qualification = qualifyLead(prospect);
+
+    if (qualification.status === 'Disqualified') {
+      return disqualifyProspect(
+        prospect.id,
+        (qualification.disqualificationReason ?? 'INELIGIBLE') as DisqualificationReason,
+        getDisqualificationMessage(qualification, prospect.budget_max)
+      );
+    }
+
+    const { fitScore, intentScore, totalScore } = qualification;
+    const leadStage = qualification.status;
 
     // Map LeadStage to database lead_state
     // Note: Database has New, Contacted, Qualified, Disqualified, Converted
@@ -218,7 +243,7 @@ export function useFunnelProcessor() {
       leadId: lead.id,
       leadStage,
     };
-  }, [queryClient]);
+  }, [createDealFromLead, disqualifyProspect, getDisqualificationMessage, queryClient]);
 
   /**
    * Create deal from qualified lead
@@ -275,7 +300,7 @@ export function useFunnelProcessor() {
     queryClient.invalidateQueries({ queryKey: ['leads'] });
 
     return { success: true, dealId: deal.id, message: `Deal ${dealId} created` };
-  }, [queryClient]);
+  }, [disqualifyProspect, getDisqualificationMessage, queryClient]);
 
   /**
    * Process prospect through complete funnel
@@ -325,8 +350,18 @@ export function useFunnelProcessor() {
       repeat_visit_7d?: boolean;
     }
   ): Promise<ProcessResult> => {
-    const { fitScore, intentScore, totalScore } = calculateTotalScore(prospect);
-    const leadStage = determineLeadStage(totalScore, prospect.timeframe);
+    const qualification = qualifyLead(prospect);
+
+    if (qualification.status === 'Disqualified') {
+      return disqualifyProspect(
+        prospect.id,
+        (qualification.disqualificationReason ?? 'INELIGIBLE') as DisqualificationReason,
+        getDisqualificationMessage(qualification, prospect.budget_max)
+      );
+    }
+
+    const { fitScore, intentScore, totalScore } = qualification;
+    const leadStage = qualification.status;
 
     // Determine prospect status based on minimum data
     const minData = validateMinimumData(prospect);
@@ -354,7 +389,7 @@ export function useFunnelProcessor() {
       message: `Scores updated: ${totalScore}/100 (${leadStage})`,
       leadStage,
     };
-  }, [queryClient]);
+  }, [disqualifyProspect, getDisqualificationMessage, queryClient]);
 
   return {
     processProspect,

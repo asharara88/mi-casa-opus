@@ -20,12 +20,8 @@ import type { Prospect } from '@/hooks/useProspects';
 import { format } from 'date-fns';
 import { QuickConvertButton } from '@/components/funnel/QuickConvertButton';
 import { toast } from 'sonner';
-import { 
-  calculateTotalScore, 
-  determineLeadStage, 
-  getScoreBreakdown,
-  type ProspectScoringData 
-} from '@/lib/scoring-engine';
+import { getScoreBreakdown } from '@/lib/scoring-engine';
+import { qualifyLead, type ProspectScoringData } from '@/utils/bosScoring';
 import { getGateStatus, type ProspectData } from '@/lib/qualification-gates';
 import { useFunnelProcessor } from '@/hooks/useFunnelProcessor';
 import { ProspectVoiceMessage } from '@/components/voice/ProspectVoiceMessage';
@@ -121,14 +117,9 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
     repeat_visit_7d: repeatVisit,
   }), [buyerType, budgetMin, budgetMax, timeframe, isCashBuyer, mortgagePreapproval, priceListRequested, whatsappStarted, brochureDownloaded, repeatVisit]);
 
-  const { fitScore, intentScore, totalScore } = useMemo(
-    () => calculateTotalScore(scoringData), 
+  const { fitScore, intentScore, totalScore, status: leadStage } = useMemo(
+    () => qualifyLead(scoringData),
     [scoringData]
-  );
-  
-  const leadStage = useMemo(
-    () => determineLeadStage(totalScore, timeframe || null),
-    [totalScore, timeframe]
   );
   
   const scoreBreakdown = useMemo(
@@ -293,16 +284,20 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
                 <Target className="w-4 h-4" />
                 Qualification Score
               </h4>
-            <Badge variant={
-              leadStage === 'HighIntent' ? 'default' :
-              leadStage === 'Qualified' ? 'default' :
-              leadStage === 'Interested' ? 'secondary' :
-              'outline'
-            } className={
-              leadStage === 'HighIntent' ? 'bg-primary' :
-              leadStage === 'Qualified' ? 'bg-accent' :
-              ''
-              }>
+            <Badge
+              variant={
+                leadStage === 'HighIntent' ? 'default' :
+                leadStage === 'Qualified' ? 'default' :
+                leadStage === 'Interested' ? 'secondary' :
+                leadStage === 'Disqualified' ? 'destructive' :
+                'outline'
+              }
+              className={
+                leadStage === 'HighIntent' ? 'bg-primary' :
+                leadStage === 'Qualified' ? 'bg-accent' :
+                ''
+              }
+            >
                 {leadStage}
               </Badge>
             </div>

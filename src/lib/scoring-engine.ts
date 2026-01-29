@@ -105,7 +105,7 @@ export function calculateTotalScore(prospect: ProspectScoringData): {
  * Determine lead stage based on score and timeframe
  * This is the SOLE authority for stage assignment - not AI
  */
-export type LeadStage = 'Nurture' | 'Interested' | 'Qualified' | 'HighIntent';
+export type LeadStage = 'Nurture' | 'Interested' | 'Qualified' | 'HighIntent' | 'Disqualified';
 
 export function determineLeadStage(totalScore: number, timeframe: string | null | undefined): LeadStage {
   const urgentTimeframes = ['0-3', '3-6'];

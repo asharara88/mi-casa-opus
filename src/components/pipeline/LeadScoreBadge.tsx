@@ -6,7 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { calculateTotalScore, determineLeadStage, ProspectScoringData } from '@/lib/scoring-engine';
+import { qualifyLead, type ProspectScoringData } from '@/utils/bosScoring';
 
 interface LeadScoreBadgeProps {
   qualificationData?: ProspectScoringData | null;
@@ -16,13 +16,14 @@ interface LeadScoreBadgeProps {
 export function LeadScoreBadge({ qualificationData, className }: LeadScoreBadgeProps) {
   if (!qualificationData) return null;
 
-  const { fitScore, intentScore, totalScore } = calculateTotalScore(qualificationData);
-  const stage = determineLeadStage(totalScore, qualificationData.timeframe);
+  const { fitScore, intentScore, totalScore, status } = qualifyLead(qualificationData);
+  const stage = status;
   
   // Don't show if no score
-  if (totalScore === 0) return null;
+  if (totalScore === 0 && stage !== 'Disqualified') return null;
 
   const getScoreColor = (score: number) => {
+    if (stage === 'Disqualified') return 'text-destructive';
     if (score >= 75) return 'text-success';
     if (score >= 60) return 'text-primary';
     if (score >= 40) return 'text-warning';
@@ -30,6 +31,7 @@ export function LeadScoreBadge({ qualificationData, className }: LeadScoreBadgeP
   };
 
   const getScoreBg = (score: number) => {
+    if (stage === 'Disqualified') return 'bg-destructive/10 border-destructive/30';
     if (score >= 75) return 'bg-success/15 border-success/30';
     if (score >= 60) return 'bg-primary/15 border-primary/30';
     if (score >= 40) return 'bg-warning/15 border-warning/30';
@@ -93,13 +95,16 @@ export function LeadScoreBadge({ qualificationData, className }: LeadScoreBadgeP
               <div className="flex items-center gap-1 text-xs">
                 <TrendingUp className="w-3 h-3 text-muted-foreground" />
                 <span className="text-muted-foreground">Suggested:</span>
-                <span className={cn(
-                  'font-medium',
-                  stage === 'HighIntent' && 'text-success',
-                  stage === 'Qualified' && 'text-primary',
-                  stage === 'Interested' && 'text-warning',
-                  stage === 'Nurture' && 'text-muted-foreground'
-                )}>
+                <span
+                  className={cn(
+                    'font-medium',
+                    stage === 'HighIntent' && 'text-success',
+                    stage === 'Qualified' && 'text-primary',
+                    stage === 'Interested' && 'text-warning',
+                    stage === 'Disqualified' && 'text-destructive',
+                    stage === 'Nurture' && 'text-muted-foreground'
+                  )}
+                >
                   {stage}
                 </span>
               </div>
