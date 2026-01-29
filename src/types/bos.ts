@@ -103,7 +103,78 @@ export interface Listing {
 }
 
 // ============================================
-// 5️⃣ LEAD
+// 5️⃣ PROSPECT
+// ============================================
+export type ProspectBuyerType = 'EndUser' | 'Investor' | 'Broker';
+export type ProspectTimeframe = '0-3' | '3-6' | '6-12' | '12+';
+export type ProspectStatus = 'NEW' | 'INCOMPLETE' | 'VERIFIED' | 'DISQUALIFIED';
+export type ProspectDisqualificationReason = 'SPAM' | 'DUPLICATE' | 'BROKER' | 'BELOW_BUDGET' | 'INELIGIBLE';
+export type ProspectOutreachStatus =
+  | 'not_contacted'
+  | 'contacted'
+  | 'qualified'
+  | 'follow_up'
+  | 'interested'
+  | 'not_interested'
+  | 'converted';
+export type ProspectSource =
+  | 'Website'
+  | 'Referral'
+  | 'Portal'
+  | 'WalkIn'
+  | 'SocialMedia'
+  | 'WhatsApp'
+  | 'Ads'
+  | 'Phone'
+  | 'Event'
+  | 'Other';
+export type CrmConfidenceLevel = 'High' | 'Medium' | 'Low';
+
+export interface Prospect {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  full_name: string;
+  phone: string | null;
+  email: string | null;
+  source: ProspectSource | null;
+  city: string | null;
+  crm_customer_id: string | null;
+  crm_created_date: string | null;
+  crm_stage: string | null;
+  crm_confidence_level: CrmConfidenceLevel | null;
+  outreach_status: ProspectOutreachStatus;
+  last_contacted_at: string | null;
+  contact_attempts: number;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  buyer_type: ProspectBuyerType | null;
+  budget_min: number | null;
+  budget_max: number | null;
+  timeframe: ProspectTimeframe | null;
+  language: string | null;
+  country: string | null;
+  prospect_status: ProspectStatus | null;
+  disqualification_reason: ProspectDisqualificationReason | null;
+  disqualified_at: string | null;
+  linked_lead_id: string | null;
+  campaign_id: string | null;
+  event_id: string | null;
+  referral_source_id: string | null;
+  is_cash_buyer: boolean | null;
+  mortgage_preapproval: boolean | null;
+  price_list_requested: boolean | null;
+  whatsapp_started: boolean | null;
+  brochure_downloaded: boolean | null;
+  repeat_visit_7d: boolean | null;
+  fit_score: number | null;
+  intent_score: number | null;
+  total_score: number | null;
+}
+
+// ============================================
+// 6️⃣ LEAD
 // ============================================
 // Lead States - Supports both legacy (DB) and new MiCasa algorithm stages
 // Legacy: New, Contacted | New: Nurture, Interested, HighIntent
@@ -141,6 +212,22 @@ export interface Lead {
   intent_score?: number;
   total_score?: number;
   notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LeadRecord {
+  id: string;
+  lead_id: string;
+  source: LeadSource;
+  contact_name: string;
+  contact_email: string | null;
+  contact_phone: string | null;
+  lead_state: LeadState;
+  assigned_broker_id: string | null;
+  consents: LeadConsent[] | Record<string, unknown>;
+  qualification_data: Record<string, unknown> | null;
+  notes: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -185,7 +272,7 @@ export const LEAD_STATE_REQUIREMENTS: Record<LeadState, { required_fields: strin
 };
 
 // ============================================
-// 6️⃣ DEAL
+// 7️⃣ DEAL
 // ============================================
 export type DealType = 'Sale' | 'Rent' | 'OffPlan';
 export type DealState = 
@@ -242,6 +329,22 @@ export interface Deal {
   registry_actions: RegistryAction[];
   agreed_price?: number;
   currency: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DealRecord {
+  id: string;
+  deal_id: string;
+  deal_type: DealType;
+  deal_state: DealState;
+  linked_lead_id: string | null;
+  listing_id: string | null;
+  property_id: string | null;
+  side: DealSide;
+  deal_economics: Record<string, unknown> | null;
+  registry_actions: RegistryAction[] | Record<string, unknown>;
+  notes: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -306,7 +409,7 @@ export const DEAL_STATE_REQUIREMENTS: Record<DealState, DealStateRequirement> = 
 };
 
 // ============================================
-// 7️⃣ DOCUMENT TEMPLATE (Read-only after publish)
+// 8️⃣ DOCUMENT TEMPLATE (Read-only after publish)
 // ============================================
 export type DocType = 
   | 'OfferLetter' 
@@ -334,7 +437,7 @@ export interface DocumentTemplate {
 }
 
 // ============================================
-// 8️⃣ DOCUMENT INSTANCE
+// 9️⃣ DOCUMENT INSTANCE
 // ============================================
 export type DocumentStatus = 'Draft' | 'Generated' | 'PendingSignature' | 'Executed' | 'Voided';
 
@@ -353,7 +456,7 @@ export interface DocumentInstance {
 }
 
 // ============================================
-// 9️⃣ SIGNATURE ENVELOPE
+// 🔟 SIGNATURE ENVELOPE
 // ============================================
 export interface Signer {
   signer_id: string;
@@ -389,7 +492,7 @@ export interface SignatureEnvelope {
 }
 
 // ============================================
-// 🔟 EVIDENCE OBJECT
+// 1️⃣1️⃣ EVIDENCE OBJECT
 // ============================================
 export type EvidenceType = 
   | 'Screenshot' 
@@ -413,7 +516,7 @@ export interface EvidenceObject {
 }
 
 // ============================================
-// 1️⃣1️⃣ COMMISSION RECORD
+// 1️⃣2️⃣ COMMISSION RECORD
 // ============================================
 export type CommissionStatus = 'Expected' | 'Earned' | 'Received' | 'Paid';
 
@@ -446,7 +549,50 @@ export interface CommissionRecord {
 }
 
 // ============================================
-// 1️⃣2️⃣ EVENT LOG ENTRY (Append-only)
+// 1️⃣3️⃣ ACTIVITY LOG (Communication)
+// ============================================
+export type ActivityEntityType = 'prospect' | 'lead' | 'deal';
+export type ActivityChannel = 'whatsapp' | 'sms' | 'email';
+export type ActivityDirection = 'outbound' | 'inbound';
+export type ActivityStatus = 'pending' | 'sent' | 'delivered' | 'failed' | 'read';
+
+export interface Activity {
+  id: string;
+  entity_type: ActivityEntityType;
+  entity_id: string;
+  channel: ActivityChannel;
+  direction: ActivityDirection;
+  template_used: string | null;
+  subject: string | null;
+  content: string;
+  status: ActivityStatus;
+  external_id: string | null;
+  error_message: string | null;
+  metadata: Record<string, unknown> | null;
+  sent_at: string | null;
+  delivered_at: string | null;
+  read_at: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
+// ============================================
+// 1️⃣4️⃣ DECISION LOG (AI/Advisory)
+// ============================================
+export interface DecisionLog {
+  id: string;
+  entity_type: string;
+  entity_id: string;
+  insight_type: string;
+  score: number | null;
+  rationale: Record<string, unknown> | null;
+  next_best_action: string | null;
+  is_authoritative: boolean;
+  created_at: string;
+}
+
+// ============================================
+// 1️⃣5️⃣ EVENT LOG ENTRY (Append-only)
 // ============================================
 export interface EventLogEntry {
   event_id: string;
