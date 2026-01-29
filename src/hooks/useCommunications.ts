@@ -1,32 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type {
+  Activity,
+  ActivityChannel,
+  ActivityDirection,
+  ActivityEntityType,
+  ActivityStatus,
+} from '@/types/bos';
 
-export type CommunicationChannel = 'whatsapp' | 'sms' | 'email';
-export type MessageDirection = 'outbound' | 'inbound';
-export type MessageStatus = 'pending' | 'sent' | 'delivered' | 'failed' | 'read';
+export type CommunicationChannel = ActivityChannel;
+export type MessageDirection = ActivityDirection;
+export type MessageStatus = ActivityStatus;
+export type CommunicationLog = Activity;
 
-export interface CommunicationLog {
-  id: string;
-  entity_type: string;
-  entity_id: string;
-  channel: CommunicationChannel;
-  direction: MessageDirection;
-  template_used: string | null;
-  subject: string | null;
-  content: string;
-  status: MessageStatus;
-  external_id: string | null;
-  error_message: string | null;
-  metadata: Record<string, any>;
-  sent_at: string | null;
-  delivered_at: string | null;
-  read_at: string | null;
-  created_at: string;
-  created_by: string | null;
-}
-
-export function useCommunicationLogs(entityType: string, entityId: string) {
+export function useCommunicationLogs(entityType: ActivityEntityType, entityId: string) {
   return useQuery({
     queryKey: ['communication_logs', entityType, entityId],
     queryFn: async () => {
@@ -53,7 +41,7 @@ export function useSendWhatsApp() {
       template?: string;
       content?: string;
       variables?: Record<string, string>;
-      entityType: 'prospect' | 'lead' | 'deal';
+      entityType: ActivityEntityType;
       entityId: string;
     }) => {
       const { data, error } = await supabase.functions.invoke('twilio-messaging', {
@@ -90,7 +78,7 @@ export function useSendSMS() {
       template?: string;
       content?: string;
       variables?: Record<string, string>;
-      entityType: 'prospect' | 'lead' | 'deal';
+      entityType: ActivityEntityType;
       entityId: string;
     }) => {
       const { data, error } = await supabase.functions.invoke('twilio-messaging', {
@@ -127,7 +115,7 @@ export function useSendEmail() {
       template: string;
       variables?: Record<string, string>;
       subject?: string;
-      entityType?: 'prospect' | 'lead' | 'deal';
+      entityType?: ActivityEntityType;
       entityId?: string;
     }) => {
       const { data, error } = await supabase.functions.invoke('sendgrid-email', {
