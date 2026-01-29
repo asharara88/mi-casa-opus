@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, HelpCircle, Map, Upload } from 'lucide-react';
+import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, Map, Upload, Phone, MessageCircle } from 'lucide-react';
 import { CompliancePanel } from '@/components/compliance/CompliancePanel';
 import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
 import { useUpdateListing } from '@/hooks/useListings';
@@ -37,6 +37,8 @@ interface ListingDisplayData {
   madhmoun_listing_id?: string | null;
   madhmoun_status?: string | null;
   compliance_status?: string | null;
+  agent_phone?: string | null;
+  reference_number?: string | null;
 }
 
 interface ListingDetailModalProps {
@@ -144,6 +146,41 @@ export function ListingDetailModal({
 
   if (!listing) return null;
 
+  const referenceNumber = listing.reference_number || listing.listing_id;
+
+  const createProspect = async (channel: 'call' | 'whatsapp') => {
+    try {
+      await fetch('/api/prospects/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reference_number: referenceNumber,
+          listing_id: listing.listing_id,
+          channel,
+        }),
+        keepalive: true,
+      });
+    } catch (error) {
+      console.warn('Failed to create prospect', error);
+    }
+  };
+
+  const handleCallClick = async () => {
+    if (!listing.agent_phone) return;
+    await createProspect('call');
+    window.location.href = `tel:${listing.agent_phone}`;
+  };
+
+  const handleWhatsappClick = async () => {
+    if (!listing.agent_phone) return;
+    await createProspect('whatsapp');
+    const cleanPhone = listing.agent_phone.replace(/[^\d]/g, '');
+    const message = referenceNumber
+      ? `?text=${encodeURIComponent(`I'm interested in reference ${referenceNumber}`)}`
+      : '';
+    window.open(`https://wa.me/${cleanPhone}${message}`, '_blank', 'noopener');
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -244,6 +281,38 @@ export function ListingDetailModal({
                 )}
               </div>
             </div>
+
+            {/* Contact CTA */}
+            {(listing.agent_phone || referenceNumber) && (
+              <div className="rounded-lg border border-border p-3 space-y-2">
+                <div className="text-sm text-muted-foreground">Contact Listing</div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCallClick}
+                    disabled={!listing.agent_phone}
+                    className="contact_links btnAnimation inline-flex flex-1 items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Phone className="h-4 w-4" />
+                    Call
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleWhatsappClick}
+                    disabled={!listing.agent_phone}
+                    className="contact_links btnAnimation inline-flex flex-1 items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    WhatsApp
+                  </button>
+                </div>
+                {referenceNumber && (
+                  <div className="text-xs text-muted-foreground">
+                    Reference: {referenceNumber}
+                  </div>
+                )}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="location" className="space-y-4 mt-4">

@@ -71,6 +71,8 @@ interface Listing {
   madhmoun_listing_id?: string | null;
   madhmoun_status?: string | null;
   compliance_status?: string | null;
+  agent_phone?: string | null;
+  reference_number?: string | null;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -105,28 +107,34 @@ export function ListingsSection() {
   const { mutate: deleteListing, isPending: isDeleting } = useDeleteListing();
 
   // Convert DB listings to display format - only use real data
-  const allListings: Listing[] = (dbListings || []).map(dbListing => ({
-    id: dbListing.id,
-    listing_id: dbListing.listing_id,
-    property_type: (dbListing.listing_attributes as any)?.propertyType || 'Property',
-    listing_type: dbListing.listing_type as 'Sale' | 'Rent' | 'OffPlan',
-    status: dbListing.status as 'Draft' | 'Active' | 'Reserved' | 'Sold' | 'Withdrawn',
-    location: {
-      community: (dbListing.listing_attributes as any)?.community || 'Abu Dhabi',
-      building: (dbListing.listing_attributes as any)?.building,
-      city: 'Abu Dhabi',
-    },
-    price: (dbListing.asking_terms as any)?.price || 0,
-    currency: 'AED',
-    bedrooms: (dbListing.listing_attributes as any)?.bedrooms || 0,
-    bathrooms: (dbListing.listing_attributes as any)?.bathrooms || 0,
-    sqft: (dbListing.listing_attributes as any)?.sqft || 0,
-    images: (dbListing.listing_attributes as any)?.images || [],
-    created_at: dbListing.created_at,
-    madhmoun_listing_id: dbListing.madhmoun_listing_id,
-    madhmoun_status: dbListing.madhmoun_status,
-    compliance_status: dbListing.compliance_status,
-  }));
+  const allListings: Listing[] = (dbListings || []).map(dbListing => {
+    const listingAttributes = dbListing.listing_attributes as any;
+
+    return {
+      id: dbListing.id,
+      listing_id: dbListing.listing_id,
+      property_type: listingAttributes?.propertyType || 'Property',
+      listing_type: dbListing.listing_type as 'Sale' | 'Rent' | 'OffPlan',
+      status: dbListing.status as 'Draft' | 'Active' | 'Reserved' | 'Sold' | 'Withdrawn',
+      location: {
+        community: listingAttributes?.community || 'Abu Dhabi',
+        building: listingAttributes?.building,
+        city: 'Abu Dhabi',
+      },
+      price: (dbListing.asking_terms as any)?.price || 0,
+      currency: 'AED',
+      bedrooms: listingAttributes?.bedrooms || 0,
+      bathrooms: listingAttributes?.bathrooms || 0,
+      sqft: listingAttributes?.sqft || 0,
+      images: listingAttributes?.images || [],
+      created_at: dbListing.created_at,
+      madhmoun_listing_id: dbListing.madhmoun_listing_id,
+      madhmoun_status: dbListing.madhmoun_status,
+      compliance_status: dbListing.compliance_status,
+      agent_phone: listingAttributes?.agentPhone || listingAttributes?.agent_phone || null,
+      reference_number: listingAttributes?.referenceNumber || listingAttributes?.reference_number || null,
+    };
+  });
 
   const handleViewListing = (listing: Listing) => {
     setSelectedListing(listing);
