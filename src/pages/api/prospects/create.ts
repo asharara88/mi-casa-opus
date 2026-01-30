@@ -32,7 +32,10 @@ export default function handler(req: ApiRequest, res: ApiResponse) {
   }
 
   // TODO: Replace with Supabase insert using SUPABASE_URL/SUPABASE_ANON_KEY.
-  const prospect = createProspect(req.body);
+  const prospect = createProspect({
+    ...req.body,
+    full_name: req.body.full_name,
+  });
 
   res.status(201).json({ prospect, note: SUPABASE_NOTE });
 }

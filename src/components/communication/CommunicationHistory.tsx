@@ -34,7 +34,7 @@ const statusColors: Record<MessageStatus, string> = {
 };
 
 export function CommunicationHistory({ entityType, entityId }: CommunicationHistoryProps) {
-  const { data: logs, isLoading } = useCommunicationLogs(entityType, entityId);
+  const { data: logs, isLoading } = useCommunicationLogs(entityType as 'prospect' | 'lead' | 'deal', entityId);
 
   if (isLoading) {
     return (

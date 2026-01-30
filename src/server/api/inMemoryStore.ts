@@ -28,10 +28,10 @@ export interface ProspectRecord {
 export interface LeadRecord {
   id: string;
   lead_state: LeadState;
-  qualification_data?: Record<string, unknown> | null;
-  disqualification_reason?: string | null;
-  disqualified_at?: string | null;
-  notes?: string | null;
+  qualification_data: Record<string, unknown> | null;
+  disqualification_reason: string | null;
+  disqualified_at: string | null;
+  notes: string | null;
   created_at: string;
   updated_at: string;
   [key: string]: unknown;
@@ -69,20 +69,21 @@ if (!(globalThis as { __micasaMemoryStore?: MemoryStore }).__micasaMemoryStore) 
   (globalThis as { __micasaMemoryStore?: MemoryStore }).__micasaMemoryStore = memoryStore;
 }
 
-export function createProspect(payload: Omit<ProspectRecord, 'id' | 'created_at' | 'updated_at' | 'outreach_status'> & {
-  outreach_status?: string;
+export function createProspect(payload: Partial<ProspectRecord> & {
+  full_name: string;
 }): ProspectRecord {
   const now = new Date().toISOString();
+  
   const prospect: ProspectRecord = {
+    ...payload,
     id: createId('PROSPECT'),
     full_name: payload.full_name,
-    email: payload.email ?? null,
-    phone: payload.phone ?? null,
-    source: payload.source ?? null,
-    outreach_status: payload.outreach_status ?? 'not_contacted',
+    email: (payload.email as string | null) ?? null,
+    phone: (payload.phone as string | null) ?? null,
+    source: (payload.source as string | null) ?? null,
+    outreach_status: (payload.outreach_status as string) ?? 'not_contacted',
     created_at: now,
     updated_at: now,
-    ...payload,
   };
 
   memoryStore.prospects.unshift(prospect);
@@ -236,16 +237,25 @@ export function seedLead(payload: Omit<LeadRecord, 'id' | 'created_at' | 'update
   lead_state?: LeadState;
 }): LeadRecord {
   const now = new Date().toISOString();
+  const { 
+    qualification_data, 
+    disqualification_reason, 
+    disqualified_at, 
+    notes, 
+    lead_state, 
+    ...rest 
+  } = payload;
+
   const lead: LeadRecord = {
+    ...rest,
     id: createId('LEAD'),
-    lead_state: payload.lead_state ?? 'New',
-    qualification_data: payload.qualification_data ?? null,
-    disqualification_reason: payload.disqualification_reason ?? null,
-    disqualified_at: payload.disqualified_at ?? null,
-    notes: payload.notes ?? null,
+    lead_state: lead_state ?? 'New',
+    qualification_data: (qualification_data as Record<string, unknown>) ?? null,
+    disqualification_reason: (disqualification_reason as string) ?? null,
+    disqualified_at: (disqualified_at as string) ?? null,
+    notes: (notes as string) ?? null,
     created_at: now,
     updated_at: now,
-    ...payload,
   };
 
   memoryStore.leads.unshift(lead);

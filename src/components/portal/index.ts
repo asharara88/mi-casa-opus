@@ -1,0 +1,1 @@
+export { PropertyInquiryForm } from './PropertyInquiryForm';

@@ -143,7 +143,7 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
   const handleStatusChange = (newStatus: string) => {
     setStatus(newStatus);
     onUpdate({ 
-      outreach_status: newStatus,
+      outreach_status: newStatus as Prospect['outreach_status'],
       last_contacted_at: newStatus !== 'not_contacted' ? new Date().toISOString() : extProspect?.last_contacted_at,
       contact_attempts: newStatus !== 'not_contacted' ? (extProspect?.contact_attempts || 0) + 1 : extProspect?.contact_attempts
     });
