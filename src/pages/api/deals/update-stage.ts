@@ -1,5 +1,10 @@
 import { updateDealStage } from '@/server/api/inMemoryStore';
-import type { OffPlanDealState, SecondaryDealState } from '@/types/pipeline';
+import type { 
+  OffPlanDealState, 
+  SecondaryDealState, 
+  OffPlanDeadReason, 
+  SecondaryDeadReason 
+} from '@/types/pipeline';
 
 const SUPABASE_NOTE =
   'Replace this in-memory call with a Supabase update using SUPABASE_URL/SUPABASE_ANON_KEY.';
@@ -35,7 +40,7 @@ export default function handler(req: ApiRequest, res: ApiResponse) {
     const deal = updateDealStage({
       dealId: req.body.dealId,
       targetState: req.body.targetState,
-      deadReason: req.body.deadReason ?? null,
+      deadReason: (req.body.deadReason as OffPlanDeadReason | SecondaryDeadReason) ?? null,
       notes: req.body.notes ?? null,
     });
 

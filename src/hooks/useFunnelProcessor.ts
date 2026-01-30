@@ -33,6 +33,10 @@ export interface ProcessResult {
 
 export function useFunnelProcessor() {
   const queryClient = useQueryClient();
+
+  /**
+   * Get disqualification message
+   */
   const getDisqualificationMessage = useCallback((
     qualification: LeadQualificationResult,
     budgetMax?: number | null
@@ -47,6 +51,24 @@ export function useFunnelProcessor() {
     }
 
     return 'Prospect is disqualified.';
+  }, []);
+
+  /**
+   * Generate unique Lead ID
+   */
+  const generateLeadId = useCallback(() => {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `LD-${timestamp}-${random}`;
+  }, []);
+
+  /**
+   * Generate unique Deal ID
+   */
+  const generateDealId = useCallback(() => {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `DL-${timestamp}-${random}`;
   }, []);
 
   /**
@@ -79,7 +101,7 @@ export function useFunnelProcessor() {
       action: 'disqualified', 
       message: message || `Prospect disqualified: ${reason}` 
     };
-  }, [disqualifyProspect, getDisqualificationMessage, queryClient]);
+  }, [queryClient]);
 
   /**
    * Update prospect status to INCOMPLETE
@@ -106,25 +128,64 @@ export function useFunnelProcessor() {
       action: 'incomplete', 
       message: `Missing: ${missingFields}` 
     };
-  }, [disqualifyProspect, getDisqualificationMessage, queryClient]);
+  }, [queryClient]);
 
   /**
-   * Generate unique Lead ID
+   * Create deal from qualified lead
    */
-  const generateLeadId = () => {
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `LD-${timestamp}-${random}`;
-  };
+  const createDealFromLead = useCallback(async (
+    leadUuid: string,
+    leadId: string,
+    _contactName: string
+  ): Promise<{ success: boolean; dealId?: string; message: string }> => {
+    // Check invariant: no active deal exists for this lead
+    const { data: existingDeal } = await supabase
+      .from('deals')
+      .select('id, deal_id')
+      .eq('linked_lead_id', leadUuid)
+      .not('deal_state', 'in', '(ClosedWon,ClosedLost)')
+      .limit(1)
+      .single();
 
-  /**
-   * Generate unique Deal ID
-   */
-  const generateDealId = () => {
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `DL-${timestamp}-${random}`;
-  };
+    if (existingDeal) {
+      return { 
+        success: false, 
+        message: `Active deal already exists: ${existingDeal.deal_id}` 
+      };
+    }
+
+    const dealId = generateDealId();
+
+    const { data: deal, error } = await supabase
+      .from('deals')
+      .insert([{
+        deal_id: dealId,
+        linked_lead_id: leadUuid,
+        deal_type: 'Sale' as const,
+        deal_state: 'Created' as const,
+        side: 'Buy' as const,
+        pipeline: 'Secondary' as const,
+        secondary_state: 'ViewingScheduled' as const,
+        notes: `Auto-created from qualified lead ${leadId}`,
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    // Update lead to Converted
+    await supabase
+      .from('leads')
+      .update({ lead_state: 'Converted' as const })
+      .eq('id', leadUuid);
+
+    queryClient.invalidateQueries({ queryKey: ['deals'] });
+    queryClient.invalidateQueries({ queryKey: ['leads'] });
+
+    return { success: true, dealId: deal.id, message: `Deal ${dealId} created` };
+  }, [generateDealId, queryClient]);
 
   /**
    * Convert prospect to lead with calculated stage
@@ -243,64 +304,7 @@ export function useFunnelProcessor() {
       leadId: lead.id,
       leadStage,
     };
-  }, [createDealFromLead, disqualifyProspect, getDisqualificationMessage, queryClient]);
-
-  /**
-   * Create deal from qualified lead
-   */
-  const createDealFromLead = useCallback(async (
-    leadUuid: string,
-    leadId: string,
-    contactName: string
-  ): Promise<{ success: boolean; dealId?: string; message: string }> => {
-    // Check invariant: no active deal exists for this lead
-    const { data: existingDeal } = await supabase
-      .from('deals')
-      .select('id, deal_id')
-      .eq('linked_lead_id', leadUuid)
-      .not('deal_state', 'in', '(ClosedWon,ClosedLost)')
-      .limit(1)
-      .single();
-
-    if (existingDeal) {
-      return { 
-        success: false, 
-        message: `Active deal already exists: ${existingDeal.deal_id}` 
-      };
-    }
-
-    const dealId = generateDealId();
-
-    const { data: deal, error } = await supabase
-      .from('deals')
-      .insert([{
-        deal_id: dealId,
-        linked_lead_id: leadUuid,
-        deal_type: 'Sale' as const,
-        deal_state: 'Created' as const,
-        side: 'Buy' as const,
-        pipeline: 'Secondary' as const,
-        secondary_state: 'ViewingScheduled' as const,
-        notes: `Auto-created from qualified lead ${leadId}`,
-      }])
-      .select()
-      .single();
-
-    if (error) {
-      return { success: false, message: error.message };
-    }
-
-    // Update lead to Converted
-    await supabase
-      .from('leads')
-      .update({ lead_state: 'Converted' as const })
-      .eq('id', leadUuid);
-
-    queryClient.invalidateQueries({ queryKey: ['deals'] });
-    queryClient.invalidateQueries({ queryKey: ['leads'] });
-
-    return { success: true, dealId: deal.id, message: `Deal ${dealId} created` };
-  }, [disqualifyProspect, getDisqualificationMessage, queryClient]);
+  }, [createDealFromLead, disqualifyProspect, generateLeadId, getDisqualificationMessage, queryClient]);
 
   /**
    * Process prospect through complete funnel
