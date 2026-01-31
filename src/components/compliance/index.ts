@@ -10,3 +10,5 @@ export { AuditTrailSummary } from "./AuditTrailSummary";
 export { AdCompliancePreview } from "./AdCompliancePreview";
 export { ComplianceGateButton } from "./ComplianceGateButton";
 export { CompliancePanel } from "./CompliancePanel";
+export { WorkflowGatePanel } from "./WorkflowGatePanel";
+export { AMLCheckPanel } from "./AMLCheckPanel";

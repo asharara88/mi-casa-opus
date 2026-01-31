@@ -12,7 +12,8 @@ import {
   Building2,
   AlertCircle,
   Shield,
-  Sparkles
+  Sparkles,
+  Gavel
 } from 'lucide-react';
 import { Deal, DealState, ValidationContext, DEAL_STATE_REQUIREMENTS } from '@/types/bos';
 import { DealStateRail } from './DealStateRail';
@@ -22,12 +23,13 @@ import { RegistryActionsChecklist } from './RegistryActionsChecklist';
 import { EvidenceDrawer } from './EvidenceDrawer';
 import { validateDealTransition } from '@/lib/state-machine';
 import { StateBadge } from '@/components/dashboard/StateBadge';
-import { CompliancePanel } from '@/components/compliance/CompliancePanel';
+import { CompliancePanel, WorkflowGatePanel, AMLCheckPanel } from '@/components/compliance';
 import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { OverridePayload } from '@/types/compliance';
 import { AIChatPanel } from '@/components/ai/AIChatPanel';
+import { DocumentGeneratorPanel } from '@/components/documents/DocumentGeneratorPanel';
 
 interface DealDetailProps {
   deal: Deal;
@@ -248,8 +250,12 @@ export const DealDetail: React.FC<DealDetailProps> = ({
         {/* Right Column - Tabs */}
         <div className="lg:col-span-2">
           <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList>
+            <TabsList className="flex-wrap h-auto gap-1">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="gate">
+                <Gavel className="h-4 w-4 mr-1" />
+                Gate
+              </TabsTrigger>
               <TabsTrigger value="compliance">
                 <Shield className="h-4 w-4 mr-1" />
                 Compliance
@@ -257,6 +263,10 @@ export const DealDetail: React.FC<DealDetailProps> = ({
               <TabsTrigger value="ai">
                 <Sparkles className="h-4 w-4 mr-1" />
                 AI
+              </TabsTrigger>
+              <TabsTrigger value="documents">
+                <FileText className="h-4 w-4 mr-1" />
+                Documents
               </TabsTrigger>
               <TabsTrigger value="parties">Parties</TabsTrigger>
               <TabsTrigger value="registry">Registry</TabsTrigger>
@@ -300,6 +310,30 @@ export const DealDetail: React.FC<DealDetailProps> = ({
                   </CardContent>
                 </Card>
               </div>
+
+              {/* AML Check on Overview for Sales */}
+              {deal.deal_type === 'Sale' && (
+                <AMLCheckPanel
+                  dealValueAed={(deal as any).deal_economics?.transaction_value_aed}
+                  paymentMethod={(deal as any).deal_economics?.payment_method}
+                  buyerFlags={(deal as any).aml_flags}
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="gate" className="space-y-4">
+              <WorkflowGatePanel
+                dealId={dealDbId}
+                dealType={deal.deal_type === 'Sale' ? 'sales' : 'leasing'}
+                documentsPresent={context.documents
+                  .filter(d => d.entity_ref.entity_id === deal.deal_id)
+                  .map(d => d.template_ref)}
+                requestedAction={`transition_to_${nextState || 'next_state'}`}
+                onDocumentUpload={(docType) => toast.info(`Upload ${docType}`)}
+                onProceed={(action) => {
+                  if (nextState) handleStateClick(nextState);
+                }}
+              />
             </TabsContent>
 
             <TabsContent value="compliance">
@@ -340,6 +374,21 @@ export const DealDetail: React.FC<DealDetailProps> = ({
                   requiredActions: complianceResult.requiredActions,
                 } : undefined}
                 collapsed={false}
+              />
+            </TabsContent>
+
+            <TabsContent value="documents" className="space-y-4">
+              <DocumentGeneratorPanel
+                entityType="deal"
+                entityId={dealDbId}
+                dealType={deal.deal_type === 'Sale' ? 'sales' : 'leasing'}
+                prefilledData={{
+                  deal_type: deal.deal_type === 'Sale' ? 'sales' : 'leasing',
+                  property_ref: deal.deal_id,
+                }}
+                onDocumentGenerated={(docId, title) => {
+                  toast.success(`Document generated: ${title}`);
+                }}
               />
             </TabsContent>
 
