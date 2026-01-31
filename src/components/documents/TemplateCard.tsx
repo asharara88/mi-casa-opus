@@ -10,7 +10,9 @@ import {
   FileCheck,
   AlertTriangle,
   ClipboardList,
-  Scale
+  Scale,
+  Lock,
+  FileSignature
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ManifestPrompt } from "@/types/manifest";
@@ -24,6 +26,14 @@ interface TemplateCardProps {
 
 // Icon mapping for different template types
 const TEMPLATE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  // Static templates (locked - no AI)
+  STATIC_ADM_FORM_A: FileSignature,
+  STATIC_ADM_FORM_B: FileSignature,
+  STATIC_NDA: Lock,
+  STATIC_VIEWING_RECEIPT: FileCheck,
+  STATIC_COMMISSION_RECEIPT: Receipt,
+  STATIC_HANDOVER_CHECKLIST: ClipboardList,
+  STATIC_RESERVATION: FileSignature,
   // Document types
   DOC_BROKERAGE_SALES: FileText,
   DOC_BROKERAGE_LEASING: FileText,
@@ -60,6 +70,7 @@ const TEMPLATE_ICONS: Record<string, React.ComponentType<{ className?: string }>
 
 // Color schemes for different categories
 const CATEGORY_COLORS: Record<string, string> = {
+  STATIC_TEMPLATES: "bg-orange-500/10 text-orange-500 border-orange-500/20",
   DOCUMENT_TEMPLATES: "bg-blue-500/10 text-blue-500 border-blue-500/20",
   CHECKLISTS: "bg-amber-500/10 text-amber-500 border-amber-500/20",
   COMPLIANCE: "bg-red-500/10 text-red-500 border-red-500/20",
@@ -67,9 +78,13 @@ const CATEGORY_COLORS: Record<string, string> = {
   WORKFLOW_GATES: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
 };
 
+// Check if template is static (no AI modification)
+const isStaticTemplate = (promptId: string) => promptId.startsWith("STATIC_");
+
 export function TemplateCard({ prompt, isSelected, onClick, subcategory }: TemplateCardProps) {
   const Icon = TEMPLATE_ICONS[prompt.prompt_id] || FileText;
   const colorClass = CATEGORY_COLORS[prompt.group_name] || "bg-muted text-muted-foreground";
+  const isStatic = isStaticTemplate(prompt.prompt_id);
   
   // Extract key input fields for preview
   const inputSchema = prompt.input_schema as { required?: string[] } | null;
@@ -83,17 +98,23 @@ export function TemplateCard({ prompt, isSelected, onClick, subcategory }: Templ
         "border-2",
         isSelected 
           ? "border-primary bg-primary/5 shadow-md" 
-          : "border-transparent hover:border-muted-foreground/20"
+          : "border-transparent hover:border-muted-foreground/20",
+        isStatic && "ring-1 ring-orange-500/30"
       )}
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           {/* Icon */}
           <div className={cn(
-            "flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center border",
+            "flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center border relative",
             colorClass
           )}>
             <Icon className="h-5 w-5" />
+            {isStatic && (
+              <div className="absolute -top-1 -right-1 bg-orange-500 rounded-full p-0.5">
+                <Lock className="h-2.5 w-2.5 text-white" />
+              </div>
+            )}
           </div>
           
           {/* Content */}
@@ -113,17 +134,23 @@ export function TemplateCard({ prompt, isSelected, onClick, subcategory }: Templ
             
             {/* Tags & Meta */}
             <div className="flex items-center gap-2 mt-2 flex-wrap">
-              {subcategory && (
+              {isStatic && (
+                <Badge variant="outline" className="text-xs py-0 bg-orange-500/10 text-orange-600 border-orange-500/30">
+                  <Lock className="h-3 w-3 mr-1" />
+                  No AI
+                </Badge>
+              )}
+              {subcategory && !isStatic && (
                 <Badge variant="outline" className="text-xs py-0">
                   {subcategory}
                 </Badge>
               )}
-              {requiredFields.length > 0 && (
+              {requiredFields.length > 0 && !isStatic && (
                 <span className="text-xs text-muted-foreground">
                   {requiredFields.length} fields
                 </span>
               )}
-              {prompt.tags?.slice(0, 2).map(tag => (
+              {!isStatic && prompt.tags?.slice(0, 2).map(tag => (
                 <Badge 
                   key={tag} 
                   variant="secondary" 

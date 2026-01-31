@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { AI_MODELS } from "../_shared/models.ts";
+import { STATIC_TEMPLATES, isStaticTemplate, getStaticTemplate } from "./static-templates.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -283,6 +284,56 @@ Deno.serve(async (req) => {
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // =====================================================
+    // HANDLE STATIC TEMPLATES (no AI - exact copy)
+    // =====================================================
+    if (manifest.group_name === "STATIC_TEMPLATES" || isStaticTemplate(promptId)) {
+      const staticDoc = getStaticTemplate(promptId);
+      
+      if (staticDoc) {
+        // Store generated document if entity info provided
+        if (entityType && entityId) {
+          const documentId = `SDOC-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+          await supabase.from("generated_documents").insert({
+            document_id: documentId,
+            prompt_id: promptId,
+            entity_type: entityType,
+            entity_id: entityId,
+            input_payload: inputPayload,
+            output: { static: true },
+            document_title: staticDoc.title,
+            document_body: staticDoc.body,
+            status: "Draft",
+            generated_by: userId
+          });
+
+          return new Response(
+            JSON.stringify({
+              success: true,
+              promptId,
+              document_title: staticDoc.title,
+              document_body: staticDoc.body,
+              generatedDocumentId: documentId,
+              status: "Draft",
+              static: true
+            }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            promptId,
+            document_title: staticDoc.title,
+            document_body: staticDoc.body,
+            static: true
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // =====================================================
