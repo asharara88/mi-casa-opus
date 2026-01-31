@@ -1,203 +1,300 @@
 
-# Edge Function Authentication Hardening Plan
+
+# MiCasa BOS Manifest Integration Plan
 
 ## Overview
 
-This plan addresses the security finding that while `bos-llm-ops` properly validates authentication, 14 other edge functions lack authentication entirely. This allows anyone with the function URLs to invoke them, potentially consuming API credits (ElevenLabs, Firecrawl, Twilio, SendGrid) or manipulating data.
+This plan integrates the MiCasa BOS Manifest — a comprehensive governance system defining document templates, workflow gates, compliance checks, and admin operations for Abu Dhabi real estate transactions.
 
 ---
 
-## Risk Assessment
-
-### HIGH Priority (API Credit Abuse / Data Modification)
-- **twilio-messaging** - Can send SMS/WhatsApp at your expense
-- **sendgrid-email** - Can send emails at your expense  
-- **import-prospects-csv** - Can bulk insert data into prospects table
-- **docusign-envelope** - Can create DocuSign envelopes
-- **elevenlabs-tts** - Can consume ElevenLabs credits
-- **elevenlabs-conversation-token** - Can obtain conversation tokens
-- **elevenlabs-scribe-token** - Can obtain scribe tokens
-
-### MEDIUM Priority (AI Credit Consumption)
-- **bos-llm-router** - Uses AI credits
-- **bos-llm-lead-qualify** - Uses AI credits
-- **bos-llm-listing-faq** - Uses AI credits
-- **bos-llm-marketing-copy** - Uses AI credits
-- **bos-llm-property-match** - Uses AI credits
-- **competitor-analyze** - Uses Firecrawl + AI credits
-- **firecrawl-scrape** - Uses Firecrawl credits
-- **blog-insights-extract** - Uses AI credits
-
-### LOW Priority (Internal Operations)
-- **evaluate-compliance** - Already partially protected
-- **generate-portal-xml** - Read-only, internal use
-- **price-watch-check** - Scheduled job, internal use
-
-### EXCLUDE (Webhooks - Require External Access)
-- **portal-lead-sync** - Already has webhook secret validation
-- **twilio-webhook** - External webhook
-- **cal-webhook** - External webhook  
-- **docusign-webhook** - External webhook
-
----
-
-## Authentication Pattern
-
-We will implement the same proven pattern used in `bos-llm-ops`:
-
-```typescript
-// SECURITY: Validate authentication
-const authHeader = req.headers.get('authorization');
-if (!authHeader?.startsWith('Bearer ')) {
-  return new Response(
-    JSON.stringify({ error: 'Authentication required' }),
-    { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
-}
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  global: { headers: { Authorization: authHeader } },
-});
-
-const { data: { user }, error: authError } = await supabase.auth.getUser();
-if (authError || !user) {
-  return new Response(
-    JSON.stringify({ error: 'Invalid authentication token' }),
-    { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
-}
-```
-
----
-
-## Implementation Plan
-
-### Phase 1: HIGH Priority Functions
-
-| Function | Changes |
-|----------|---------|
-| `twilio-messaging` | Add auth validation, log `user.id` |
-| `sendgrid-email` | Add auth validation, log `user.id` |
-| `import-prospects-csv` | Add auth validation, inject `created_by` user ID |
-| `docusign-envelope` | Add auth validation |
-| `elevenlabs-tts` | Add auth validation |
-| `elevenlabs-conversation-token` | Add auth validation |
-| `elevenlabs-scribe-token` | Add auth validation |
-
-### Phase 2: MEDIUM Priority Functions
-
-| Function | Changes |
-|----------|---------|
-| `bos-llm-router` | Add auth validation |
-| `bos-llm-lead-qualify` | Add auth validation |
-| `bos-llm-listing-faq` | Add auth validation |
-| `bos-llm-marketing-copy` | Add auth validation |
-| `bos-llm-property-match` | Add auth validation |
-| `competitor-analyze` | Add auth validation |
-| `firecrawl-scrape` | Add auth validation |
-| `blog-insights-extract` | Add auth validation |
-
-### Phase 3: LOW Priority Functions
-
-| Function | Changes |
-|----------|---------|
-| `evaluate-compliance` | Make auth required (not optional) |
-| `generate-portal-xml` | Add auth validation |
-| `price-watch-check` | Add auth validation OR restrict to cron/service role |
-
----
-
-## Files to Modify
+## Architecture
 
 ```text
-supabase/functions/twilio-messaging/index.ts
-supabase/functions/sendgrid-email/index.ts
-supabase/functions/import-prospects-csv/index.ts
-supabase/functions/docusign-envelope/index.ts
-supabase/functions/elevenlabs-tts/index.ts
-supabase/functions/elevenlabs-conversation-token/index.ts
-supabase/functions/elevenlabs-scribe-token/index.ts
-supabase/functions/bos-llm-router/index.ts
-supabase/functions/bos-llm-lead-qualify/index.ts
-supabase/functions/bos-llm-listing-faq/index.ts
-supabase/functions/bos-llm-marketing-copy/index.ts
-supabase/functions/bos-llm-property-match/index.ts
-supabase/functions/competitor-analyze/index.ts
-supabase/functions/firecrawl-scrape/index.ts
-supabase/functions/blog-insights-extract/index.ts
-supabase/functions/evaluate-compliance/index.ts
-supabase/functions/generate-portal-xml/index.ts
-supabase/functions/price-watch-check/index.ts
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           BOS MANIFEST EXECUTOR                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌──────────────┐    ┌───────────────────┐    ┌──────────────────────────┐  │
+│  │   Frontend   │───▶│   Edge Function   │───▶│   Lovable AI Gateway     │  │
+│  │  (Forms/UI)  │    │ bos-manifest-exec │    │   (google/gemini-3-flash)│  │
+│  └──────────────┘    └───────────────────┘    └──────────────────────────┘  │
+│         │                     │                          │                   │
+│         │                     ▼                          │                   │
+│         │           ┌─────────────────┐                  │                   │
+│         │           │  Validation     │                  │                   │
+│         │           │  • Input Schema │                  │                   │
+│         │           │  • Refusal Rules│                  │                   │
+│         │           │  • Hard Gates   │                  │                   │
+│         │           └─────────────────┘                  │                   │
+│         │                     │                          │                   │
+│         ▼                     ▼                          ▼                   │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                     Supabase Database                                 │   │
+│  │  • bos_manifest_prompts (stored prompts)                             │   │
+│  │  • generated_documents (output storage)                              │   │
+│  │  • workflow_gate_results (gate evaluations)                          │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Code Template
+## Components to Build
 
-Each function will receive this authentication block after CORS handling:
+### 1. Database Schema
+
+**New Tables:**
+
+- `bos_manifest_prompts` — Stores the manifest prompt definitions
+  - `id`, `prompt_id` (e.g., "DOC_BROKERAGE_SALES"), `group`, `order`
+  - `title`, `purpose`, `prompt` (the system instruction)
+  - `input_schema` (JSONB), `output_schema` (JSONB)
+  - `refusal_policy` (JSONB), `depends_on` (TEXT[])
+  - `tags` (TEXT[]), `is_active` (BOOLEAN)
+
+- `generated_documents` — Stores AI-generated document outputs
+  - `id`, `prompt_id`, `entity_type`, `entity_id`
+  - `input_payload` (JSONB), `output` (JSONB)
+  - `document_title`, `document_body` (TEXT)
+  - `status` ("Draft", "Finalized", "Voided")
+  - `generated_by`, `generated_at`
+
+- `workflow_gate_results` — Stores gate evaluation results
+  - `id`, `gate_id` (e.g., "FLOW_SALES_GATE"), `deal_id`
+  - `requested_action`, `documents_present` (TEXT[])
+  - `status` ("APPROVED", "BLOCKED"), `missing` (TEXT[])
+  - `next_allowed_actions` (TEXT[])
+  - `evaluated_at`, `evaluated_by`
+
+### 2. Edge Function: `bos-manifest-executor`
+
+**Responsibilities:**
+- Accept prompt execution requests with `promptId` and `inputPayload`
+- Validate input against the prompt's `input_schema`
+- Apply `refusal_policy` rules before AI invocation
+- Construct the full prompt with manifest instructions
+- Call Lovable AI Gateway with the prompt
+- Extract and validate structured output
+- Store results in appropriate tables
+- Return the generated document or gate result
+
+**Endpoint:** `POST /functions/v1/bos-manifest-executor`
+
+**Request Body:**
+```json
+{
+  "promptId": "DOC_BROKERAGE_SALES",
+  "inputPayload": {
+    "client_role": "seller",
+    "client_legal_name": "Ahmed Al Mansouri",
+    "property": { ... },
+    "commission": { ... },
+    "contract_term": { ... },
+    "assigned_agent": { ... },
+    "micasa": { ... }
+  },
+  "entityType": "deal",
+  "entityId": "DL-ABC123"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "promptId": "DOC_BROKERAGE_SALES",
+  "document_title": "SALES BROKERAGE AGREEMENT ADDENDUM",
+  "document_body": "...",
+  "generatedDocumentId": "uuid",
+  "status": "Draft"
+}
+```
+
+### 3. Workflow Gate Evaluation Logic
+
+For `FLOW_SALES_GATE` and `FLOW_LEASING_GATE`:
+
+**Required Documents Matrix:**
+
+| Deal Type | Gate | Required Documents |
+|-----------|------|-------------------|
+| Sales | FLOW_SALES_GATE | Signed brokerage contract, Ownership proof, KYC folder, AML assessment |
+| Leasing | FLOW_LEASING_GATE | Signed brokerage contract, Ownership proof, Tenant ID (when identified) |
+
+**Gate Evaluation Flow:**
+1. Receive requested action and document list
+2. Check against required documents for deal type
+3. Return APPROVED with next actions or BLOCKED with missing items
+
+### 4. Frontend Components
+
+**A. Document Generation UI (`src/components/documents/DocumentGeneratorPanel.tsx`):**
+- Template selector (Sales Brokerage, Leasing Brokerage, Offers, etc.)
+- Dynamic form based on selected template's `input_schema`
+- Live validation with required field highlighting
+- Generate button that calls the edge function
+- Preview and download capabilities
+
+**B. Workflow Gate Panel (`src/components/compliance/WorkflowGatePanel.tsx`):**
+- Shows current gate status (APPROVED/BLOCKED)
+- Lists missing documents with upload prompts
+- Displays next allowed actions
+- Integration with existing `CompliancePanel`
+
+**C. AML Check Component (`src/components/compliance/AMLCheckPanel.tsx`):**
+- Risk level indicator (Low/Medium/High)
+- Source of funds requirement status
+- goAML trigger warning
+- Required documents checklist
+
+### 5. Document Template Groups
+
+| Group | Templates |
+|-------|-----------|
+| DOCUMENT_TEMPLATES | Sales Brokerage Addendum, Leasing Brokerage Addendum, Agent-to-Agent Master, Agent-to-Agent Annex, Buyer Offer, Tenant Offer, Commission Invoice, Commission Split |
+| WORKFLOW_GATES | Sales Gatekeeper, Leasing Gatekeeper |
+| COMPLIANCE | AML Sales Check, KYC Leasing Check, Portals Map |
+| ADMIN_OPS | Document Index Generator, Audit Export Checklist |
+
+---
+
+## Implementation Sequence
+
+### Phase 1: Database & Backend
+1. Create `bos_manifest_prompts` table and seed with manifest data
+2. Create `generated_documents` table
+3. Create `workflow_gate_results` table
+4. Implement `bos-manifest-executor` edge function
+5. Add RLS policies (Operator role only)
+
+### Phase 2: Workflow Gates
+1. Extend `evaluate-compliance` to support workflow gate contexts
+2. Create gate evaluation helpers for sales/leasing
+3. Integrate with deal state machine
+
+### Phase 3: Document Generation UI
+1. Create `DocumentGeneratorPanel` with template selection
+2. Build dynamic form renderer for input schemas
+3. Add document preview with Markdown/PDF rendering
+4. Connect to edge function for generation
+
+### Phase 4: Compliance Integration
+1. Add AML check panel to deal details
+2. Add KYC completeness indicator for leasing
+3. Add portal steps map to transaction view
+4. Create audit export functionality
+
+---
+
+## Technical Details
+
+### Input Schema Validation
+
+The edge function will use JSON Schema validation:
 
 ```typescript
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-// After OPTIONS handling:
-
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
-
-// SECURITY: Validate authentication
-const authHeader = req.headers.get('authorization');
-if (!authHeader?.startsWith('Bearer ')) {
-  return new Response(
-    JSON.stringify({ error: 'Authentication required' }),
-    { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
+// Validate required fields from manifest
+function validateInput(schema: JSONSchema, payload: unknown): ValidationResult {
+  const required = schema.required || [];
+  const missing = required.filter(field => !getNestedValue(payload, field));
+  
+  if (missing.length > 0) {
+    return { valid: false, errors: missing.map(f => `Missing required: ${f}`) };
+  }
+  
+  // Validate nested objects recursively
+  // Check enum values
+  // Verify data types
+  
+  return { valid: true, errors: [] };
 }
+```
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  global: { headers: { Authorization: authHeader } },
-});
+### Refusal Policy Enforcement
 
-const { data: { user }, error: authError } = await supabase.auth.getUser();
-if (authError || !user) {
-  console.error('[FUNCTION_NAME] Auth validation failed:', authError);
-  return new Response(
-    JSON.stringify({ error: 'Invalid authentication token' }),
-    { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
+```typescript
+function checkRefusalPolicy(policy: RefusalPolicy, input: unknown): RefusalResult {
+  for (const condition of policy.must_refuse_if) {
+    if (evaluateRefusalCondition(condition, input)) {
+      return { refused: true, reason: condition };
+    }
+  }
+  return { refused: false };
 }
+```
 
-console.log(`[FUNCTION_NAME] Authenticated user: ${user.id}`);
+### AI Prompt Construction
+
+```typescript
+function buildPrompt(manifest: ManifestPrompt, input: unknown): string {
+  return `${manifest.prompt}
+
+INPUT DATA:
+${JSON.stringify(input, null, 2)}
+
+OUTPUT REQUIREMENTS:
+- Follow the output schema exactly
+- Document must be copy-paste ready
+- No filler text or unnecessary legal language
+- If uncertain about any ADM requirement, output: VERIFY WITH ADM`;
+}
 ```
 
 ---
 
-## Special Considerations
+## Security Considerations
 
-### import-prospects-csv
-Will switch from service role to user-scoped client and set `created_by` on all imported prospects.
-
-### price-watch-check  
-This function is designed for scheduled execution. Two options:
-1. Add auth for manual triggers, allow service role for cron
-2. Keep service role but add internal secret validation
-
-### evaluate-compliance
-Currently optionally reads user ID. Will make authentication required.
+1. **Authentication**: All endpoints require Bearer token auth
+2. **Authorization**: RLS policies restrict to Operator role
+3. **Input Validation**: Strict schema validation before AI invocation
+4. **Audit Trail**: All generations logged with user ID and timestamp
+5. **Refusal Logging**: Track refused requests for compliance review
+6. **No Legal Advice**: AI constrained to operational documentation only
 
 ---
 
-## Post-Implementation Verification
+## Hard Rules (Non-Negotiable)
 
-1. Test each function call without auth header → expect 401
-2. Test each function call with valid auth → expect normal operation
-3. Verify frontend hooks include auth headers (they should via Supabase client)
-4. Run security scan to confirm findings resolved
+These rules from the manifest are enforced at the code level:
+
+- No brokerage activity without signed ADM-approved contract
+- Leasing commission charged to ONE party only
+- Sales transactions require AML/KYC processing
+- Online advertising requires Madhmoun permit
+- All actions leave audit trail
+- Missing documents block progression
+- VAT only if `vat_registered = true`
+- Commission splits must reconcile to 100%
 
 ---
 
-## Expected Outcome
+## Files to Create/Modify
 
-All edge functions (except webhooks) will require a valid authenticated session before processing requests. This prevents:
-- Unauthorized API credit consumption
-- Data manipulation by unauthenticated actors
-- Exposure of internal AI/communication capabilities
+### New Files:
+- `supabase/functions/bos-manifest-executor/index.ts` — Main edge function
+- `src/components/documents/DocumentGeneratorPanel.tsx` — Document generation UI
+- `src/components/compliance/WorkflowGatePanel.tsx` — Gate status display
+- `src/components/compliance/AMLCheckPanel.tsx` — AML risk display
+- `src/hooks/useManifestExecutor.ts` — React hook for edge function
+- `src/types/manifest.ts` — TypeScript types for manifest schemas
+
+### Modified Files:
+- `src/components/deals/DealDetail.tsx` — Add document generator and gate panel
+- `src/components/compliance/CompliancePanel.tsx` — Integrate gate results
+- `src/components/documents/DocumentsSection.tsx` — Add generator tab
+- `supabase/config.toml` — Register new edge function
+
+---
+
+## Estimated Effort
+
+| Phase | Effort |
+|-------|--------|
+| Phase 1: Database & Backend | 3-4 hours |
+| Phase 2: Workflow Gates | 2-3 hours |
+| Phase 3: Document Generation UI | 3-4 hours |
+| Phase 4: Compliance Integration | 2-3 hours |
+| **Total** | **10-14 hours** |
+
