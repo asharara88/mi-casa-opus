@@ -105,6 +105,28 @@ function checkRefusalPolicy(
       return { refused: true, reason: condition };
     }
     
+    // Check for split not equal to 100%
+    if (condLower.includes("split") && condLower.includes("100")) {
+      const split = _input.split as { party_a_percent?: number; party_b_percent?: number } | undefined;
+      if (split) {
+        const total = (split.party_a_percent || 0) + (split.party_b_percent || 0);
+        if (total !== 100) {
+          return { refused: true, reason: `Split must equal 100% (currently ${total}%)` };
+        }
+      }
+    }
+    
+    // Check for invalid leasing commission payor
+    if (condLower.includes("leasing") && condLower.includes("payor")) {
+      const dealType = _input.deal_type as string | undefined;
+      const commission = _input.commission as { payor?: string } | undefined;
+      if (dealType === "leasing" && commission?.payor) {
+        if (!["landlord", "tenant"].includes(commission.payor)) {
+          return { refused: true, reason: "Leasing commission payor must be landlord or tenant" };
+        }
+      }
+    }
+    
     // Check for missing required fields referenced in refusal
     if (condLower.includes("missing") || condLower.includes("not specified") || condLower.includes("not provided")) {
       // This is handled by validation, skip
@@ -444,6 +466,23 @@ Deno.serve(async (req) => {
           source_of_funds_required: parsedOutput.source_of_funds_required ?? true,
           goaml_trigger_likely: parsedOutput.goaml_trigger_likely ?? false,
           required_documents: parsedOutput.required_documents || [],
+          notes: parsedOutput.notes || ""
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // =====================================================
+    // HANDLE COMPLIANCE PORTALS MAP
+    // =====================================================
+    if (promptId === "COMPLIANCE_PORTALS_MAP") {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          promptId,
+          portal_steps: parsedOutput.portal_steps || [],
+          evidence_to_save: parsedOutput.evidence_to_save || [],
+          folder_target: parsedOutput.folder_target || "",
           notes: parsedOutput.notes || ""
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
