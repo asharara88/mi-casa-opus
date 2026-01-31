@@ -95,6 +95,60 @@ export type Database = {
         }
         Relationships: []
       }
+      bos_manifest_prompts: {
+        Row: {
+          created_at: string
+          depends_on: string[]
+          group_name: string
+          id: string
+          input_schema: Json
+          is_active: boolean
+          output_schema: Json
+          prompt: string
+          prompt_id: string
+          purpose: string
+          refusal_policy: Json | null
+          sort_order: number
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          depends_on?: string[]
+          group_name: string
+          id?: string
+          input_schema?: Json
+          is_active?: boolean
+          output_schema?: Json
+          prompt: string
+          prompt_id: string
+          purpose: string
+          refusal_policy?: Json | null
+          sort_order?: number
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          depends_on?: string[]
+          group_name?: string
+          id?: string
+          input_schema?: Json
+          is_active?: boolean
+          output_schema?: Json
+          prompt?: string
+          prompt_id?: string
+          purpose?: string
+          refusal_policy?: Json | null
+          sort_order?: number
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       broker_profiles: {
         Row: {
           broker_id: string
@@ -1047,6 +1101,66 @@ export type Database = {
           immutability_class?: Database["public"]["Enums"]["immutability_class"]
           metadata?: Json | null
           source?: string | null
+        }
+        Relationships: []
+      }
+      generated_documents: {
+        Row: {
+          created_at: string
+          document_body: string
+          document_id: string
+          document_title: string
+          entity_id: string
+          entity_type: string
+          finalized_at: string | null
+          generated_at: string
+          generated_by: string | null
+          id: string
+          input_payload: Json
+          output: Json
+          prompt_id: string
+          status: Database["public"]["Enums"]["generated_document_status"]
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_body: string
+          document_id: string
+          document_title: string
+          entity_id: string
+          entity_type: string
+          finalized_at?: string | null
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          input_payload?: Json
+          output?: Json
+          prompt_id: string
+          status?: Database["public"]["Enums"]["generated_document_status"]
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_body?: string
+          document_id?: string
+          document_title?: string
+          entity_id?: string
+          entity_type?: string
+          finalized_at?: string | null
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          input_payload?: Json
+          output?: Json
+          prompt_id?: string
+          status?: Database["public"]["Enums"]["generated_document_status"]
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
         }
         Relationships: []
       }
@@ -2323,6 +2437,62 @@ export type Database = {
           },
         ]
       }
+      workflow_gate_results: {
+        Row: {
+          created_at: string
+          deal_id: string
+          documents_present: string[]
+          evaluated_at: string
+          evaluated_by: string | null
+          evaluation_notes: string | null
+          gate_id: string
+          id: string
+          missing: string[]
+          next_allowed_actions: string[]
+          requested_action: string
+          result_id: string
+          status: Database["public"]["Enums"]["workflow_gate_status"]
+        }
+        Insert: {
+          created_at?: string
+          deal_id: string
+          documents_present?: string[]
+          evaluated_at?: string
+          evaluated_by?: string | null
+          evaluation_notes?: string | null
+          gate_id: string
+          id?: string
+          missing?: string[]
+          next_allowed_actions?: string[]
+          requested_action: string
+          result_id: string
+          status?: Database["public"]["Enums"]["workflow_gate_status"]
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string
+          documents_present?: string[]
+          evaluated_at?: string
+          evaluated_by?: string | null
+          evaluation_notes?: string | null
+          gate_id?: string
+          id?: string
+          missing?: string[]
+          next_allowed_actions?: string[]
+          requested_action?: string
+          result_id?: string
+          status?: Database["public"]["Enums"]["workflow_gate_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_gate_results_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       pipeline_kpis: {
@@ -2467,6 +2637,7 @@ export type Database = {
         | "Email"
         | "Contract"
         | "Other"
+      generated_document_status: "Draft" | "Finalized" | "Voided"
       immutability_class: "External" | "Internal" | "System"
       lead_source:
         | "Website"
@@ -2595,6 +2766,7 @@ export type Database = {
         | "cancelled"
         | "no_show"
         | "rescheduled"
+      workflow_gate_status: "APPROVED" | "BLOCKED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2839,6 +3011,7 @@ export const Constants = {
         "Contract",
         "Other",
       ],
+      generated_document_status: ["Draft", "Finalized", "Voided"],
       immutability_class: ["External", "Internal", "System"],
       lead_source: [
         "Website",
@@ -2981,6 +3154,7 @@ export const Constants = {
         "no_show",
         "rescheduled",
       ],
+      workflow_gate_status: ["APPROVED", "BLOCKED"],
     },
   },
 } as const
