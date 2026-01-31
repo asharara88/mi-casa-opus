@@ -12,3 +12,6 @@ export { ComplianceGateButton } from "./ComplianceGateButton";
 export { CompliancePanel } from "./CompliancePanel";
 export { WorkflowGatePanel } from "./WorkflowGatePanel";
 export { AMLCheckPanel } from "./AMLCheckPanel";
+export { KYCCheckPanel } from "./KYCCheckPanel";
+export { PortalStepsPanel } from "./PortalStepsPanel";
+export { AuditExportPanel } from "./AuditExportPanel";
