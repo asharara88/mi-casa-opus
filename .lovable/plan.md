@@ -162,29 +162,30 @@ For `FLOW_SALES_GATE` and `FLOW_LEASING_GATE`:
 
 ## Implementation Sequence
 
-### Phase 1: Database & Backend
-1. Create `bos_manifest_prompts` table and seed with manifest data
-2. Create `generated_documents` table
-3. Create `workflow_gate_results` table
-4. Implement `bos-manifest-executor` edge function
-5. Add RLS policies (Operator role only)
+### Phase 1: Database & Backend ✅ COMPLETE
+1. ✅ Created `bos_manifest_prompts` table and seeded with manifest data
+2. ✅ Created `generated_documents` table
+3. ✅ Created `workflow_gate_results` table
+4. ✅ Implemented `bos-manifest-executor` edge function
+5. ✅ Added RLS policies (Operator role only)
 
-### Phase 2: Workflow Gates
-1. Extend `evaluate-compliance` to support workflow gate contexts
-2. Create gate evaluation helpers for sales/leasing
-3. Integrate with deal state machine
+### Phase 2: UI Components ✅ COMPLETE
+1. ✅ Created `DocumentGeneratorPanel` with template selection
+2. ✅ Created `WorkflowGatePanel` for gate status display
+3. ✅ Created `AMLCheckPanel` for risk assessment
+4. ✅ Integrated into Deal Details view
 
-### Phase 3: Document Generation UI
-1. Create `DocumentGeneratorPanel` with template selection
-2. Build dynamic form renderer for input schemas
-3. Add document preview with Markdown/PDF rendering
-4. Connect to edge function for generation
+### Phase 3: Compliance Integration ✅ COMPLETE
+1. ✅ Added AML check panel to deal details
+2. ✅ Added KYC completeness indicator for leasing
+3. ✅ Added portal steps map to transaction view
+4. ✅ Created audit export functionality
 
-### Phase 4: Compliance Integration
-1. Add AML check panel to deal details
-2. Add KYC completeness indicator for leasing
-3. Add portal steps map to transaction view
-4. Create audit export functionality
+### Phase 4: Additional Components ✅ COMPLETE
+1. ✅ Created `KYCCheckPanel` for leasing deals
+2. ✅ Created `PortalStepsPanel` for portal touchpoints
+3. ✅ Created `AuditExportPanel` for audit bundles
+4. ✅ Integrated all panels into DealDetail tabs
 
 ---
 
@@ -270,21 +271,24 @@ These rules from the manifest are enforced at the code level:
 
 ---
 
-## Files to Create/Modify
+## Files Created/Modified
 
-### New Files:
-- `supabase/functions/bos-manifest-executor/index.ts` — Main edge function
-- `src/components/documents/DocumentGeneratorPanel.tsx` — Document generation UI
-- `src/components/compliance/WorkflowGatePanel.tsx` — Gate status display
-- `src/components/compliance/AMLCheckPanel.tsx` — AML risk display
-- `src/hooks/useManifestExecutor.ts` — React hook for edge function
-- `src/types/manifest.ts` — TypeScript types for manifest schemas
+### New Files (Created):
+- ✅ `supabase/functions/bos-manifest-executor/index.ts` — Main edge function
+- ✅ `src/components/documents/DocumentGeneratorPanel.tsx` — Document generation UI
+- ✅ `src/components/compliance/WorkflowGatePanel.tsx` — Gate status display
+- ✅ `src/components/compliance/AMLCheckPanel.tsx` — AML risk display
+- ✅ `src/components/compliance/KYCCheckPanel.tsx` — KYC completeness check
+- ✅ `src/components/compliance/PortalStepsPanel.tsx` — Portal touchpoints
+- ✅ `src/components/compliance/AuditExportPanel.tsx` — Audit export
+- ✅ `src/hooks/useManifestExecutor.ts` — React hook for edge function
+- ✅ `src/types/manifest.ts` — TypeScript types for manifest schemas
 
 ### Modified Files:
-- `src/components/deals/DealDetail.tsx` — Add document generator and gate panel
-- `src/components/compliance/CompliancePanel.tsx` — Integrate gate results
-- `src/components/documents/DocumentsSection.tsx` — Add generator tab
-- `supabase/config.toml` — Register new edge function
+- ✅ `src/components/deals/DealDetail.tsx` — Add document generator and gate panel
+- ✅ `src/components/compliance/index.ts` — Export new components
+- ✅ `src/components/documents/DocumentsSection.tsx` — Add generator tab
+- ✅ `supabase/config.toml` — Register new edge function
 
 ---
 

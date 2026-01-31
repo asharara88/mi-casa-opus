@@ -13,7 +13,10 @@ import {
   AlertCircle,
   Shield,
   Sparkles,
-  Gavel
+  Gavel,
+  MapPin,
+  FileArchive,
+  UserCheck
 } from 'lucide-react';
 import { Deal, DealState, ValidationContext, DEAL_STATE_REQUIREMENTS } from '@/types/bos';
 import { DealStateRail } from './DealStateRail';
@@ -23,7 +26,7 @@ import { RegistryActionsChecklist } from './RegistryActionsChecklist';
 import { EvidenceDrawer } from './EvidenceDrawer';
 import { validateDealTransition } from '@/lib/state-machine';
 import { StateBadge } from '@/components/dashboard/StateBadge';
-import { CompliancePanel, WorkflowGatePanel, AMLCheckPanel } from '@/components/compliance';
+import { CompliancePanel, WorkflowGatePanel, AMLCheckPanel, KYCCheckPanel, PortalStepsPanel, AuditExportPanel } from '@/components/compliance';
 import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -268,6 +271,14 @@ export const DealDetail: React.FC<DealDetailProps> = ({
                 <FileText className="h-4 w-4 mr-1" />
                 Documents
               </TabsTrigger>
+              <TabsTrigger value="portal">
+                <MapPin className="h-4 w-4 mr-1" />
+                Portal
+              </TabsTrigger>
+              <TabsTrigger value="audit">
+                <FileArchive className="h-4 w-4 mr-1" />
+                Audit
+              </TabsTrigger>
               <TabsTrigger value="parties">Parties</TabsTrigger>
               <TabsTrigger value="registry">Registry</TabsTrigger>
               <TabsTrigger value="timeline">Timeline</TabsTrigger>
@@ -317,6 +328,25 @@ export const DealDetail: React.FC<DealDetailProps> = ({
                   dealValueAed={(deal as any).deal_economics?.transaction_value_aed}
                   paymentMethod={(deal as any).deal_economics?.payment_method}
                   buyerFlags={(deal as any).aml_flags}
+                />
+              )}
+
+              {/* KYC Check on Overview for Leasing */}
+              {deal.deal_type === 'Rent' && (
+                <KYCCheckPanel
+                  landlordIdPresent={context.documents.some(d => 
+                    d.entity_ref.entity_id === deal.deal_id && 
+                    d.template_ref.toLowerCase().includes('landlord')
+                  )}
+                  tenantIdPresent={context.documents.some(d => 
+                    d.entity_ref.entity_id === deal.deal_id && 
+                    d.template_ref.toLowerCase().includes('tenant')
+                  )}
+                  ownershipProofPresent={context.documents.some(d => 
+                    d.entity_ref.entity_id === deal.deal_id && 
+                    (d.template_ref.toLowerCase().includes('title') || 
+                     d.template_ref.toLowerCase().includes('ownership'))
+                  )}
                 />
               )}
             </TabsContent>
@@ -389,6 +419,23 @@ export const DealDetail: React.FC<DealDetailProps> = ({
                 onDocumentGenerated={(docId, title) => {
                   toast.success(`Document generated: ${title}`);
                 }}
+              />
+            </TabsContent>
+
+            <TabsContent value="portal" className="space-y-4">
+              <PortalStepsPanel
+                dealType={deal.deal_type === 'Sale' ? 'sales' : 'leasing'}
+                initialStage="intake"
+              />
+            </TabsContent>
+
+            <TabsContent value="audit" className="space-y-4">
+              <AuditExportPanel
+                dealType={deal.deal_type === 'Sale' ? 'sales' : 'leasing'}
+                propertyRef={deal.deal_id}
+                documentsPresent={context.documents
+                  .filter(d => d.entity_ref.entity_id === deal.deal_id)
+                  .map(d => d.template_ref)}
               />
             </TabsContent>
 
