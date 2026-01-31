@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.portal-inquiry-receive]
 verify_jwt = false
+
+[functions.bos-manifest-executor]
+verify_jwt = false
