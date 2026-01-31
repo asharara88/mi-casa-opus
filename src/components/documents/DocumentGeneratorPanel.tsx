@@ -44,17 +44,22 @@ interface DocumentGeneratorPanelProps {
 // Category metadata for display
 const CATEGORY_META: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; description: string }> = {
   DOCUMENT_TEMPLATES: {
-    label: "Document Templates",
+    label: "Documents",
     icon: FileText,
     description: "Generate ADM-compliant documents"
   },
+  CHECKLISTS: {
+    label: "Checklists",
+    icon: FolderOpen,
+    description: "Deal & onboarding checklists"
+  },
   COMPLIANCE: {
-    label: "Compliance Checks",
+    label: "Compliance",
     icon: Shield,
-    description: "AML, KYC & Portal compliance"
+    description: "AML, KYC & validation controls"
   },
   ADMIN_OPS: {
-    label: "Admin Operations",
+    label: "Admin Ops",
     icon: Settings,
     description: "Audit & administrative tools"
   },
@@ -67,6 +72,7 @@ const CATEGORY_META: Record<string, { label: string; icon: React.ComponentType<{
 
 // Template subcategories for better organization
 const TEMPLATE_SUBCATEGORIES: Record<string, string> = {
+  // Document Templates
   DOC_SELLER_MANDATE: "Mandates",
   DOC_LANDLORD_MANDATE: "Mandates",
   DOC_BROKERAGE_SALES: "Brokerage Agreements",
@@ -81,6 +87,17 @@ const TEMPLATE_SUBCATEGORIES: Record<string, string> = {
   DOC_COMMISSION_INVOICE: "Finance",
   DOC_COMMISSION_SPLIT: "Finance",
   DOC_PAYMENT_RECEIPT: "Finance",
+  // Checklists
+  CHECKLIST_SALES_DEAL: "Deal Checklists",
+  CHECKLIST_LEASING_DEAL: "Deal Checklists",
+  CHECKLIST_AGENT_ONBOARDING: "Onboarding",
+  // Compliance
+  AML_SALES_CHECK: "Risk Assessment",
+  KYC_LEASING_CHECK: "KYC Verification",
+  COMPLIANCE_PORTALS_MAP: "Portal Compliance",
+  CONTROL_COMMISSION_DISPUTE: "Dispute Prevention",
+  CONTROL_AUDIT_TRAIL: "Audit Validation",
+  CONTROL_AUTHORITY_CHAIN: "Authority Validation",
 };
 
 // Deal type filtering
@@ -107,8 +124,9 @@ export function DocumentGeneratorPanel({
   // Fetch all prompts on mount
   useEffect(() => {
     fetchPrompts("DOCUMENT_TEMPLATES");
-    fetchPrompts("ADMIN_OPS");
+    fetchPrompts("CHECKLISTS");
     fetchPrompts("COMPLIANCE");
+    fetchPrompts("ADMIN_OPS");
     fetchPrompts("WORKFLOW_GATES");
   }, [fetchPrompts]);
 
