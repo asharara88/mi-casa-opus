@@ -10,7 +10,8 @@ import {
   Settings,
   Sparkles,
   Clock,
-  Star
+  Star,
+  Lock
 } from "lucide-react";
 import { TemplateSearchBar } from "./TemplateSearchBar";
 import { TemplateCard } from "./TemplateCard";
@@ -27,6 +28,11 @@ interface TemplateBrowserProps {
 
 // Category configuration
 const CATEGORY_CONFIG = {
+  STATIC_TEMPLATES: {
+    label: "Official Forms",
+    icon: Lock,
+    description: "ADM forms & standard templates (no AI)"
+  },
   DOCUMENT_TEMPLATES: {
     label: "Documents",
     icon: FileText,

@@ -46,6 +46,7 @@ export function DocumentGeneratorPanel({
 
   // Fetch all prompts on mount
   useEffect(() => {
+    fetchPrompts("STATIC_TEMPLATES");
     fetchPrompts("DOCUMENT_TEMPLATES");
     fetchPrompts("CHECKLISTS");
     fetchPrompts("COMPLIANCE");
@@ -61,12 +62,25 @@ export function DocumentGeneratorPanel({
   }, [prefilledData, selectedTemplate]);
 
   const selectedPrompt = prompts.find(p => p.prompt_id === selectedTemplate);
+  const isStaticTemplate = selectedTemplate?.startsWith("STATIC_") || false;
 
-  const handleTemplateSelect = (templateId: string) => {
+  const handleTemplateSelect = async (templateId: string) => {
     setSelectedTemplate(templateId);
     setFormData({});
     setGeneratedDoc(null);
-    setViewState("form");
+    
+    // For static templates, skip form and generate immediately
+    if (templateId.startsWith("STATIC_")) {
+      setViewState("form"); // Show loading state briefly
+      const result = await generateDocument(templateId, {}, entityType, entityId);
+      if (result) {
+        setGeneratedDoc({ title: result.title, body: result.body });
+        setViewState("preview");
+        toast.success("Document loaded");
+      }
+    } else {
+      setViewState("form");
+    }
   };
 
   const handleBackToBrowse = () => {
