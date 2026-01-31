@@ -187,6 +187,19 @@ For `FLOW_SALES_GATE` and `FLOW_LEASING_GATE`:
 3. ✅ Created `AuditExportPanel` for audit bundles
 4. ✅ Integrated all panels into DealDetail tabs
 
+### Phase 5: Template Library Expansion ✅ COMPLETE
+1. ✅ Added Seller Mandate / Listing Authority template
+2. ✅ Added Landlord Mandate / Leasing Authority template
+3. ✅ Added Agent-to-Agent Master Agreement template
+4. ✅ Added Agent-to-Agent Deal Annex template
+5. ✅ Added Internal Commission Split Agreement template
+6. ✅ Added Property Viewing Confirmation template
+7. ✅ Added Property Handover Checklist template
+8. ✅ Added Payment Receipt template
+9. ✅ Added NOC Request Letter template
+10. ✅ Added Portal Touchpoints Map compliance check
+11. ✅ Updated DocumentGeneratorPanel with dynamic template loading by category
+
 ---
 
 ## Technical Details
