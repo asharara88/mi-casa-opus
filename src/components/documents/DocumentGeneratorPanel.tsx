@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,13 @@ import {
   Loader2,
   ChevronRight,
   FileCheck,
-  RefreshCw
+  RefreshCw,
+  FolderOpen,
+  Building,
+  Users,
+  Receipt,
+  Shield,
+  Settings
 } from "lucide-react";
 import { toast } from "sonner";
 import { useDocumentGenerator, useManifestPrompts } from "@/hooks/useManifestExecutor";
@@ -35,29 +41,51 @@ interface DocumentGeneratorPanelProps {
   onDocumentGenerated?: (documentId: string, title: string) => void;
 }
 
-// Map prompt IDs to friendly names and categories
-const TEMPLATE_CATEGORIES = {
+// Category metadata for display
+const CATEGORY_META: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; description: string }> = {
   DOCUMENT_TEMPLATES: {
-    label: "Documents",
-    templates: [
-      { id: "DOC_BROKERAGE_SALES", label: "Sales Brokerage Agreement", dealType: "sales" },
-      { id: "DOC_BROKERAGE_LEASING", label: "Leasing Brokerage Agreement", dealType: "leasing" },
-      { id: "DOC_AGENT_TO_AGENT_MASTER", label: "Agent-to-Agent Master", dealType: null },
-      { id: "DOC_AGENT_TO_AGENT_ANNEX", label: "Agent-to-Agent Annex", dealType: null },
-      { id: "DOC_BUYER_OFFER", label: "Buyer Offer Letter", dealType: "sales" },
-      { id: "DOC_TENANT_OFFER", label: "Tenant Intent Letter", dealType: "leasing" },
-      { id: "DOC_COMMISSION_INVOICE", label: "Commission Invoice", dealType: null },
-      { id: "DOC_COMMISSION_SPLIT", label: "Commission Split Confirmation", dealType: null },
-    ]
+    label: "Document Templates",
+    icon: FileText,
+    description: "Generate ADM-compliant documents"
+  },
+  COMPLIANCE: {
+    label: "Compliance Checks",
+    icon: Shield,
+    description: "AML, KYC & Portal compliance"
   },
   ADMIN_OPS: {
     label: "Admin Operations",
-    templates: [
-      { id: "ADMIN_DOC_INDEX", label: "Deal Document Index", dealType: null },
-      { id: "ADMIN_AUDIT_EXPORT", label: "Audit Export Checklist", dealType: null },
-    ]
+    icon: Settings,
+    description: "Audit & administrative tools"
+  },
+  WORKFLOW_GATES: {
+    label: "Workflow Gates",
+    icon: FolderOpen,
+    description: "Transaction flow controls"
   }
 };
+
+// Template subcategories for better organization
+const TEMPLATE_SUBCATEGORIES: Record<string, string> = {
+  DOC_SELLER_MANDATE: "Mandates",
+  DOC_LANDLORD_MANDATE: "Mandates",
+  DOC_BROKERAGE_SALES: "Brokerage Agreements",
+  DOC_BROKERAGE_LEASING: "Brokerage Agreements",
+  DOC_AGENT_MASTER: "Agent Cooperation",
+  DOC_AGENT_ANNEX: "Agent Cooperation",
+  DOC_BUYER_OFFER: "Offers & Letters",
+  DOC_TENANT_OFFER: "Offers & Letters",
+  DOC_VIEWING_CONFIRMATION: "Transaction Support",
+  DOC_NOC_REQUEST: "Transaction Support",
+  DOC_HANDOVER_CHECKLIST: "Transaction Support",
+  DOC_COMMISSION_INVOICE: "Finance",
+  DOC_COMMISSION_SPLIT: "Finance",
+  DOC_PAYMENT_RECEIPT: "Finance",
+};
+
+// Deal type filtering
+const SALES_ONLY = ["DOC_SELLER_MANDATE", "DOC_BROKERAGE_SALES", "DOC_BUYER_OFFER", "AML_SALES_CHECK", "FLOW_SALES_GATE"];
+const LEASING_ONLY = ["DOC_LANDLORD_MANDATE", "DOC_BROKERAGE_LEASING", "DOC_TENANT_OFFER", "KYC_LEASING_CHECK", "FLOW_LEASING_GATE"];
 
 export function DocumentGeneratorPanel({
   entityType,
@@ -71,14 +99,17 @@ export function DocumentGeneratorPanel({
   const [generatedDoc, setGeneratedDoc] = useState<{ title: string; body: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("form");
+  const [selectedCategory, setSelectedCategory] = useState("DOCUMENT_TEMPLATES");
 
   const { prompts, fetchPrompts, isLoading: isLoadingPrompts } = useManifestPrompts();
   const { generateDocument, isLoading: isGenerating, error } = useDocumentGenerator();
 
-  // Fetch prompts on mount
+  // Fetch all prompts on mount
   useEffect(() => {
     fetchPrompts("DOCUMENT_TEMPLATES");
     fetchPrompts("ADMIN_OPS");
+    fetchPrompts("COMPLIANCE");
+    fetchPrompts("WORKFLOW_GATES");
   }, [fetchPrompts]);
 
   // Apply prefilled data when template changes
@@ -89,6 +120,47 @@ export function DocumentGeneratorPanel({
   }, [prefilledData, selectedTemplate]);
 
   const selectedPrompt = prompts.find(p => p.prompt_id === selectedTemplate);
+
+  // Organize prompts by category and subcategory
+  const organizedPrompts = useMemo(() => {
+    const organized: Record<string, { subcategory: string; prompts: ManifestPrompt[] }[]> = {};
+    
+    // Filter by deal type if specified
+    const filteredPrompts = prompts.filter(p => {
+      if (!dealType) return true;
+      if (dealType === "sales" && LEASING_ONLY.includes(p.prompt_id)) return false;
+      if (dealType === "leasing" && SALES_ONLY.includes(p.prompt_id)) return false;
+      return true;
+    });
+
+    // Exclude system prompts
+    const visiblePrompts = filteredPrompts.filter(p => p.group_name !== "SYSTEM");
+
+    visiblePrompts.forEach(prompt => {
+      const group = prompt.group_name;
+      if (!organized[group]) {
+        organized[group] = [];
+      }
+
+      const subcategory = TEMPLATE_SUBCATEGORIES[prompt.prompt_id] || "General";
+      let subcat = organized[group].find(s => s.subcategory === subcategory);
+      if (!subcat) {
+        subcat = { subcategory, prompts: [] };
+        organized[group].push(subcat);
+      }
+      subcat.prompts.push(prompt);
+    });
+
+    // Sort subcategories and prompts
+    Object.keys(organized).forEach(group => {
+      organized[group].sort((a, b) => a.subcategory.localeCompare(b.subcategory));
+      organized[group].forEach(sub => {
+        sub.prompts.sort((a, b) => a.sort_order - b.sort_order);
+      });
+    });
+
+    return organized;
+  }, [prompts, dealType]);
 
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
@@ -162,24 +234,6 @@ export function DocumentGeneratorPanel({
     }
   }, [generatedDoc]);
 
-  // Filter templates based on deal type
-  const getFilteredTemplates = () => {
-    const result: typeof TEMPLATE_CATEGORIES = JSON.parse(JSON.stringify(TEMPLATE_CATEGORIES));
-    
-    if (dealType) {
-      Object.keys(result).forEach(cat => {
-        const category = result[cat as keyof typeof TEMPLATE_CATEGORIES];
-        category.templates = category.templates.filter(
-          t => t.dealType === null || t.dealType === dealType
-        );
-      });
-    }
-    
-    return result;
-  };
-
-  const filteredTemplates = getFilteredTemplates();
-
   // Render form fields based on input schema
   const renderFormFields = () => {
     if (!selectedPrompt?.input_schema) {
@@ -198,6 +252,7 @@ export function DocumentGeneratorPanel({
         enum?: string[];
         properties?: Record<string, unknown>;
         required?: string[];
+        items?: { type: string; properties?: Record<string, unknown> };
       }>;
     };
 
@@ -209,6 +264,38 @@ export function DocumentGeneratorPanel({
         {Object.entries(properties).map(([key, prop]) => {
           const isRequired = required.includes(key);
           const value = formData[key];
+
+          // Handle array fields
+          if (prop.type === "array" && prop.items?.type === "object") {
+            return (
+              <div key={key} className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-medium text-foreground capitalize">
+                    {key.replace(/_/g, " ")}
+                  </h4>
+                  {isRequired && (
+                    <Badge variant="outline" className="text-xs">Required</Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Add items below (array fields - simplified input)
+                </p>
+                <Textarea
+                  value={JSON.stringify(value || [], null, 2)}
+                  onChange={(e) => {
+                    try {
+                      handleFieldChange(key, JSON.parse(e.target.value));
+                    } catch {
+                      // Invalid JSON, ignore
+                    }
+                  }}
+                  placeholder={`Enter JSON array for ${key}`}
+                  rows={4}
+                  className="font-mono text-xs"
+                />
+              </div>
+            );
+          }
 
           // Handle nested objects
           if (prop.type === "object" && prop.properties) {
@@ -276,32 +363,49 @@ export function DocumentGeneratorPanel({
     // Boolean field - render as switch
     if (prop.type === "boolean") {
       return (
-        <Switch
-          checked={!!value}
-          onCheckedChange={(checked) => handleFieldChange(path, checked)}
-        />
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={!!value}
+            onCheckedChange={(checked) => handleFieldChange(path, checked)}
+          />
+          <span className="text-sm text-muted-foreground">
+            {value ? "Yes" : "No"}
+          </span>
+        </div>
       );
     }
 
-    // Number field
-    if (prop.type === "number") {
+    // Number/integer field
+    if (prop.type === "number" || prop.type === "integer") {
       return (
         <Input
           type="number"
-          value={(value as number) || ""}
+          value={(value as number) ?? ""}
           onChange={(e) => handleFieldChange(path, parseFloat(e.target.value) || 0)}
           placeholder={`Enter ${path.split(".").pop()?.replace(/_/g, " ")}`}
         />
       );
     }
 
+    // Date field
+    if (prop.format === "date") {
+      return (
+        <Input
+          type="date"
+          value={(value as string) || ""}
+          onChange={(e) => handleFieldChange(path, e.target.value)}
+        />
+      );
+    }
+
     // String field - use textarea for longer content
-    if (path.includes("content") || path.includes("notes") || path.includes("conditions")) {
+    const fieldName = path.split(".").pop() || "";
+    if (fieldName.includes("content") || fieldName.includes("notes") || fieldName.includes("conditions") || fieldName.includes("comments")) {
       return (
         <Textarea
           value={(value as string) || ""}
           onChange={(e) => handleFieldChange(path, e.target.value)}
-          placeholder={`Enter ${path.split(".").pop()?.replace(/_/g, " ")}`}
+          placeholder={`Enter ${fieldName.replace(/_/g, " ")}`}
           rows={3}
         />
       );
@@ -312,10 +416,14 @@ export function DocumentGeneratorPanel({
       <Input
         value={(value as string) || ""}
         onChange={(e) => handleFieldChange(path, e.target.value)}
-        placeholder={`Enter ${path.split(".").pop()?.replace(/_/g, " ")}`}
+        placeholder={`Enter ${fieldName.replace(/_/g, " ")}`}
       />
     );
   };
+
+  const availableCategories = Object.keys(organizedPrompts).filter(
+    cat => CATEGORY_META[cat] && organizedPrompts[cat]?.length > 0
+  );
 
   return (
     <Card>
@@ -324,10 +432,10 @@ export function DocumentGeneratorPanel({
           <div>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Sparkles className="h-5 w-5 text-primary" />
-              AI Document Generator
+              MICASA Ai Document Generator
             </CardTitle>
             <CardDescription>
-              Generate ADM-compliant documents from templates
+              Generate ADM-compliant documents from BOS templates
             </CardDescription>
           </div>
           {generatedDoc && (
@@ -344,38 +452,74 @@ export function DocumentGeneratorPanel({
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* Category Tabs */}
+        <div className="flex flex-wrap gap-2 pb-2 border-b">
+          {availableCategories.map(cat => {
+            const meta = CATEGORY_META[cat];
+            if (!meta) return null;
+            const Icon = meta.icon;
+            const count = organizedPrompts[cat]?.reduce((acc, sub) => acc + sub.prompts.length, 0) || 0;
+            
+            return (
+              <Button
+                key={cat}
+                variant={selectedCategory === cat ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(cat)}
+                className="gap-2"
+              >
+                <Icon className="h-4 w-4" />
+                {meta.label}
+                <Badge variant="secondary" className="ml-1 text-xs">
+                  {count}
+                </Badge>
+              </Button>
+            );
+          })}
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Template Selector */}
           <div className="space-y-4">
-            <h4 className="font-medium text-sm text-muted-foreground">Select Template</h4>
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium text-sm text-muted-foreground">Select Template</h4>
+              {isLoadingPrompts && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            </div>
             <ScrollArea className="h-[400px] pr-4">
-              {Object.entries(filteredTemplates).map(([catKey, category]) => (
-                <div key={catKey} className="mb-4">
-                  <h5 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">
-                    {category.label}
+              {organizedPrompts[selectedCategory]?.map((subcat) => (
+                <div key={subcat.subcategory} className="mb-4">
+                  <h5 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider flex items-center gap-2">
+                    <FolderOpen className="h-3 w-3" />
+                    {subcat.subcategory}
                   </h5>
                   <div className="space-y-1">
-                    {category.templates.map((template) => (
+                    {subcat.prompts.map((prompt) => (
                       <button
-                        key={template.id}
-                        onClick={() => handleTemplateSelect(template.id)}
+                        key={prompt.prompt_id}
+                        onClick={() => handleTemplateSelect(prompt.prompt_id)}
                         className={cn(
                           "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
                           "hover:bg-accent",
-                          selectedTemplate === template.id
+                          selectedTemplate === prompt.prompt_id
                             ? "bg-primary text-primary-foreground"
                             : "text-foreground"
                         )}
                       >
                         <div className="flex items-center justify-between">
-                          <span>{template.label}</span>
-                          <ChevronRight className="h-4 w-4 opacity-50" />
+                          <span className="truncate">{prompt.title}</span>
+                          <ChevronRight className="h-4 w-4 opacity-50 flex-shrink-0" />
                         </div>
                       </button>
                     ))}
                   </div>
                 </div>
               ))}
+              {(!organizedPrompts[selectedCategory] || organizedPrompts[selectedCategory].length === 0) && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No templates in this category</p>
+                </div>
+              )}
             </ScrollArea>
           </div>
 
@@ -394,7 +538,23 @@ export function DocumentGeneratorPanel({
               </TabsList>
 
               <TabsContent value="form" className="mt-0">
-                <ScrollArea className="h-[350px] pr-4">
+                {selectedPrompt && (
+                  <div className="mb-4 p-3 bg-muted/50 rounded-md">
+                    <h3 className="font-medium text-foreground">{selectedPrompt.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{selectedPrompt.purpose}</p>
+                    {selectedPrompt.tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {selectedPrompt.tags.map(tag => (
+                          <Badge key={tag} variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <ScrollArea className="h-[320px] pr-4">
                   {renderFormFields()}
                 </ScrollArea>
 
