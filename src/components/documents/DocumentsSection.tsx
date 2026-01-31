@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDocumentTemplates, useDocumentInstances } from '@/hooks/useDocuments';
 import { DocumentTemplateCard } from './DocumentTemplateCard';
 import { DocumentInstanceRow } from './DocumentInstanceRow';
+import { DocumentGeneratorPanel } from './DocumentGeneratorPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,8 @@ import {
   FileCheck, 
   Filter,
   FolderOpen,
-  Loader2
+  Loader2,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -174,6 +176,7 @@ export function DocumentsSection() {
           <TabsList>
             <TabsTrigger value="instances">Documents</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="generator">AI Generator</TabsTrigger>
           </TabsList>
 
           <div className="flex items-center gap-3">
@@ -275,6 +278,17 @@ export function DocumentsSection() {
               <p className="text-muted-foreground">No templates found</p>
             </div>
           )}
+        </TabsContent>
+
+        {/* AI Generator Tab */}
+        <TabsContent value="generator" className="mt-0">
+          <DocumentGeneratorPanel
+            onDocumentGenerated={(docId, title) => {
+              toast.success(`Document created: ${title}`, {
+                description: `ID: ${docId}`,
+              });
+            }}
+          />
         </TabsContent>
       </Tabs>
     </div>
