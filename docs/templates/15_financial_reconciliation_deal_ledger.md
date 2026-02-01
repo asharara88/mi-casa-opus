@@ -1,56 +1,54 @@
-Financial Reconciliation & Deal Ledger
+# Financial Reconciliation & Deal Ledger (Per Deal)
+**Purpose:** To maintain a per-deal ledger of all financial movements and reconcile receipts, invoices, payouts, and final outcomes for audit and dispute resolution.
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
+Date Opened: ____ / ____ / ______  
+Deal / CRM ID: __________________________  
+Property: ___________________________________________  
+Transaction Type: ☐ Sale ☐ Lease  
+Closing Date (if closed): ____ / ____ / ______
 
-Purpose
-This ledger records all financial movements for a specific deal, enabling reconciliation and audit verification.
+## 1. Parties
+Seller/Landlord: ___________________________  
+Buyer/Tenant: ___________________________  
+Other Parties (developer/management/bank): ___________________________
 
-1. Deal Information
-Deal Reference: __________________________________________
-Property Address: _______________________________________
-Transaction Type: [  ] Sale  [  ] Lease
-Completion Date: ________________________________________
+## 2. Deal Financial Summary (High-Level)
+Agreed Sale Price / Annual Rent: AED ___________________________  
+Commission Agreement: ___________________________  
+Commission Invoice No.: ___________________________  
+VAT Applicable: ☐ Yes ☐ No  
+Total Commission Invoiced (Incl. VAT if applicable): AED ___________________________
 
-2. Ledger Entries
-Date | Description | Debit (AED) | Credit (AED) | Balance (AED)
---- | --- | --- | --- | ---
-__________ | __________________________ | ______ | ______ | ______
-__________ | __________________________ | ______ | ______ | ______
-__________ | __________________________ | ______ | ______ | ______
+## 3. Deal Ledger Entries
+Date | Entry Type | Description | Debit (AED) | Credit (AED) | Method | Reference | Notes/Evidence Location
+--- | --- | --- | --- | --- | --- | --- | ---
+//____ | Receipt | __________________ | 0.00 | ______ | ______ | ______ | ______
+//____ | Invoice | __________________ | ______ | 0.00 | N/A | ______ | ______
+//____ | Payout | __________________ | ______ | 0.00 | ______ | ______ | ______
+//____ | Refund | __________________ | ______ | 0.00 | ______ | ______ | ______
 
-3. Reconciliation Summary
-Total Receipts (AED): _________________________________
-Total Payments (AED): _________________________________
-Net Balance (AED): ____________________________________
-Reconciled By: ________________________________________
-Reconciliation Date: ___________________________________
+## 4. Reconciliation
+Total Receipts (Cleared): AED ___________________________  
+Total Invoices Raised: AED ___________________________  
+Total Payouts/Refunds: AED ___________________________  
+Balance (should be zero or explained): AED ___________________________  
+Explanation if non-zero: ___________________________________________
 
-4. Notes
-__________________________________________________________________
-__________________________________________________________________
+## 5. Governing Law and Jurisdiction
+This ledger is maintained in Abu Dhabi and governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi.
 
-5. Governing Law
-This ledger is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+---
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+## Sign-Off
 
-Signatures
+**Finance Owner**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Finance Officer
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+**Compliance/Operations Review**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Compliance Review
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Company Stamp
-[Stamp Here]
+Company Stamp (Mi Casa Real Estate): __________________________

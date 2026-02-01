@@ -1,76 +1,81 @@
-Agent-to-Agent / Agency-to-Agency Agreement
+# Agent-to-Agent / Agency-to-Agency Agreement
+**Purpose:** To document cooperation between two licensed brokerages/agents on a specific transaction, including commission split, non-circumvention, and confidentiality.
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
+## 1. Parties
+Date: ____ / ____ / ______
 
-Purpose
-This agreement sets the terms for cooperation between MiCasa Real Estate and another licensed broker or agency for a specific transaction or ongoing cooperation, including commission sharing, non-circumvention, and confidentiality.
+**Party A (Listing Brokerage / Agent):**  
+Company Name: __________________________ License No.: __________________________  
+Address: ___________________________________________  
+Authorized Representative / Agent Name: __________________________  
+Agent License/ID No. (if applicable): __________________________  
+Email: __________________________ Mobile: __________________________
 
-1. Parties
-MiCasa Real Estate
-License No.: CN-3762725
-TRN: _________________________________________________
-Representative: _________________________________________
-Email: _________________________________________________
+**Party B (Cooperating Brokerage / Agent):**  
+Company Name: Mi Casa Real Estate License No.: CN-3762725  
+Address: Office 1703, Al Masaood Building, Najda Street, Abu Dhabi, UAE  
+Representative / Agent Name: __________________________  
+Agent License/ID No. (if applicable): __________________________  
+Email: __________________________ Mobile: __________________________
 
-Cooperating Broker / Agency
-Legal Name: ____________________________________________
-License No.: ___________________________________________
-TRN (if applicable): ____________________________________
-Representative: _________________________________________
-Email: _________________________________________________
+Collectively, the “Parties”.
 
-2. Scope of Cooperation
-This agreement applies to the following:
-[  ] Specific Property/Deal
-[  ] Ongoing cooperation for multiple listings
+## 2. Subject Property / Deal
+Property Address / Location: ___________________________________________  
+Unit/Reference: ___________________________  
+Transaction Type: ☐ Sale ☐ Lease  
+Asking Price / Rent: AED ___________________________  
+Client Type Introduced by Party B: ☐ Buyer ☐ Tenant  
+Introduced Client Name (for record): ___________________________  
+CRM/Deal ID (if used): ___________________________
 
-Property / Deal Reference (if applicable): ________________
-Client Type Introduced: [  ] Buyer  [  ] Seller  [  ] Tenant  [  ] Landlord
+## 3. Commission Sharing
+3.1 The Parties agree to share the brokerage commission received for the above transaction as follows:  
+Party A: ____ % of total commission received  
+Party B: ____ % of total commission received
 
-3. Commission Sharing
-Total Commission: __________________________ (AED or %)
-MiCasa Share: _______________________________ (AED or %)
-Cooperating Broker Share: _____________________ (AED or %)
-Payment Trigger: ______________________________
-Payment Method and Timing: ____________________
+3.2 “Commission received” means commission funds actually received and cleared in the receiving brokerage’s bank account, net of any bank charges directly attributable to the receipt (unless otherwise agreed in writing).
 
-4. Roles and Responsibilities
-Each party shall provide accurate information, comply with applicable laws, and act in good faith. Neither party shall make representations outside its authority or use the other party’s brand without written consent.
+3.3 Payment of the cooperating share shall be made within 2 business days of receipt of a valid tax invoice (where applicable) and confirmation that the transaction has completed (sale transfer/registration or lease execution/registration, as applicable), unless otherwise agreed in writing.
 
-5. Non-Circumvention
-Each party agrees not to bypass the other or directly solicit the other’s introduced clients for the subject transaction or any related transaction for a period of 12 months from the date of introduction.
+3.4 No commission is payable under this Agreement for renewals, extensions, or subsequent transactions with the same client unless specifically agreed in writing for that later transaction.
 
-6. Confidentiality
-All confidential information, client details, and deal terms exchanged shall be kept strictly confidential and used only for the stated purpose.
+## 4. Non-Circumvention and Communication
+4.1 The Parties shall not bypass each other. All communications with the other Party’s introduced client relating to the Subject Property must be transparent and, where practical, coordinated.  
+4.2 Neither Party shall directly solicit or contract with the other Party’s client for the Subject Property outside this Agreement.
 
-7. Compliance
-Each party warrants that it is duly licensed and authorized in its jurisdiction and will comply with Abu Dhabi DMT/ADM regulations and applicable UAE laws.
+## 5. Confidentiality and Data Handling
+5.1 Each Party shall keep confidential all non-public transaction information and any personal data shared.  
+5.2 Shared client data shall be used solely for the transaction and handled in accordance with applicable UAE data protection requirements.  
+5.3 Disclosure to third parties is permitted only as necessary to complete the transaction (e.g., developers/management companies, banks, conveyancing professionals) or where required by law.
 
-8. Governing Law
-This agreement is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+## 6. Compliance
+Each Party confirms it holds valid licenses and approvals required to perform brokerage activities in Abu Dhabi and will comply with applicable regulations and professional standards.
 
-9. Entire Agreement
-This agreement constitutes the entire agreement between the parties relating to the cooperation described herein.
+## 7. Term and Termination
+7.1 This Agreement is valid until completion of the Subject Property transaction or 90 days from the date above, whichever occurs first, unless extended in writing.  
+7.2 Either Party may terminate by written notice; however, commission rights for a completed transaction introduced under this Agreement survive termination.
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+## 8. Governing Law and Jurisdiction
+This Agreement is governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi. The courts of Abu Dhabi shall have jurisdiction.
 
-Signatures
+## 9. Entire Agreement
+This Agreement is the entire agreement between the Parties for the Subject Property and supersedes prior communications regarding commission sharing for the Subject Property.
 
-MiCasa Real Estate
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+---
 
-Cooperating Broker / Agency
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+## Signatures
 
-Company Stamp
-[Stamp Here]
+**Party A (Listing Brokerage / Agent)**  
+Company: __________________________  
+Name: __________________________ Title: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______  
+Company Stamp: __________________________
+
+**Party B (Mi Casa Real Estate)**  
+Company: Mi Casa Real Estate (CN-3762725)  
+Name: __________________________ Title: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______  
+Company Stamp (Mi Casa Real Estate): __________________________

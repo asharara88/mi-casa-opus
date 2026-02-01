@@ -1,49 +1,38 @@
-Complaint, Dispute & Incident Register
+# Complaint, Dispute & Incident Register (Internal)
+**Purpose:** To record and manage complaints, disputes, and incidents for regulatory defense, internal escalation, and service improvement.
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
+Register Start Date: ____ / ____ / ______  
+Maintained By (Name/Title): __________________________
 
-Purpose
-This register records complaints, disputes, and operational incidents for regulatory compliance, internal escalation, and resolution tracking.
+## 1. Register Entries
+Ref No. | Date Logged | Complainant / Party | Deal/Listing Ref | Type (Complaint/Dispute/Incident) | Summary | Severity (Low/Med/High) | Owner | Target Resolution Date | Status | Outcome / Close Date
+--- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+____ | //____ | __________ | __________ | __________ | __________ | ___ | ___ | //____ | ___ | ___
+____ | //____ | __________ | __________ | __________ | __________ | ___ | ___ | //____ | ___ | ___
 
-1. Register Details
-Register Period: _________________________________________
-Prepared By: ____________________________________________
+## 2. Handling and Escalation Rules
+2.1 Each entry must have a named owner and documented actions taken.  
+2.2 High severity matters must be escalated to management and compliance immediately and tracked daily until stabilized.  
+2.3 Evidence (messages, emails, contracts, receipts) must be preserved in the deal file and referenced in the register.
 
-2. Case Log
-Case No. | Date Received | Complainant / Party | Type | Summary | Status | Resolution Date
---- | --- | --- | --- | --- | --- | ---
-________ | ____________ | ___________________ | _____ | ______________________ | ______ | ____________
-________ | ____________ | ___________________ | _____ | ______________________ | ______ | ____________
-________ | ____________ | ___________________ | _____ | ______________________ | ______ | ____________
+## 3. Confidentiality and Data Handling
+Personal data and case details must be accessed only by authorized staff and used solely for resolving the matter and fulfilling legal obligations.
 
-3. Escalation and Actions
-For each case, the following information must be recorded in the case file:
-(a) Evidence collected and communications log.
-(b) Internal review and decision notes.
-(c) Any authority notifications and response dates.
+## 4. Governing Law and Jurisdiction
+This register is maintained in Abu Dhabi and governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi.
 
-4. Governing Law
-This register is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+---
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+## Sign-Off
 
-Signatures
+**Prepared/Updated By (Compliance/Operations)**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Compliance Officer
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+**Approved By (Management)**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Operations Manager
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Company Stamp
-[Stamp Here]
+Company Stamp (Mi Casa Real Estate): __________________________

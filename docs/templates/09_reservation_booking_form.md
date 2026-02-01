@@ -1,78 +1,73 @@
-Reservation / Booking Form
+# Reservation / Booking Form (Temporary Hold)
+**Purpose:** To document a temporary reservation request for a unit and the handling/refund rules for the reservation amount pending formal contract signing.
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
+Date: ____ / ____ / ______  
+Reservation Reference (CRM/ERP): __________________________
 
-Purpose
-This form records a temporary reservation of the Property, the booking fee/deposit received, and the conditions for refund or forfeiture.
+## 1. Parties
+Applicant: ☐ Buyer ☐ Tenant  
+Name: __________________________  
+Emirates ID / Passport / Trade License No.: __________________________  
+Mobile: __________________________ Email: __________________________
 
-1. Parties
-Reserving Party (Buyer / Tenant)
-Full Name: ______________________________________________
-Emirates ID / Passport No.: ______________________________
-Mobile: ________________________________________________
-Email: _________________________________________________
+Property Owner / Landlord / Seller (if identified): __________________________  
+Broker: Mi Casa Real Estate (CN-3762725)
 
-Owner / Landlord
-Full Name: ______________________________________________
-Contact: _______________________________________________
+## 2. Property
+Property Address / Location: ___________________________________________  
+Unit/Villa No.: ___________________________  
+Building / Community: ___________________________________________  
+Transaction Type: ☐ Sale ☐ Lease
 
-Broker
-Company: MiCasa Real Estate
-Representative: _________________________________________
+## 3. Reservation Request
+3.1 The Applicant requests that the Property be marked as “Reserved / On Hold” for a period ending on: ____ / ____ / ______ at ______.  
+3.2 Reservation Amount: AED ___________________________  
+Paid By: ☐ Bank transfer ☐ Card ☐ Cheque ☐ Cash (only if permitted by company policy)  
+Paid To: ☐ Owner/Landlord/Seller ☐ Developer/Management ☐ Broker (only if separately authorized in writing)  
+3.3 Intended Terms:  
+(a) Intended purchase price / annual rent: AED ___________________________  
+(b) Intended move-in / completion date: ____ / ____ / ______  
+(c) Special terms: ___________________________________________
 
-2. Property Details
-Property Address: _______________________________________
-Unit / Plot No.: ________________________________________
-Property Type: __________________________________________
+## 4. Nature of Reservation
+4.1 The Applicant acknowledges that this reservation is a temporary hold request only and does not by itself create a binding sale/lease unless a formal agreement (MOU/SPA/Lease) is signed by the parties.  
+4.2 The Owner/Landlord/Seller retains the right to accept or reject the reservation request unless a written acceptance is issued.
 
-3. Reservation Terms
-Reservation Start Date: _________________________________
-Reservation End Date: ___________________________________
-Reservation Fee / Booking Deposit (AED): _________________
-Payment Method: _________________________________________
+## 5. Refund / Forfeiture Rules
+5.1 If the reservation amount is held by the Broker, the Broker will hold it as a stakeholder for the limited purpose of this reservation, subject to written instructions and applicable policies.  
+5.2 Unless otherwise agreed in writing, refund handling is as follows:  
+(a) If the Owner/Landlord/Seller rejects the Applicant or declines to proceed before signing a formal agreement, the reservation amount shall be refunded to the Applicant.  
+(b) If the Applicant withdraws without lawful cause after the reservation is accepted and within the hold period, the reservation amount shall be: ☐ refunded ☐ forfeited ☐ partially forfeited (details): ___________________________.  
+(c) If parties sign a formal agreement, the reservation amount shall be applied toward: ☐ deposit ☐ rent advance ☐ other: __________, as specified in the formal agreement.  
+5.3 Refunds should be processed back to the original payer and method where reasonably possible.
 
-4. Purpose of Reservation
-The reservation is intended to allow the parties to complete due diligence and execute the applicable sale or lease agreement within the reservation period.
+## 6. Documentation
+Applicant shall provide identification and supporting documents requested for compliance and transaction processing.
 
-5. Refund and Forfeiture Terms
-The reservation fee shall be:
-(a) Refunded to the Reserving Party if the Owner fails to proceed for reasons within the Owner’s control.
-(b) Applied to the purchase price or rental obligations upon successful execution of the agreement.
-(c) Forfeited if the Reserving Party withdraws without lawful excuse after acceptance, subject to applicable law.
+## 7. Governing Law and Jurisdiction
+This Booking Form is governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi. The courts of Abu Dhabi shall have jurisdiction.
 
-6. Documentation and Approvals
-The parties shall cooperate to provide required documents, approvals, and NOCs during the reservation period.
+## 8. Entire Agreement
+This Booking Form is the entire agreement regarding the reservation hold only and does not replace any future MOU/SPA/Lease.
 
-7. Governing Law
-This reservation is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+---
 
-8. Entire Agreement
-This reservation form constitutes the entire agreement for the reservation arrangement and supersedes prior discussions on the same subject.
+## Signatures
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+**Applicant (Buyer/Tenant)**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Signatures
+**Owner/Landlord/Seller Acceptance (optional)**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Reserving Party
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+**Mi Casa Real Estate (Broker)**  
+Name: __________________________  
+Title: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Owner / Landlord
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Broker Acknowledgment (MiCasa Real Estate)
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Company Stamp
-[Stamp Here]
+Company Stamp (Mi Casa Real Estate): __________________________

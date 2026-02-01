@@ -1,72 +1,60 @@
-Agent License & Registration Record
+# Agent License & Registration Record (Internal)
+**Purpose:** Internal compliance record to evidence agent licensing, registration, and mandatory acknowledgments for Abu Dhabi brokerage operations.
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
+## 1. Agent Identification
+Record Date: ____ / ____ / ______  
+Agent Full Name: __________________________  
+Internal Employee/Agent ID: __________________________  
+Role: ☐ Sales Agent ☐ Leasing Agent ☐ Admin ☐ Team Leader ☐ Other: __________  
+Mobile: __________________________ Email: __________________________  
+Nationality: __________________________  
+Emirates ID No.: __________________________ Expiry: ____ / ____ / ______  
+Passport No.: __________________________ Expiry: ____ / ____ / ______  
+Visa Status: ☐ UAE Resident ☐ Non-Resident ☐ Other: __________
 
-Purpose
-This internal record documents the licensing and registration status of a MiCasa Real Estate agent in accordance with Abu Dhabi DMT/ADM requirements and company compliance controls.
+## 2. Regulatory Registration and Licensing
+ADM/DMT Broker/Agent License No.: __________________________  
+Issue Date: ____ / ____ / ______ Expiry Date: ____ / ____ / ______  
+Registered Brokerage: Mi Casa Real Estate (CN-3762725)  
+Authorized Areas/Activities (if applicable): __________________________
 
-1. Agent Identification
-Full Name: ______________________________________________
-Employee / Contractor ID: ________________________________
-Nationality: ____________________________________________
-Emirates ID No.: _________________________________________
-Mobile: ________________________________________________
-Email: _________________________________________________
+## 3. Supporting Documents on File
+The following are maintained in the agent’s compliance file (physical or digital):  
+(a) Emirates ID copy and verification date: ____ / ____ / ______  
+(b) Passport copy and verification date: ____ / ____ / ______  
+(c) Visa copy (if applicable) and verification date: ____ / ____ / ______  
+(d) Agent license/card copy and verification date: ____ / ____ / ______  
+(e) Signed code of conduct and conflict of interest declaration date: ____ / ____ / ______  
+(f) Training records (AML / sanctions / data protection / conduct): __________________________
 
-2. Licensing and Registration
-Broker Card / License No.: _______________________________
-Issuing Authority: ______________________________________
-Issue Date: _____________________________________________
-Expiry Date: ____________________________________________
-DMT / ADM Registration ID (if applicable): ________________
-Registration Status: ____________________________________
+## 4. Declarations (Agent)
+The Agent confirms that:  
+(a) the Agent will operate only under Mi Casa Real Estate’s license and policies;  
+(b) the Agent will not market properties or collect monies outside approved processes;  
+(c) the Agent will keep accurate records in the CRM/ERP and maintain client confidentiality;  
+(d) the Agent will promptly report any complaint, incident, suspected fraud, or data breach.
 
-3. Training and Compliance
-Mandatory Training Completed: ____________________________
-AML/KYC Training Date: _________________________________
-PDPL Awareness Training Date: ____________________________
-Fit and Proper Declaration Date: _________________________
+## 5. Review and Renewal Control
+Last Compliance Review Date: ____ / ____ / ______  
+Next Review Due Date: ____ / ____ / ______  
+Reviewer Name/Title: __________________________ Signature: __________________________
 
-4. Employment and Supervision
-Supervisor Name: ________________________________________
-Supervisor License No.: _________________________________
-Office Location: ________________________________________
-Role / Specialization: __________________________________
+## 6. Governing Law and Jurisdiction
+This internal record is maintained in Abu Dhabi and governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi.
 
-5. Supporting Documents on File
-Documents held by Compliance:
-- Emirates ID copy
-- Passport and visa copy
-- Broker card copy
-- Training certificates
-- Signed code of conduct
+---
 
-6. Notes and Exceptions
-__________________________________________________________________
-__________________________________________________________________
+## Acknowledgment Signatures
 
-7. Governing Law
-This internal record is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+**Agent**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+**Compliance / Operations (Mi Casa Real Estate)**  
+Name: __________________________  
+Title: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Signatures
-
-Compliance Officer
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Agent Acknowledgment
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Company Stamp
-[Stamp Here]
+Company Stamp (Mi Casa Real Estate): __________________________

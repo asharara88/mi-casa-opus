@@ -1,98 +1,92 @@
-Buyer / Tenant Representation Agreement
+# Buyer / Tenant Representation Agreement
+**Purpose:** To appoint Mi Casa Real Estate (MiCasa Real Estate) to represent the Client as buyer or tenant in sourcing and negotiating a property transaction and to set service scope, fees, and conduct rules.
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
+## 1. Parties
+This Buyer / Tenant Representation Agreement (the “Agreement”) is made on Date: ____ / ____ / ______.
 
-Purpose
-This agreement appoints MiCasa Real Estate to represent the Buyer and/or Tenant in locating and negotiating the purchase or lease of property in Abu Dhabi.
+**Broker:** Mi Casa Real Estate, Abu Dhabi, UAE (Commercial License CN-3762725) (the “Broker”).  
+Address: Office 1703, Al Masaood Building, Najda Street, Abu Dhabi, UAE, P.O. Box 4805  
+Email: contact@micasa.ae | Tel: +971 2 245 7987  
+VAT TRN (if applicable): 100496681600003
 
-1. Parties
-Client (Buyer / Tenant)
-Full Name: ______________________________________________
-Emirates ID / Passport No.: ______________________________
-Address: _______________________________________________
-Mobile: ________________________________________________
-Email: _________________________________________________
+**Client:** Full Name / Entity Name: __________________________ (the “Client”)  
+Emirates ID / Passport / Trade License No.: __________________________  
+Mobile: __________________________ Email: __________________________  
+Address: ___________________________________________
 
-Broker
-Company: MiCasa Real Estate
-License No.: CN-3762725
-TRN: _________________________________________________
-Address: _______________________________________________
-Representative: _________________________________________
-Mobile: ________________________________________________
-Email: _________________________________________________
+## 2. Representation Type
+The Client appoints the Broker to represent the Client as:  
+☐ Buyer (purchase) ☐ Tenant (lease) ☐ Either, depending on opportunity
 
-2. Representation Type
-This agreement applies to (select one):
-[  ] Buyer representation (purchase)
-[  ] Tenant representation (lease)
+## 3. Client Requirements
+3.1 Preferred Areas/Communities: ___________________________________________  
+3.2 Property Type: ☐ Apartment ☐ Villa ☐ Townhouse ☐ Plot ☐ Office ☐ Retail ☐ Other: ______  
+3.3 Budget:  
+(a) Purchase price up to AED ____________________ or  
+(b) Annual rent up to AED ____________________  
+3.4 Funding: ☐ Cash ☐ Mortgage ☐ Company Lease ☐ Other: __________  
+If mortgage: Bank / Broker (if known): ____________________ Pre-approval: ☐ Yes ☐ No
 
-3. Scope of Services
-The Broker shall:
-(a) Identify properties meeting the Client’s criteria.
-(b) Arrange viewings and provide market guidance.
-(c) Prepare and present offers or expressions of interest.
-(d) Coordinate negotiation and documentation to completion.
+## 4. Services
+4.1 The Broker will:  
+(a) propose suitable properties based on the Client’s criteria;  
+(b) arrange and attend viewings where reasonably required;  
+(c) assist the Client in submitting offers and negotiating commercial terms;  
+(d) coordinate documentation, NOC/clearances, and transaction steps with relevant parties;  
+(e) facilitate communications with listing brokers/owners, subject to professional conduct and applicable regulations.
 
-4. Client Requirements
-Preferred Areas: ________________________________________
-Property Type: _________________________________________
-Budget / Rent Range: ____________________________________
-Move-in / Completion Timeline: __________________________
+4.2 The Broker does not provide legal, tax, engineering, or valuation advice. The Client should appoint appropriate professionals where required.
 
-5. Exclusivity
-[  ] Exclusive representation for the term stated below.
-[  ] Non-exclusive representation.
+## 5. Exclusivity and Non-Circumvention
+5.1 Representation Basis: ☐ Exclusive ☐ Non-Exclusive  
+5.2 If Exclusive, the Client agrees that during the term the Client will not appoint another broker for the same requirement and will not directly approach owners/landlords/listing agents introduced by the Broker to avoid fees.  
+5.3 If the Client concludes a transaction for a property introduced by the Broker (directly or indirectly) during the term or within 6 months after expiry/termination, the Broker’s fee remains payable as agreed.
 
-6. Term
-Start Date: __________________________
-End Date: ____________________________
-This agreement terminates automatically at the end date unless renewed in writing.
+## 6. Fees, Commission, and VAT
+6.1 Broker Fee Payable by Client:  
+☐ Sale: ____ % of purchase price (or AED __________)  
+☐ Lease: ____ % of annual rent (or AED __________)  
+☐ Other structure: ______________________________________  
+6.2 Third-Party Commission: The Client acknowledges that in many transactions the listing broker/owner/landlord may pay brokerage commission. If such commission is paid to the Broker by a third party, the Broker may offset or waive the Client-payable fee to the extent agreed in writing.  
+6.3 If VAT is applicable, fees are: ☐ exclusive of VAT ☐ inclusive of VAT.  
+6.4 Fees become due upon:  
+(a) execution of an MOU/SPA or other binding purchase agreement; or  
+(b) execution of a lease agreement (and/or registration where applicable),  
+for a property introduced or materially negotiated by the Broker.
 
-7. Commission and Fees
-Commission Rate: ________ % of purchase price or annual rent, or
-Fixed Amount (AED): _________________________________
-Commission Payable By: [  ] Client  [  ] Seller/Landlord  [  ] Other as permitted by law
-Commission is due upon successful transfer (sale) or execution of a registered tenancy contract (lease), as applicable.
+## 7. Client Duties and Declarations
+7.1 The Client will provide accurate identification and supporting documents and will promptly disclose any constraints affecting the transaction (sanctions exposure, beneficial ownership issues, source of funds, corporate approvals, etc.).  
+7.2 The Client will not provide false documents or misrepresent financial capacity.  
+7.3 The Client acknowledges that property information provided by third parties may be subject to change and should be independently verified where critical.
 
-8. Client Obligations
-The Client shall:
-(a) Provide accurate personal and financial information.
-(b) Disclose any direct negotiations with owners or other agents.
-(c) Inform the Broker promptly of any accepted offer or lease execution.
-(d) Pay agreed commission in accordance with Section 7.
+## 8. Confidentiality and Data Use
+8.1 Each party shall keep confidential any non-public information received from the other party, except where disclosure is required for transaction completion or by law.  
+8.2 The Client consents to the Broker processing the Client’s personal data for the purposes of providing services and complying with legal obligations, subject to applicable UAE data protection requirements.
 
-9. Non-Circumvention
-The Client shall not directly negotiate with any property or party introduced by the Broker during the term and for 12 months after termination without the Broker’s written consent.
+## 9. Term and Termination
+9.1 Start Date: ____ / ____ / ______  
+9.2 End Date: ____ / ____ / ______ (if blank, 90 days from Start Date)  
+9.3 Either party may terminate by written notice. Accrued rights and fees for introduced properties remain enforceable.
 
-10. Confidentiality
-All non-public information exchanged under this agreement shall be treated as confidential and used only for the transaction purpose.
+## 10. Governing Law and Jurisdiction
+This Agreement is governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi. The courts of Abu Dhabi shall have jurisdiction.
 
-11. Governing Law
-This agreement is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+## 11. Entire Agreement
+This Agreement is the entire agreement between the parties regarding representation and supersedes prior communications or understandings.
 
-12. Entire Agreement
-This agreement constitutes the entire agreement between the parties concerning representation services and supersedes prior discussions or arrangements.
+---
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+## Signatures
 
-Signatures
+**Client**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Client (Buyer / Tenant)
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+**For and on behalf of Mi Casa Real Estate (MiCasa Real Estate)**  
+Authorized Signatory Name: __________________________  
+Title: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Broker Representative (MiCasa Real Estate)
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Company Stamp
-[Stamp Here]
+Company Stamp (Mi Casa Real Estate): __________________________

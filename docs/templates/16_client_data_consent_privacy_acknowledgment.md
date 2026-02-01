@@ -1,62 +1,103 @@
-Client Data Consent & Privacy Acknowledgment
+# Client Data Consent & Privacy Acknowledgment (PDPL)
+**Purpose:** To obtain and record the Client’s acknowledgment of Mi Casa Real Estate’s privacy practices and consent choices for processing personal data in connection with brokerage services, in accordance with UAE PDPL (Federal Decree-Law No. 45 of 2021).
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
+Date: ____ / ____ / ______  
+Client Reference (CRM/ERP): __________________________
 
-Purpose
-This document records the Client’s consent and acknowledgment regarding the collection, use, and processing of personal data by MiCasa Real Estate in compliance with UAE PDPL (Federal Decree-Law No. 45 of 2021).
+## 1. Data Controller (Who Processes Your Data)
+Mi Casa Real Estate (MiCasa Real Estate), CN-3762725, Abu Dhabi, UAE (the “Company”, “we”, “us”).  
+Contact Email (privacy): __________________________  
+Main Email: contact@micasa.ae
 
-1. Data Controller
-MiCasa Real Estate is the data controller for the personal data collected in connection with real estate brokerage services.
+## 2. Client Identification
+Client Name: __________________________  
+Emirates ID / Passport / Trade License No.: __________________________  
+Mobile: __________________________ Email: __________________________  
+Client Role: ☐ Seller ☐ Landlord ☐ Buyer ☐ Tenant ☐ Investor ☐ Other: __________
 
-2. Personal Data Collected
-The data may include identity documents, contact details, financial information, property preferences, transaction records, and communications necessary for brokerage services and regulatory compliance.
+## 3. What Data We Collect
+We may collect and process:  
+(a) identification and contact details;  
+(b) property-related information (ownership, tenancy, unit details);  
+(c) financial and transactional information (payments, invoices, bank confirmations, mortgage status);  
+(d) communications (emails, messages, call notes);  
+(e) compliance information required for legal obligations (including KYC and screening where applicable).
 
-3. Purposes of Processing
-Personal data is processed for the following purposes:
-(a) Client onboarding, verification, and KYC/AML compliance.
-(b) Property search, marketing, and transaction facilitation.
-(c) Contracting, invoicing, and regulatory reporting.
-(d) Customer service, dispute handling, and audit compliance.
+## 4. Why We Process Your Data (Purposes)
+We process your personal data to:  
+(a) provide brokerage services (listing, viewings, negotiations, documentation, and transaction coordination);  
+(b) communicate with you and respond to inquiries;  
+(c) comply with applicable laws and regulatory requirements;  
+(d) prevent fraud, protect our legal rights, and manage disputes/complaints;  
+(e) operate our CRM/ERP systems, recordkeeping, and internal controls.
 
-4. Legal Basis
-Processing is based on the Client’s consent, performance of a contract, and compliance with legal obligations under UAE law.
+## 5. Legal Basis
+We process personal data based on one or more of the following, as applicable:  
+(a) performance of a contract or taking steps at your request;  
+(b) compliance with legal obligations;  
+(c) our legitimate interests (such as service delivery, quality assurance, fraud prevention, and dispute management);  
+(d) your consent, where required or where we request it for specific uses (e.g., marketing).
 
-5. Data Sharing and Transfers
-MiCasa may share data with relevant authorities, service providers, and counterparties as required for the transaction, subject to confidentiality and lawful processing requirements. Cross-border transfers, if required, will be conducted in accordance with PDPL requirements and safeguards.
+## 6. Who We Share Data With
+We may share necessary data with:  
+(a) other brokerages/agents involved in a transaction;  
+(b) property owners/landlords/sellers and prospective buyers/tenants (as applicable);  
+(c) developers/management companies/owners associations for NOCs and clearances;  
+(d) banks/mortgage providers (where the Client requests financing);  
+(e) service providers (IT/CRM systems, marketing providers, document processors) under confidentiality and security obligations;  
+(f) competent authorities where required by law.
 
-6. Data Retention
-Personal data will be retained for the period required by applicable law and for legitimate business purposes, including audit and dispute resolution.
+## 7. Cross-Border Transfers
+Where service providers or transaction parties are located outside the UAE, your data may be transferred outside the UAE as required to deliver services. We will take reasonable steps to ensure appropriate safeguards consistent with applicable law.
 
-7. Client Rights
-The Client has the right to access, correct, request deletion (where applicable), restrict processing, and withdraw consent subject to legal and contractual obligations.
+## 8. Retention
+We retain personal data for as long as necessary for the purposes above, including compliance, audit, and dispute resolution, and then securely delete or anonymize it where appropriate.
 
-8. Contact
-For data protection inquiries, contact: ____________________________
-Email: _________________________________________________
-Phone: _________________________________________________
+## 9. Your Rights
+Subject to applicable law and limits, you may request:  
+(a) information about processing and access to your personal data;  
+(b) correction of inaccurate data;  
+(c) deletion/erasure where lawful;  
+(d) restriction of processing in certain cases;  
+(e) objection to certain processing;  
+(f) withdrawal of consent where processing is based on consent (withdrawal does not affect prior processing).
 
-9. Governing Law
-This acknowledgment is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+Requests can be submitted to: __________________________ (privacy email/contact).
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+## 10. Marketing and Contact Preferences (Consent Choices)
+Please tick your preference(s). You may change your choice at any time by written notice.
 
-Signatures
+10.1 Direct Marketing (Property Updates, Promotions):  
+☐ I CONSENT to receive marketing communications by email/WhatsApp/SMS/calls.  
+☐ I DO NOT CONSENT to receive marketing communications.
 
-Client
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+10.2 Use of Testimonials/Reviews (optional):  
+☐ I CONSENT to the use of my feedback/testimonial (without publishing my ID details).  
+☐ I DO NOT CONSENT.
 
-Broker Representative (MiCasa Real Estate)
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+10.3 Call Recording / Quality Monitoring (where used):  
+☐ I ACKNOWLEDGE that calls may be recorded/monitored for quality and compliance where applicable.  
+☐ I REQUEST that communication be by written channels only, where feasible.
 
-Company Stamp
-[Stamp Here]
+## 11. Acknowledgment
+By signing, you confirm that you have read and understood this Privacy Acknowledgment and your consent choices (where selected) are freely given.
+
+## 12. Governing Law and Jurisdiction
+This document is governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi. The courts of Abu Dhabi shall have jurisdiction.
+
+---
+
+## Signatures
+
+**Client**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
+
+**For Mi Casa Real Estate (MiCasa Real Estate)**  
+Name: __________________________  
+Title: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
+
+Company Stamp (Mi Casa Real Estate): __________________________

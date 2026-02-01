@@ -1,79 +1,57 @@
-Company Trade License & Regulatory Registration Record
+# Company Trade License & Regulatory Registration Record (Internal)
+**Purpose:** Master internal compliance record summarizing Mi Casa Real Estate’s corporate registrations, operational authorizations, and audit references.
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
+## 1. Company Identification
+Record Date: ____ / ____ / ______  
+Legal Name: Mi Casa Real Estate  
+Trading Name (if used): MiCasa Real Estate  
+Commercial Trade License No.: CN-3762725  
+Issued In: Abu Dhabi, United Arab Emirates  
+Registered Address: Office 1703, Al Masaood Building, Najda Street, Abu Dhabi, UAE, P.O. Box 4805  
+Main Email: contact@micasa.ae Main Tel: +971 2 245 7987  
+Website: www.micasa.ae
 
-Purpose
-This internal master record consolidates MiCasa Real Estate licensing, regulatory registrations, and key compliance identifiers for audit and operational reference.
+## 2. Tax Registration (VAT)
+VAT Registration Status: ☐ Registered ☐ Not Registered ☐ Group Registered  
+VAT TRN (if registered): 100496681600003  
+VAT Certificate on File: ☐ Yes ☐ No  
+Tax Invoice Series / Numbering Control Owner (Finance): __________________________
 
-1. Company Identification
-Legal Name: MiCasa Real Estate
-Trade Name: MiCasa Real Estate
-Company Registration No. (CN): 3762725
-Trade License No.: ______________________________
-Issuing Authority: ______________________________
-Trade License Issue Date: ________________________
-Trade License Expiry Date: _______________________
-Office Address: __________________________________
-Telephone: ______________________________________
-Email: __________________________________________
+## 3. Banking and Collections Controls (Summary)
+Approved Company Bank Accounts for Client Payments (if any):  
+Bank Name: __________________________ IBAN: __________________________  
+Bank Name: __________________________ IBAN: __________________________  
+Cash Handling Policy Reference: __________________________  
+Receipt Issuance Control: ☐ Finance Only ☐ Finance + Authorized Managers
 
-2. Regulatory Registrations
-Abu Dhabi DMT / ADM Registration No.: ____________
-Activities Registered: ___________________________
-Registration Status: ____________________________
-Renewal Date: ___________________________________
+## 4. Authorized Signatories (Internal Control)
+Signatory 1 Name: __________________________ Title: __________________________ Specimen Signature on File: ☐ Yes  
+Signatory 2 Name: __________________________ Title: __________________________ Specimen Signature on File: ☐ Yes  
+Authority Limits / Approvals Matrix Reference: __________________________
 
-3. Tax Registration
-TRN (UAE VAT): __________________________________
-Tax Registration Date: ___________________________
-VAT Filing Cycle: ________________________________
-FTA Portal Username (internal): ___________________
+## 5. Operational Compliance Documents (On File)
+(a) Corporate trade license copy (current): ☐ Yes  
+(b) Office lease / tenancy (if applicable): ☐ Yes  
+(c) Policies: AML/KYC, sanctions screening, PDPL privacy, complaints handling, commissions and payroll controls: ☐ Yes  
+(d) Templates in use (Form A equivalent, representation agreement, MOU, invoices): ☐ Yes  
+(e) Staff/agent register (active): ☐ Yes
 
-4. Banking and Financial Controls
-Primary Bank: ____________________________________
-Account Name: ___________________________________
-Account Number / IBAN: ___________________________
-Authorized Signatories: __________________________
+## 6. Governing Law and Jurisdiction
+This internal record is maintained in Abu Dhabi and governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi.
 
-5. Compliance Contacts
-Compliance Officer: ______________________________
-Finance Lead: ____________________________________
-Data Protection Contact: __________________________
+---
 
-6. Supporting Documents on File
-Documents held by Compliance:
-- Trade license copy
-- DMT/ADM registration certificate
-- VAT registration certificate
-- Office lease/tenancy contract
-- Professional indemnity (if applicable)
+## Sign-Off
 
-7. Notes and Exceptions
-__________________________________________________________________
-__________________________________________________________________
+**Prepared By (Operations/Compliance)**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-8. Governing Law
-This internal record is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+**Approved By (Management)**  
+Name: __________________________  
+Title: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
-
-Signatures
-
-Authorized Signatory
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Compliance Officer
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Company Stamp
-[Stamp Here]
+Company Stamp (Mi Casa Real Estate): __________________________
