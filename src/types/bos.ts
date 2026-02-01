@@ -411,24 +411,28 @@ export const DEAL_STATE_REQUIREMENTS: Record<DealState, DealStateRequirement> = 
 // ============================================
 // 8️⃣ DOCUMENT TEMPLATE (Read-only after publish)
 // ============================================
+// Doc types matching database enum
 export type DocType = 
-  | 'OfferLetter' 
-  | 'ReservationForm' 
+  | 'MOU'
   | 'SPA' 
+  | 'Reservation' 
+  | 'Mandate' 
   | 'ICA' 
-  | 'MandateAgreement' 
-  | 'ViewingConfirmation'
-  | 'NOCApplication'
-  | 'HandoverCertificate';
+  | 'NDA'
+  | 'POA'
+  | 'CommissionInvoice'
+  | 'Receipt'
+  | 'Other';
 
 export interface DocumentTemplate {
   template_id: string;
+  name: string;
   doc_type: DocType;
-  template_version: number;
+  template_version: number | string;
   effective_from: string;
   required_signers_schema: {
     roles: string[];
-    min_signers: number;
+    min_signers?: number;
   };
   data_binding_schema: Record<string, string>;
   template_content: string;
