@@ -4,11 +4,11 @@ Purpose
 This agreement sets the terms for cooperation between MI CASA REALESTATE and another licensed broker or agency for a specific transaction or ongoing cooperation, including commission sharing, non-circumvention, and confidentiality.
 
 1. Parties
-MI CASA REALESTATE - مؤسسة فردية
-License No.: CN-5220826
-TRN: 104329382600003
+MI CASA REALESTATE - مي كاسا للعقارات
+License No.: CN-3762725
+TRN: 100496681600003
 Representative: _________________________________________
-Email: info@micasarealestate.ae
+Email: contact@micasa.ae
 
 Cooperating Broker / Agency
 Legal Name: ____________________________________________

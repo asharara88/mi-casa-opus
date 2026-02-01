@@ -12,12 +12,12 @@ Mobile: ________________________________________________
 Email: _________________________________________________
 
 Broker
-Company: MI CASA REALESTATE - مؤسسة فردية
-License No.: CN-5220826
-TRN: 104329382600003
+Company: MI CASA REALESTATE - مي كاسا للعقارات
+License No.: CN-3762725
+TRN: 100496681600003
 Representative: _________________________________________
-Mobile: +971 2 447 0028
-Email: info@micasarealestate.ae
+Tel: +971 2 245 7987
+Email: contact@micasa.ae
 
 2. Property Details
 Property Type: __________________________________________
