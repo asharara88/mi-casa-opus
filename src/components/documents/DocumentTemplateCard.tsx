@@ -1,4 +1,3 @@
-import { DocumentTemplate, DocType } from '@/types/bos';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,12 +11,27 @@ import {
   Hash
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { DocType } from '@/types/bos';
+
+// Define a flexible template type for the card
+export interface DocumentTemplateCardData {
+  template_id: string;
+  name?: string;
+  doc_type: DocType;
+  template_version: string | number;
+  effective_from: string;
+  required_signers_schema?: { roles?: string[]; min_signers?: number } | null;
+  data_binding_schema?: Record<string, unknown> | null;
+  template_content?: string;
+  is_published: boolean;
+  created_at?: string;
+}
 
 interface DocumentTemplateCardProps {
-  template: DocumentTemplate;
-  onView: (template: DocumentTemplate) => void;
-  onEdit?: (template: DocumentTemplate) => void;
-  onDuplicate?: (template: DocumentTemplate) => void;
+  template: DocumentTemplateCardData;
+  onView: (template: DocumentTemplateCardData) => void;
+  onEdit?: (template: DocumentTemplateCardData) => void;
+  onDuplicate?: (template: DocumentTemplateCardData) => void;
 }
 
 // Colors for doc types matching database enum
