@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Sparkles, 
@@ -9,14 +8,20 @@ import {
   Copy, 
   Check, 
   Loader2,
-  FileCheck,
   RefreshCw,
-  ArrowLeft
+  ArrowLeft,
+  Rocket,
+  FolderOpen,
+  Lock
 } from "lucide-react";
 import { toast } from "sonner";
 import { useDocumentGenerator, useManifestPrompts } from "@/hooks/useManifestExecutor";
 import { TemplateBrowser } from "./TemplateBrowser";
 import { FormWizard } from "./FormWizard";
+import { WorkflowWizard, type WorkflowType } from "./WorkflowWizard";
+import { QuickAccessGrid } from "./QuickAccessGrid";
+import { TemplatePreviewModal } from "./TemplatePreviewModal";
+import { useMiCasaDefaults, addRecentTemplate } from "@/hooks/useMiCasaDefaults";
 
 interface DocumentGeneratorPanelProps {
   entityType?: string;
@@ -26,7 +31,7 @@ interface DocumentGeneratorPanelProps {
   onDocumentGenerated?: (documentId: string, title: string) => void;
 }
 
-type ViewState = "browse" | "form" | "preview";
+type ViewState = "home" | "workflow" | "browse" | "form" | "preview";
 
 export function DocumentGeneratorPanel({
   entityType,
@@ -39,10 +44,12 @@ export function DocumentGeneratorPanel({
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [generatedDoc, setGeneratedDoc] = useState<{ title: string; body: string } | null>(null);
   const [copied, setCopied] = useState(false);
-  const [viewState, setViewState] = useState<ViewState>("browse");
+  const [viewState, setViewState] = useState<ViewState>("home");
+  const [previewPrompt, setPreviewPrompt] = useState<{ prompt: typeof prompts[0] | null; isStatic: boolean }>({ prompt: null, isStatic: false });
 
   const { prompts, fetchPrompts, isLoading: isLoadingPrompts } = useManifestPrompts();
   const { generateDocument, isLoading: isGenerating, error } = useDocumentGenerator();
+  const { getPrefilledData } = useMiCasaDefaults();
 
   // Fetch all prompts on mount
   useEffect(() => {
@@ -56,23 +63,47 @@ export function DocumentGeneratorPanel({
 
   // Apply prefilled data when template changes
   useEffect(() => {
-    if (prefilledData && selectedTemplate) {
-      setFormData(prev => ({ ...prev, ...prefilledData }));
+    if (selectedTemplate) {
+      const defaults = getPrefilledData(selectedTemplate);
+      setFormData(prev => ({ ...defaults, ...prefilledData, ...prev }));
     }
-  }, [prefilledData, selectedTemplate]);
+  }, [selectedTemplate, prefilledData, getPrefilledData]);
 
   const selectedPrompt = prompts.find(p => p.prompt_id === selectedTemplate);
   const isStaticTemplate = selectedTemplate?.startsWith("STATIC_") || false;
 
   const handleTemplateSelect = async (templateId: string) => {
-    setSelectedTemplate(templateId);
+    const prompt = prompts.find(p => p.prompt_id === templateId);
+    if (!prompt) return;
+
+    // Show preview modal first
+    setPreviewPrompt({ prompt, isStatic: templateId.startsWith("STATIC_") });
+  };
+
+  const handleOfficialFormSelect = async (templateId: string) => {
+    const prompt = prompts.find(p => p.prompt_id === templateId);
+    if (!prompt) return;
+
+    // Show preview modal for static forms
+    setPreviewPrompt({ prompt, isStatic: true });
+  };
+
+  const handleStartFormFromPreview = async () => {
+    const { prompt, isStatic } = previewPrompt;
+    if (!prompt) return;
+
+    setPreviewPrompt({ prompt: null, isStatic: false });
+    setSelectedTemplate(prompt.prompt_id);
     setFormData({});
     setGeneratedDoc(null);
     
+    // Track in recent
+    addRecentTemplate(prompt.prompt_id, prompt.title);
+    
     // For static templates, skip form and generate immediately
-    if (templateId.startsWith("STATIC_")) {
+    if (isStatic) {
       setViewState("form"); // Show loading state briefly
-      const result = await generateDocument(templateId, {}, entityType, entityId);
+      const result = await generateDocument(prompt.prompt_id, {}, entityType, entityId);
       if (result) {
         setGeneratedDoc({ title: result.title, body: result.body });
         setViewState("preview");
@@ -83,8 +114,8 @@ export function DocumentGeneratorPanel({
     }
   };
 
-  const handleBackToBrowse = () => {
-    setViewState("browse");
+  const handleBackToHome = () => {
+    setViewState("home");
     setSelectedTemplate(null);
     setFormData({});
     setGeneratedDoc(null);
@@ -159,16 +190,56 @@ export function DocumentGeneratorPanel({
     setViewState("form");
   };
 
+  // Header title and description based on view state
+  const getHeaderContent = () => {
+    switch (viewState) {
+      case "home":
+        return {
+          title: "Generate Documents",
+          description: "Create ADM-compliant documents and forms",
+          icon: <Sparkles className="h-5 w-5 text-primary" />
+        };
+      case "workflow":
+        return {
+          title: "Guided Workflow",
+          description: "Step-by-step document generation",
+          icon: <Rocket className="h-5 w-5 text-primary" />
+        };
+      case "browse":
+        return {
+          title: "Browse Templates",
+          description: "Search and select from all available templates",
+          icon: <FolderOpen className="h-5 w-5 text-primary" />
+        };
+      case "form":
+        return {
+          title: selectedPrompt?.title || "Document Form",
+          description: selectedPrompt?.purpose || "Fill in the required fields",
+          icon: isStaticTemplate 
+            ? <Lock className="h-5 w-5 text-amber-500" />
+            : <Sparkles className="h-5 w-5 text-primary" />
+        };
+      case "preview":
+        return {
+          title: generatedDoc?.title || "Generated Document",
+          description: "Review and export your document",
+          icon: <Check className="h-5 w-5 text-emerald-500" />
+        };
+    }
+  };
+
+  const headerContent = getHeaderContent();
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-3 border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {viewState !== "browse" && (
+            {viewState !== "home" && (
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={handleBackToBrowse}
+                onClick={handleBackToHome}
                 className="h-8 w-8"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -176,15 +247,11 @@ export function DocumentGeneratorPanel({
             )}
             <div>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Sparkles className="h-5 w-5 text-primary" />
-                {viewState === "browse" && "Document Generator"}
-                {viewState === "form" && selectedPrompt?.title}
-                {viewState === "preview" && generatedDoc?.title}
+                {headerContent.icon}
+                {headerContent.title}
               </CardTitle>
               <CardDescription>
-                {viewState === "browse" && "Search and select a template to generate ADM-compliant documents"}
-                {viewState === "form" && selectedPrompt?.purpose}
-                {viewState === "preview" && "Review and export your generated document"}
+                {headerContent.description}
               </CardDescription>
             </div>
           </div>
@@ -206,14 +273,76 @@ export function DocumentGeneratorPanel({
 
       <CardContent className="p-6">
         {/* Loading State */}
-        {isLoadingPrompts && viewState === "browse" && (
+        {isLoadingPrompts && viewState === "home" && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         )}
 
-        {/* Browse Templates View */}
-        {viewState === "browse" && !isLoadingPrompts && (
+        {/* Home View - Mode Selection */}
+        {viewState === "home" && !isLoadingPrompts && (
+          <div className="space-y-6">
+            {/* Mode Selection Buttons */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Button
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2 hover:border-primary hover:bg-primary/5"
+                onClick={() => setViewState("workflow")}
+              >
+                <Rocket className="h-6 w-6 text-primary" />
+                <div className="text-center">
+                  <p className="font-medium">Start Workflow</p>
+                  <p className="text-xs text-muted-foreground">Guided step-by-step</p>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2 hover:border-primary hover:bg-primary/5"
+                onClick={() => setViewState("browse")}
+              >
+                <FolderOpen className="h-6 w-6 text-primary" />
+                <div className="text-center">
+                  <p className="font-medium">Browse Templates</p>
+                  <p className="text-xs text-muted-foreground">Search all templates</p>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2 hover:border-amber-500 hover:bg-amber-50"
+                onClick={() => {
+                  // Quick access to official forms via browse
+                  setViewState("browse");
+                }}
+              >
+                <Lock className="h-6 w-6 text-amber-500" />
+                <div className="text-center">
+                  <p className="font-medium">Official Forms</p>
+                  <p className="text-xs text-muted-foreground">ADM regulatory forms</p>
+                </div>
+              </Button>
+            </div>
+
+            {/* Quick Access Grid */}
+            <QuickAccessGrid
+              prompts={prompts}
+              onSelectTemplate={handleTemplateSelect}
+              onSelectOfficialForm={handleOfficialFormSelect}
+              dealType={dealType}
+            />
+          </div>
+        )}
+
+        {/* Workflow View */}
+        {viewState === "workflow" && (
+          <WorkflowWizard
+            prompts={prompts}
+            onSelectTemplate={handleTemplateSelect}
+            onBack={handleBackToHome}
+          />
+        )}
+
+        {/* Browse View */}
+        {viewState === "browse" && (
           <TemplateBrowser
             prompts={prompts}
             selectedTemplate={selectedTemplate}
@@ -263,6 +392,15 @@ export function DocumentGeneratorPanel({
             </div>
           </div>
         )}
+
+        {/* Template Preview Modal */}
+        <TemplatePreviewModal
+          prompt={previewPrompt.prompt}
+          open={!!previewPrompt.prompt}
+          onOpenChange={(open) => !open && setPreviewPrompt({ prompt: null, isStatic: false })}
+          onStartForm={handleStartFormFromPreview}
+          isStatic={previewPrompt.isStatic}
+        />
       </CardContent>
     </Card>
   );

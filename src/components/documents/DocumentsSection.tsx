@@ -3,7 +3,6 @@ import { useDocumentTemplates, useDocumentInstances } from '@/hooks/useDocuments
 import { DocumentTemplateCard } from './DocumentTemplateCard';
 import { DocumentInstanceRow } from './DocumentInstanceRow';
 import { DocumentGeneratorPanel } from './DocumentGeneratorPanel';
-import { OfficialFormsPanel } from './OfficialFormsPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -17,8 +16,7 @@ import {
   Filter,
   FolderOpen,
   Loader2,
-  Sparkles,
-  Lock
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -178,13 +176,9 @@ export function DocumentsSection() {
           <TabsList>
             <TabsTrigger value="instances">Documents</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
-            <TabsTrigger value="official" className="gap-1.5">
-              <Lock className="w-3.5 h-3.5" />
-              Official Forms
-            </TabsTrigger>
             <TabsTrigger value="generator" className="gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
-              AI Generator
+              Generate Documents
             </TabsTrigger>
           </TabsList>
 
@@ -289,18 +283,7 @@ export function DocumentsSection() {
           )}
         </TabsContent>
 
-        {/* Official Forms Tab */}
-        <TabsContent value="official" className="mt-0">
-          <OfficialFormsPanel
-            onDocumentGenerated={(docId, title) => {
-              toast.success(`Form generated: ${title}`, {
-                description: `ID: ${docId}`,
-              });
-            }}
-          />
-        </TabsContent>
-
-        {/* AI Generator Tab */}
+        {/* Generate Documents Tab (Consolidated) */}
         <TabsContent value="generator" className="mt-0">
           <DocumentGeneratorPanel
             onDocumentGenerated={(docId, title) => {
