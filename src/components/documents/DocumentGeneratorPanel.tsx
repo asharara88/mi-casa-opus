@@ -45,21 +45,17 @@ export function DocumentGeneratorPanel({
   const [generatedDoc, setGeneratedDoc] = useState<{ title: string; body: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [viewState, setViewState] = useState<ViewState>("home");
+  const [previousViewState, setPreviousViewState] = useState<ViewState | null>(null);
   const [previewPrompt, setPreviewPrompt] = useState<{ prompt: typeof prompts[0] | null; isStatic: boolean }>({ prompt: null, isStatic: false });
 
-  const { prompts, fetchPrompts, isLoading: isLoadingPrompts } = useManifestPrompts();
+  const { prompts, fetchAllPrompts, isLoading: isLoadingPrompts } = useManifestPrompts();
   const { generateDocument, isLoading: isGenerating, error } = useDocumentGenerator();
   const { getPrefilledData } = useMiCasaDefaults();
 
-  // Fetch all prompts on mount
+  // Fetch all prompts on mount (single call)
   useEffect(() => {
-    fetchPrompts("STATIC_TEMPLATES");
-    fetchPrompts("DOCUMENT_TEMPLATES");
-    fetchPrompts("CHECKLISTS");
-    fetchPrompts("COMPLIANCE");
-    fetchPrompts("ADMIN_OPS");
-    fetchPrompts("WORKFLOW_GATES");
-  }, [fetchPrompts]);
+    fetchAllPrompts();
+  }, [fetchAllPrompts]);
 
   // Apply prefilled data when template changes
   useEffect(() => {
@@ -76,6 +72,8 @@ export function DocumentGeneratorPanel({
     const prompt = prompts.find(p => p.prompt_id === templateId);
     if (!prompt) return;
 
+    // Track where we came from
+    setPreviousViewState(viewState);
     // Show preview modal first
     setPreviewPrompt({ prompt, isStatic: templateId.startsWith("STATIC_") });
   };
@@ -84,6 +82,8 @@ export function DocumentGeneratorPanel({
     const prompt = prompts.find(p => p.prompt_id === templateId);
     if (!prompt) return;
 
+    // Track where we came from
+    setPreviousViewState(viewState);
     // Show preview modal for static forms
     setPreviewPrompt({ prompt, isStatic: true });
   };
@@ -114,8 +114,23 @@ export function DocumentGeneratorPanel({
     }
   };
 
+  const handleBack = () => {
+    // Return to previous view (workflow or home)
+    if (viewState === "form" || viewState === "preview") {
+      const returnTo = previousViewState || "home";
+      setViewState(returnTo);
+      setSelectedTemplate(null);
+      setFormData({});
+      setGeneratedDoc(null);
+    } else {
+      setViewState("home");
+      setPreviousViewState(null);
+    }
+  };
+
   const handleBackToHome = () => {
     setViewState("home");
+    setPreviousViewState(null);
     setSelectedTemplate(null);
     setFormData({});
     setGeneratedDoc(null);
@@ -239,7 +254,7 @@ export function DocumentGeneratorPanel({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={handleBackToHome}
+                onClick={viewState === "form" || viewState === "preview" ? handleBack : handleBackToHome}
                 className="h-8 w-8"
               >
                 <ArrowLeft className="h-4 w-4" />
