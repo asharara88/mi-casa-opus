@@ -1,191 +1,138 @@
 
-# Document Generator UX Enhancement Plan
 
-## Problem Summary
-The current document system has:
-- Separate tabs that can confuse users (Official Forms vs AI Generator)
-- No guided workflow for deal sequences
-- No smart prefilling of common data (MiCasa company details)
-- Users must know which template they need upfront
-- No preview before committing to a form
+# Manifest v1.0.2 Database Synchronization Plan
 
-## Solution Overview
+## Objective
+Align the `bos_manifest_prompts` table with the provided manifest v1.0.2 JSON, ensuring all 16 core prompts have the exact prompt text, input/output schemas, and refusal policies as defined.
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                    DOCUMENT CENTER                               │
-├─────────────────────────────────────────────────────────────────┤
-│  [Documents] [Templates] [Generate Documents]                    │
-│                            ↓                                     │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  🚀 Start a Workflow                                      │  │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐         │  │
-│  │  │ 🏠 Sales    │ │ 🔑 Leasing  │ │ 🤝 Co-Broker│         │  │
-│  │  │   Deal      │ │   Deal      │ │   Setup     │         │  │
-│  │  └─────────────┘ └─────────────┘ └─────────────┘         │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                                                                  │
-│  📋 Quick Access                                                │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │ 🔒 Official Forms    │ ✨ Smart Templates   │ 📁 Recent  │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-```
+## Current State Analysis
+
+The database has **36 active prompts** while manifest v1.0.2 defines **16 core prompts**. The extended templates (CHECKLISTS, STATIC_TEMPLATES, extra DOCUMENT_TEMPLATES) will be preserved as they provide additional functionality.
+
+### Prompts Requiring Updates
+
+| Prompt ID | Field(s) to Update |
+|-----------|-------------------|
+| `MICASA_BOS_ROOT` | `prompt`, `output_schema` (add `acknowledgement`) |
+| `DOC_BROKERAGE_SALES` | `prompt`, `input_schema`, `refusal_policy` |
+| `DOC_BROKERAGE_LEASING` | `prompt`, `input_schema`, `refusal_policy` |
+| `DOC_AGENT_TO_AGENT_MASTER` | `prompt`, `input_schema` |
+| `DOC_AGENT_TO_AGENT_ANNEX` | `prompt`, `input_schema`, `refusal_policy` |
+| `DOC_BUYER_OFFER` | `prompt`, `input_schema` |
+| `DOC_TENANT_OFFER` | `prompt`, `input_schema` |
+| `DOC_COMMISSION_INVOICE` | `prompt`, `input_schema`, `refusal_policy` |
+| `DOC_COMMISSION_SPLIT` | `title`, `prompt`, `input_schema`, `refusal_policy` |
+| `FLOW_SALES_GATE` | `prompt`, `input_schema`, `output_schema` |
+| `FLOW_LEASING_GATE` | `prompt`, `input_schema`, `output_schema` |
+| `AML_SALES_CHECK` | `prompt`, `input_schema`, `output_schema` |
+| `KYC_LEASING_CHECK` | `prompt`, `input_schema`, `output_schema` |
+| `COMPLIANCE_PORTALS_MAP` | `title`, `prompt`, `input_schema`, `output_schema` |
+| `ADMIN_DOC_INDEX` | `prompt`, `input_schema`, `output_schema` |
+| `ADMIN_AUDIT_EXPORT` | `prompt`, `input_schema`, `output_schema` |
 
 ---
 
 ## Implementation Tasks
 
-### Phase 1: Unified Generator Tab (Rename & Consolidate)
+### Task 1: Create Database Migration
 
-**Task 1.1: Rename "AI Generator" tab to "Generate Documents"**
-- Remove the separate "Official Forms" tab
-- Consolidate both into a single "Generate Documents" tab
-- Clearer label that doesn't confuse non-technical users
+Create a new migration file that uses `INSERT ... ON CONFLICT` (upsert) for each of the 16 manifest prompts.
 
-**Files Modified:**
-- `src/components/documents/DocumentsSection.tsx`
+**File:** `supabase/migrations/[timestamp]_sync_manifest_v102.sql`
 
----
-
-### Phase 2: Workflow Wizard Component
-
-**Task 2.1: Create `WorkflowWizard.tsx`**
-A guided experience that walks users through recommended template sequences based on deal type.
-
-**Features:**
-- Three workflow buttons: **Sales Deal**, **Leasing Deal**, **Co-Broker Setup**
-- Shows step progress (e.g., "Step 2 of 7: AML Check")
-- Auto-proceeds to next template after each generation
-- Skip button for optional steps
-- Visual checklist of completed documents
-
-**Workflow Sequences (from manifest):**
+**SQL Strategy:**
 ```text
-Sales Deal:
-1. DOC_BROKERAGE_SALES (Brokerage Agreement)
-2. AML_SALES_CHECK (AML Assessment)
-3. DOC_BUYER_OFFER (Offer Letter)
-4. DOC_COMMISSION_INVOICE (Invoice)
-5. DOC_COMMISSION_SPLIT (Split Confirmation)
-6. ADMIN_DOC_INDEX (Document Index)
-
-Leasing Deal:
-1. DOC_BROKERAGE_LEASING (Brokerage Agreement)
-2. KYC_LEASING_CHECK (KYC Check)
-3. DOC_TENANT_OFFER (Tenant Intent)
-4. DOC_COMMISSION_INVOICE (Invoice)
-5. DOC_COMMISSION_SPLIT (Split Confirmation)
-6. ADMIN_DOC_INDEX (Document Index)
-
-Co-Broker Setup:
-1. DOC_AGENT_TO_AGENT_MASTER (Master Agreement)
-2. DOC_AGENT_TO_AGENT_ANNEX (Property Annex)
+INSERT INTO bos_manifest_prompts (prompt_id, group_name, sort_order, title, purpose, prompt, input_schema, output_schema, refusal_policy, depends_on, tags)
+VALUES (...)
+ON CONFLICT (prompt_id) DO UPDATE SET
+  group_name = EXCLUDED.group_name,
+  sort_order = EXCLUDED.sort_order,
+  title = EXCLUDED.title,
+  purpose = EXCLUDED.purpose,
+  prompt = EXCLUDED.prompt,
+  input_schema = EXCLUDED.input_schema,
+  output_schema = EXCLUDED.output_schema,
+  refusal_policy = EXCLUDED.refusal_policy,
+  depends_on = EXCLUDED.depends_on,
+  tags = EXCLUDED.tags,
+  updated_at = now();
 ```
 
-**Files Created:**
-- `src/components/documents/WorkflowWizard.tsx`
+This ensures:
+- Existing prompts get updated to match manifest exactly
+- No data loss for extended prompts (STATIC_TEMPLATES, CHECKLISTS, etc.)
+- Clean audit trail via `updated_at`
 
 ---
 
-### Phase 3: Improved Template Browser
+### Task 2: Update Manifest Types (if needed)
 
-**Task 3.1: Create `QuickAccessGrid.tsx`**
-Replace the current "Quick Start" with a cleaner three-section layout:
+Review `src/types/manifest.ts` to ensure `ManifestGroup` type includes all groups:
 
-| Section | Content |
-|---------|---------|
-| 🔒 Official Forms | Static ADM forms (Form A, Form B, NDA, etc.) - instant download |
-| ✨ Smart Templates | AI-generated documents (Brokerage, Offers, Invoices) |
-| 📁 Recently Used | Last 5 templates user generated (stored in localStorage) |
-
-**Task 3.2: Add Template Preview Modal**
-Before starting a form, show:
-- Template purpose (what it's for)
-- Required fields summary
-- Sample output preview (first 10 lines)
-- "Start Form" / "Cancel" buttons
-
-**Files Created:**
-- `src/components/documents/QuickAccessGrid.tsx`
-- `src/components/documents/TemplatePreviewModal.tsx`
-
----
-
-### Phase 4: Smart Form Prefilling
-
-**Task 4.1: Create `useMiCasaDefaults.ts` hook**
-Auto-populate common MiCasa company fields:
-
-```text
-Prefilled Values:
-- micasa.legal_name: "MiCasa Real Estate LLC"
-- micasa.license_no: "[From environment/config]"
-- micasa.address: "Abu Dhabi, UAE"
-- micasa.email: "info@micasa.ae"
-- micasa.phone: "+971 XX XXX XXXX"
-- micasa.vat_registered: false
+```typescript
+export type ManifestGroup = 
+  | 'SYSTEM' 
+  | 'DOCUMENT_TEMPLATES' 
+  | 'WORKFLOW_GATES' 
+  | 'COMPLIANCE' 
+  | 'ADMIN_OPS'
+  | 'STATIC_TEMPLATES'  // Keep for locked forms
+  | 'CHECKLISTS';       // Keep for operational checklists
 ```
 
-**Task 4.2: Enhance `FormWizard.tsx`**
-- Add field descriptions/help text from schema
-- Better date picker with calendar
-- Auto-format currency fields (AED)
-- Required field validation before next step
-- "Save Draft" button for long forms
+---
 
-**Files Created:**
-- `src/hooks/useMiCasaDefaults.ts`
+### Task 3: Verify Edge Function Compatibility
 
-**Files Modified:**
-- `src/components/documents/FormWizard.tsx`
+Ensure `supabase/functions/bos-manifest-executor/index.ts` handles the updated output schema for:
+- `AML_SALES_CHECK` now has `escalate_to_compliance` instead of `goaml_trigger_likely`
+- Workflow gates return `status` ("APPROVED"/"BLOCKED") consistently
 
 ---
 
-### Phase 5: Enhanced Official Forms Panel
+## Migration SQL Preview
 
-**Task 5.1: Improve `OfficialFormsPanel.tsx`**
-- Add instant preview (expand/collapse document content)
-- One-click copy to clipboard
-- Download as PDF-ready text file
-- Clear visual grouping (Sales Forms / Leasing Forms / General)
+The migration will contain 16 upsert statements. Example for `DOC_COMMISSION_SPLIT`:
 
----
+```sql
+INSERT INTO bos_manifest_prompts (
+  prompt_id, group_name, sort_order, title, purpose, prompt,
+  input_schema, output_schema, refusal_policy, depends_on, tags
+) VALUES (
+  'DOC_COMMISSION_SPLIT',
+  'DOCUMENT_TEMPLATES',
+  17,
+  'Commission Split Confirmation',
+  'Generate split confirmation with reconciliation using caller-provided totals (no arithmetic assumptions).',
+  'Generate a Commission Split Confirmation.
 
-## Updated Document Generator Flow
+Hard gate:
+- Splits must reconcile using provided totals.
+- Do not compute sums; compare provided splits_total_aed against the relevant commission total.
+- If mismatch, refuse.
 
-```text
-User opens "Generate Documents" tab
-           │
-           ▼
-┌─────────────────────────────────────┐
-│  How would you like to proceed?     │
-│                                     │
-│  [🚀 Start Workflow]                │  ← Guided step-by-step
-│  [📋 Browse Templates]              │  ← Manual selection
-│  [🔒 Official Forms]                │  ← Static documents
-└─────────────────────────────────────┘
-           │
-     (User choice)
-           │
-           ▼
-    ┌──────┴──────┐
-    │             │
-Workflow      Browse/Forms
-    │             │
-    ▼             ▼
-Step-by-step  Template cards
-wizard        with preview
-    │             │
-    └──────┬──────┘
-           │
-           ▼
-      Form Wizard
-   (with prefilled data)
-           │
-           ▼
-    Generated Document
-    (Copy / Download)
+Include:
+- deal details, commission amounts, split basis (gross/net), split lines, approvals.
+
+Output:
+- Return JSON only.
+- document_body must be a single copy-paste-ready document.',
+  '{"type":"object","required":["deal","commission","splits"],...}'::jsonb,
+  '{"type":"object","properties":{"document_title":{"type":"string"},"document_body":{"type":"string"}},"required":["document_title","document_body"],"additionalProperties":false}'::jsonb,
+  '{"must_refuse_if":["splits.basis is ''net'' and splits_total_aed does not equal commission.net_aed","splits.basis is ''gross'' and splits_total_aed does not equal commission.gross_aed"],"refusal_style":"State reconciliation failure and stop."}'::jsonb,
+  ARRAY['MICASA_BOS_ROOT'],
+  ARRAY['template','finance','splits']
+)
+ON CONFLICT (prompt_id) DO UPDATE SET
+  title = EXCLUDED.title,
+  purpose = EXCLUDED.purpose,
+  prompt = EXCLUDED.prompt,
+  input_schema = EXCLUDED.input_schema,
+  output_schema = EXCLUDED.output_schema,
+  refusal_policy = EXCLUDED.refusal_policy,
+  depends_on = EXCLUDED.depends_on,
+  tags = EXCLUDED.tags,
+  updated_at = now();
 ```
 
 ---
@@ -194,51 +141,28 @@ wizard        with preview
 
 | File | Action | Description |
 |------|--------|-------------|
-| `DocumentsSection.tsx` | Modify | Consolidate tabs, rename to "Generate Documents" |
-| `DocumentGeneratorPanel.tsx` | Modify | Add mode selector (Workflow/Browse/Forms) |
-| `WorkflowWizard.tsx` | Create | Guided deal workflow component |
-| `QuickAccessGrid.tsx` | Create | Three-section template layout |
-| `TemplatePreviewModal.tsx` | Create | Preview before form entry |
-| `useMiCasaDefaults.ts` | Create | Company data prefill hook |
-| `OfficialFormsPanel.tsx` | Modify | Add preview expand, better grouping |
-| `FormWizard.tsx` | Modify | Add help text, better validation, save draft |
-| `TemplateBrowser.tsx` | Modify | Add "Recently Used" tracking |
+| `supabase/migrations/[timestamp]_sync_manifest_v102.sql` | Create | 16 upsert statements for manifest alignment |
+| `src/types/manifest.ts` | Review | Ensure ManifestGroup type is complete |
+| `supabase/functions/bos-manifest-executor/index.ts` | Review | Verify AML output field handling |
 
 ---
 
-## Technical Details
+## Technical Notes
 
-### localStorage Schema for Recent Templates
-```typescript
-interface RecentTemplate {
-  prompt_id: string;
-  title: string;
-  usedAt: string; // ISO date
-}
-// Key: "micasa_recent_templates"
-// Max items: 5
-```
+### Key Schema Changes from Manifest v1.0.2
 
-### Workflow State Machine
-```typescript
-interface WorkflowState {
-  type: "sales" | "leasing" | "co_broker";
-  currentStep: number;
-  completedSteps: string[]; // prompt_ids
-  skippedSteps: string[];
-  generatedDocs: Array<{ id: string; title: string }>;
-}
-```
+1. **AML_SALES_CHECK Output**: Now includes `escalate_to_compliance` (boolean) instead of `goaml_trigger_likely`
+2. **KYC_LEASING_CHECK Output**: Returns `status` ("COMPLETE"/"INCOMPLETE") consistently
+3. **COMPLIANCE_PORTALS_MAP**: Input schema adds `portals_hint` array for caller-provided portal names
+4. **All Document Templates**: Explicit `additionalProperties: false` on output schema for stricter validation
 
----
+### Preserved Extended Templates
 
-## UX Improvements Summary
+The following will remain untouched (not in manifest but useful):
+- `STATIC_*` templates (7 locked forms)
+- `CHECKLIST_*` templates (3 operational checklists)
+- `DOC_SELLER_MANDATE`, `DOC_LANDLORD_MANDATE`
+- `DOC_VIEWING_CONFIRMATION`, `DOC_NOC_REQUEST`, `DOC_PAYMENT_RECEIPT`, `DOC_HANDOVER_CHECKLIST`
+- `CONTROL_*` compliance controls
+- `REF_NON_NEGOTIABLE_RULES`
 
-| Before | After |
-|--------|-------|
-| Two confusing tabs (Official Forms + AI Generator) | Single "Generate Documents" tab with clear modes |
-| No guidance on which template to use | Workflow wizard for Sales/Leasing/Co-Broker deals |
-| Must fill MiCasa details every time | Smart prefilling of company data |
-| No preview before starting form | Preview modal with sample output |
-| No memory of past usage | "Recently Used" section |
-| Basic form with no help | Enhanced form with descriptions and validation |
