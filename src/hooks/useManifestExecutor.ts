@@ -200,32 +200,30 @@ export function useManifestPrompts() {
   const [prompts, setPrompts] = useState<ManifestPrompt[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasFetched, setHasFetched] = useState(false);
 
-  const fetchPrompts = useCallback(async (group?: string) => {
+  // Fetch all prompts at once (no group filter for complete data)
+  const fetchAllPrompts = useCallback(async () => {
+    if (hasFetched) return prompts;
+    
     setIsLoading(true);
     setError(null);
 
     try {
-      let query = supabase
+      const { data, error: queryError } = await supabase
         .from("bos_manifest_prompts")
         .select("*")
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
-
-      if (group) {
-        query = query.eq("group_name", group);
-      }
-
-      const { data, error: queryError } = await query;
 
       if (queryError) {
         setError(queryError.message);
         return [];
       }
 
-      // Type cast the data - the database returns the correct shape
       const typedPrompts = (data || []) as unknown as ManifestPrompt[];
       setPrompts(typedPrompts);
+      setHasFetched(true);
       return typedPrompts;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Failed to fetch prompts";
@@ -234,9 +232,51 @@ export function useManifestPrompts() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [hasFetched, prompts]);
 
-  return { prompts, fetchPrompts, isLoading, error };
+  // Legacy: fetch by group (accumulates instead of replacing)
+  const fetchPrompts = useCallback(async (group?: string) => {
+    // If no group specified or we want all, use fetchAllPrompts
+    if (!group) {
+      return fetchAllPrompts();
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { data, error: queryError } = await supabase
+        .from("bos_manifest_prompts")
+        .select("*")
+        .eq("is_active", true)
+        .eq("group_name", group)
+        .order("sort_order", { ascending: true });
+
+      if (queryError) {
+        setError(queryError.message);
+        return [];
+      }
+
+      const typedPrompts = (data || []) as unknown as ManifestPrompt[];
+      
+      // Accumulate prompts instead of replacing
+      setPrompts(prev => {
+        const existingIds = new Set(prev.map(p => p.prompt_id));
+        const newPrompts = typedPrompts.filter(p => !existingIds.has(p.prompt_id));
+        return [...prev, ...newPrompts];
+      });
+      
+      return typedPrompts;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Failed to fetch prompts";
+      setError(errorMsg);
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchAllPrompts]);
+
+  return { prompts, fetchPrompts, fetchAllPrompts, isLoading, error };
 }
 
 export function useGeneratedDocuments() {
