@@ -70,16 +70,18 @@ export function DocumentTemplateCard({
       <CardContent>
         <div className="space-y-3">
           {/* Required Signers */}
-          <div className="text-xs">
-            <span className="text-muted-foreground">Required Signers:</span>
-            <div className="flex flex-wrap gap-1 mt-1">
-              {template.required_signers_schema.roles.map((role) => (
-                <Badge key={role} variant="secondary" className="text-xs">
-                  {role}
-                </Badge>
-              ))}
+          {(template.required_signers_schema as { roles?: string[] })?.roles?.length ? (
+            <div className="text-xs">
+              <span className="text-muted-foreground">Required Signers:</span>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {(template.required_signers_schema as { roles: string[] }).roles.map((role) => (
+                  <Badge key={role} variant="secondary" className="text-xs">
+                    {role}
+                  </Badge>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : null}
 
           {/* Effective Date */}
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
