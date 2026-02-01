@@ -1,88 +1,68 @@
-Property Listing Authorization & Marketing Consent
+# Property Listing Authorization & Marketing Consent
+**Purpose:** To record the Client’s approvals for marketing channels, media creation, publication permissions, and price/rent change controls for the Property listing.
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
+## 1. Parties and Listing Reference
+Date: ____ / ____ / ______  
+Broker: Mi Casa Real Estate (MiCasa Real Estate), CN-3762725 (the “Broker”)  
+Client: __________________________ (Owner / Landlord / Authorized Representative)  
+Listing / CRM ID: __________________________  
+Property: ___________________________________________
 
-Purpose
-This document authorizes MiCasa Real Estate to list, advertise, and market the Property and records the Owner’s consent for media, portals, and price approvals.
+## 2. Marketing Channels Authorization
+2.1 The Client authorizes the Broker to publish the Property listing through lawful marketing channels, including:  
+(a) Broker website and lead platforms;  
+(b) property portals operating in the UAE;  
+(c) social media pages and sponsored ads managed by the Broker;  
+(d) broadcast messaging to registered prospects;  
+(e) signage on or near the Property where permitted.
 
-1. Parties
-Owner / Landlord
-Full Name: ______________________________________________
-Emirates ID / Passport No.: ______________________________
-Address: _______________________________________________
-Mobile: ________________________________________________
-Email: _________________________________________________
+2.2 The Client acknowledges that third-party platforms may copy, syndicate, or cache listing information and images beyond the Broker’s control. The Broker will use reasonable efforts to correct or remove listings upon written instruction, subject to platform processes.
 
-Broker
-Company: MiCasa Real Estate
-License No.: CN-3762725
-TRN: _________________________________________________
-Representative: _________________________________________
-Mobile: ________________________________________________
-Email: _________________________________________________
+## 3. Media Creation Consent
+3.1 The Client consents to the Broker (or its service providers) capturing and using:  
+☐ Photographs ☐ Video ☐ Drone (where permitted) ☐ 360°/Virtual Tour ☐ Floor Plan ☐ Staging Content
 
-2. Property Details
-Property Type: __________________________________________
-Community / Building: ___________________________________
-Unit / Plot No.: ________________________________________
-Title Deed / Tawtheeq No.: _______________________________
-Furnishing: _____________________________________________
-Key Access Contact: _____________________________________
+3.2 The Client confirms that the Property may be photographed/filmed and that no third-party rights are infringed by the publication of the media, except as disclosed: ___________________________.
 
-3. Listing Authorization
-The Owner authorizes the Broker to list the Property for sale and/or lease and to display listing information to the public through approved channels.
+## 4. Publication Content and Privacy Controls
+4.1 The Broker will not publish personal data (such as Emirates ID numbers, phone numbers of tenants, or private family photos) in listings.  
+4.2 If the Property is tenanted, the Client confirms that tenant access and media capture will be handled lawfully and with appropriate permissions.  
+4.3 Viewings: ☐ By appointment only ☐ Open viewing allowed (where permitted)  
+4.4 Key Handling: ☐ Keys with Owner ☐ Keys with Building Security ☐ Keys with Broker (Key Receipt required)
 
-Listing Type: [  ] Sale  [  ] Lease
-Listed Price / Rent (AED): ______________________________
-Price Validity Period: _________________________________
+## 5. Price / Rent Approval and Change Control
+5.1 Approved Listing Price/Rent: AED ___________________________  
+5.2 Any change to listing price/rent, payment terms, or inclusions must be approved by the Client in writing (email/WhatsApp acceptable if clearly attributable to the Client).  
+5.3 The Broker may reject publishing any instruction that is unlawful, misleading, or inconsistent with regulatory requirements.
 
-4. Marketing Channels Consent
-The Owner approves the Broker to use the following channels for marketing:
-(a) Property portals and listing aggregators.
-(b) Company website and CRM distribution.
-(c) Social media, SMS, email campaigns, and print materials.
-(d) Broker network and cooperating agents.
+## 6. Advertising Budget (Optional)
+If the Client requests paid advertising beyond normal brokerage marketing:
 
-5. Media and Photography Consent
-The Owner consents to:
-(a) Professional photography, videography, and floorplan production.
-(b) Use of images and media in marketing materials and portal listings.
-(c) Reasonable editing for presentation, without altering material facts.
+6.1 Budget Cap: AED ___________________________  
+6.2 Paid By: ☐ Client ☐ Broker ☐ Shared (details): ___________________________  
+6.3 The Client acknowledges that paid advertising does not guarantee sale/lease.
 
-6. Access and Viewing Arrangements
-The Owner shall provide reasonable access for viewings on prior notice and shall ensure the Property is safe and accessible for prospective buyers/tenants.
+## 7. Liability and Indemnity
+The Client remains responsible for the accuracy of key Property facts supplied by the Client. The Client shall indemnify the Broker for losses arising from false or misleading information supplied by the Client, except to the extent caused by the Broker’s proven misconduct.
 
-7. Accuracy of Information
-The Owner confirms that all information provided is accurate and complete, including property size, condition, ownership, and any encumbrances.
+## 8. Governing Law and Jurisdiction
+This consent is governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi. The courts of Abu Dhabi shall have jurisdiction.
 
-8. Price Changes and Withdrawal
-Any change in price or withdrawal of the listing requires written confirmation from the Owner. The Owner remains responsible for any costs incurred for marketing or media production unless otherwise agreed.
+## 9. Entire Agreement
+This document forms part of the brokerage arrangement between the Client and the Broker and, for marketing and media matters, records the entire understanding between the parties.
 
-9. Governing Law
-This authorization is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+---
 
-10. Entire Agreement
-This authorization constitutes the entire agreement regarding listing and marketing consent for the Property.
+## Signatures
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+**Client (Owner/Landlord/Authorized Representative)**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Signatures
+**For and on behalf of Mi Casa Real Estate (MiCasa Real Estate)**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Owner / Landlord
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Broker Representative (MiCasa Real Estate)
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Company Stamp
-[Stamp Here]
+Company Stamp (Mi Casa Real Estate): __________________________

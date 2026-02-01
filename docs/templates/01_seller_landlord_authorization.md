@@ -1,102 +1,108 @@
-Seller / Landlord Authorization (Form A Equivalent)
+# Seller / Landlord Authorization
+**Form A Equivalent**
 
-Purpose
-This authorization appoints MiCasa Real Estate LLC to market and negotiate the sale and/or lease of the described property in Abu Dhabi, and records the parties’ responsibilities and commission terms.
+**Purpose:** To authorize Mi Casa Real Estate (MiCasa Real Estate) to market and broker the sale and/or lease of the Property and to set the key commercial terms and instructions.
 
-1. Parties
-This authorization is made between the following parties:
+## 1. Parties
+This Seller / Landlord Authorization (“Authorization”) is made on Date: ____ / ____ / ______.
 
-Principal (Seller / Landlord)
-Full Name: ______________________________________________
-Emirates ID / Passport No.: ______________________________
-Address: _______________________________________________
-Mobile: ________________________________________________
-Email: _________________________________________________
+**Broker:** Mi Casa Real Estate, Abu Dhabi, UAE (Commercial License CN-3762725) (the “Broker”).
 
-Broker
-Company: MiCasa Real Estate
-License No.: CN-3762725
-TRN: _________________________________________________
-Address: _______________________________________________
-Representative: _________________________________________
-Mobile: ________________________________________________
-Email: _________________________________________________
+Address: Office 1703, Al Masaood Building, Najda Street, Abu Dhabi, UAE, P.O. Box 4805  
+Email: contact@micasa.ae | Tel: +971 2 245 7987  
+VAT TRN (if applicable): 100496681600003
 
-2. Property Details
-Property Type: __________________________________________
-Emirate: Abu Dhabi
-Community / Building: ___________________________________
-Unit / Plot No.: ________________________________________
-Title Deed / Tawtheeq No.: _______________________________
-Approx. Area (sq. ft./sq. m): ____________________________
-Current Status: _________________________________________
+**Client (Seller / Landlord):** Full Name / Entity Name: __________________________ (the “Client”)  
+Emirates ID / Passport / Trade License No.: __________________________  
+Mobile: __________________________ Email: __________________________  
+Address: ___________________________________________
 
-3. Scope of Authority
-The Principal authorizes the Broker to market, advertise, and negotiate the sale and/or lease of the Property on the Principal’s behalf, including arranging viewings, collecting offers, and coordinating with relevant authorities for transaction completion.
+If the Client is a company or acting through a representative:  
+Authorized Signatory Name: __________________________ Capacity: __________________________
 
-Transaction Type (select one or both):
-Sale: [  ] Yes  [  ] No
-Lease: [  ] Yes  [  ] No
+## 2. Property Details
+Property Address / Location: ___________________________________________  
+Building / Community: ___________________________________________  
+Unit / Villa No.: ____________________ Floor (if any): ____________________  
+Property Type: ☐ Apartment ☐ Villa ☐ Townhouse ☐ Plot ☐ Office ☐ Retail ☐ Other: __________  
+Title Deed / Tawtheeq / Reference (if available): ___________________________  
+Current Status: ☐ Vacant ☐ Tenanted (Expiry: ____ / ____ / ______) ☐ Owner Occupied  
+Keys Held by Broker: ☐ Yes ☐ No (If yes, Key Receipt to be issued separately)
 
-Authority Type: [  ] Exclusive  [  ] Non-Exclusive
+## 3. Scope of Appointment
+### 3.1 The Client appoints the Broker to provide brokerage services for:
+Transaction Type: ☐ Sale ☐ Lease ☐ Sale and Lease
 
-4. Term
-Start Date: __________________________
-End Date: ____________________________
-This authorization remains valid for the above term unless terminated earlier by written notice in accordance with Section 11.
+### 3.2 The Broker is authorized to:
+(a) advertise and market the Property through lawful channels (including property portals, social media, company website, messaging platforms, signage, and broker networks);  
+(b) arrange and attend viewings;  
+(c) communicate with prospective buyers/tenants and their representatives;  
+(d) collect and share offers, and facilitate negotiations strictly in line with the Client’s written instructions;  
+(e) assist with documentation and transaction coordination (including NOC/clearances), without providing legal advice.
 
-5. Listing Price / Rental Terms
-Sale Price (AED): _________________________________
-Lease Terms (AED per annum / period): __________________
-The Principal confirms that any change to price or rental terms must be approved in writing.
+### 3.3 The Broker is not authorized to sign transfer documents, accept binding offers, or make representations beyond the Client’s instructions unless a separate written power of attorney or written authorization is provided.
 
-6. Broker Duties
-The Broker shall perform the following duties with reasonable skill and care:
-(a) Market and promote the Property using approved channels.
-(b) Verify prospective buyers/tenants for basic eligibility and capability.
-(c) Present offers and material communications to the Principal promptly.
-(d) Coordinate documentation and authority requirements for completion.
+## 4. Listing Terms and Pricing Instructions
+4.1 Listing Type: ☐ Exclusive ☐ Non-Exclusive  
+4.2 Authorization Start Date: ____ / ____ / ______  
+4.3 Authorization End Date: ____ / ____ / ______ (if blank, continues until terminated under Clause 10)  
+4.4 Asking Sale Price (if applicable): AED ___________________________  
+4.5 Asking Annual Rent (if applicable): AED ___________________________  
+4.6 Negotiation Authority: Any change to price/rent or special terms must be approved by the Client in writing (email/WhatsApp acceptable if clearly attributable to the Client).
 
-7. Principal Duties
-The Principal shall:
-(a) Provide accurate and complete information and documentation.
-(b) Allow reasonable access for viewings with notice.
-(c) Refrain from directly negotiating with parties introduced by the Broker during the term and for 12 months after termination.
-(d) Pay commission in accordance with Section 8.
+## 5. Broker’s Fee (Commission) and VAT
+5.1 Sale Commission: ____ % of sale price ☐ payable by Seller ☐ payable by Buyer ☐ other: __________  
+5.2 Lease Commission: ____ % of annual rent (or AED __________) ☐ payable by Landlord ☐ payable by Tenant ☐ other: __________  
+5.3 If VAT is applicable, commission amounts are: ☐ exclusive of VAT ☐ inclusive of VAT.  
+5.4 Commission becomes due and payable upon the earliest of:
+(a) execution of the MOU/SPA or binding sale agreement with a purchaser introduced or materially negotiated by the Broker; or  
+(b) completion of transfer/registration;  
+and for leasing, upon execution of the lease (and/or registration where applicable) with a tenant introduced or materially negotiated by the Broker.
 
-8. Commission
-Commission Rate: ________ % of transaction value, or
-Fixed Commission Amount (AED): ________________________
-Commission Payable By: [  ] Principal  [  ] Other party as permitted by law
-Commission becomes due upon successful transfer (sale) or execution of a registered tenancy contract (lease), as applicable.
+5.5 The Client shall not delay or avoid commission by concluding the transaction through nominees, related parties, or alternative structures with a party introduced by the Broker.
 
-9. Marketing Consent
-The Principal authorizes the Broker to use photographs, floorplans, videos, and relevant property information for marketing, subject to applicable laws and any written restrictions stated below:
-Restrictions: _______________________________________________________________
+## 6. Client Declarations and Obligations
+6.1 The Client confirms that:
+(a) the Client is the legal owner or has full legal authority to sell/lease the Property;  
+(b) the information provided to the Broker is true, accurate, and not misleading;  
+(c) there are no undisclosed disputes, restrictions, or encumbrances preventing the intended transaction, except as disclosed in writing: _______________________________________;  
+(d) the Client will provide required documentation promptly (title deed, IDs, NOC/clearances, tenancy documents, service charge statements, mortgage details if any).
 
-10. Compliance and Regulatory Requirements
-The parties acknowledge that all activities must comply with Abu Dhabi DMT/ADM regulations and applicable UAE laws. The Principal shall provide any required approvals, NOCs, or documentation for lawful marketing and transaction completion.
+6.2 The Client authorizes the Broker to share necessary Property and contact information with prospective buyers/tenants and relevant third parties (e.g., developers/management companies, banks, conveyancing professionals) for transaction purposes, subject to applicable UAE data protection requirements.
 
-11. Termination
-Either party may terminate this authorization with written notice of ______ days. Termination does not affect the Broker’s right to commission for transactions concluded with parties introduced during the term or within the non-circumvention period.
+## 7. Marketing Materials and Access
+7.1 The Client consents to the creation and use of marketing materials including photographs, videos, floor plans, and virtual tours.  
+7.2 The Client shall provide reasonable access for viewings and inspections, or authorize a named access person: __________________________ (Mobile: __________________).
 
-12. Governing Law
-This authorization is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+## 8. Non-Circumvention
+The Client shall not directly or indirectly conclude a sale/lease with a prospect introduced by the Broker without involving the Broker during the Authorization term and for a protection period of 6 months after termination, failing which commission remains due.
 
-13. Entire Agreement
-This authorization constitutes the entire agreement between the parties regarding the subject matter and supersedes prior discussions or understandings.
+## 9. Limitation of Role
+The Broker provides brokerage and coordination services only and does not provide legal, tax, engineering, or valuation advice. The Client should obtain independent advice where needed.
 
-Signatures
+## 10. Termination
+10.1 Either party may terminate this Authorization by written notice.  
+10.2 Termination does not affect accrued rights, including commission due for transactions with prospects introduced during the term (and within the protection period in Clause 8).
 
-Principal (Seller / Landlord)
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+## 11. Governing Law and Jurisdiction
+This Authorization is governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi. The courts of Abu Dhabi shall have jurisdiction.
 
-Broker Representative (MiCasa Real Estate)
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+## 12. Entire Agreement
+This Authorization constitutes the entire agreement between the parties regarding the subject matter and supersedes prior discussions or communications, whether written or oral, relating to the same.
 
-Company Stamp
-[Stamp Here]
+---
+
+## Signatures
+
+**Client (Seller/Landlord)**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
+
+**For and on behalf of Mi Casa Real Estate (MiCasa Real Estate)**  
+Authorized Signatory Name: __________________________  
+Title: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
+
+Company Stamp (Mi Casa Real Estate): __________________________

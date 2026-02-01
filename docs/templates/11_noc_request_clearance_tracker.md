@@ -1,58 +1,47 @@
-NOC Request & Clearance Tracker
+# NOC Request & Clearance Tracker (Internal)
+**Purpose:** To track required approvals/clearances for a sale/lease transaction and evidence follow-ups for audit and dispute defense.
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
+Date Opened: ____ / ____ / ______  
+Deal / CRM ID: __________________________  
+Property: ___________________________________________  
+Transaction Type: ☐ Sale ☐ Lease  
+Responsible Agent: ___________________________ Operations Owner: ___________________________
 
-Purpose
-This tracker records all NOC and authority clearance requests required for a transaction and provides an audit trail of submission, approvals, and conditions.
+## 1. Clearance Items and Status Log
+Use the table below to record each clearance requirement and evidence.
 
-1. Transaction Details
-Deal Reference: __________________________________________
-Property Address: _______________________________________
-Transaction Type: [  ] Sale  [  ] Lease
-Parties: ________________________________________________
-Broker Representative: __________________________________
+Clearance / NOC Item | Requested From | Request Date | Reference No. | Status (Pending/Received/Rejected) | Received Date | Notes / Evidence Location
+--- | --- | --- | --- | --- | --- | ---
+Developer / Management NOC | __________________ | //____ | __________ | __________ | //____ | __________________
+Service Charge Clearance | __________________ | //____ | __________ | __________ | //____ | __________________
+Mortgage Release / Bank Letter | __________________ | //____ | __________ | __________ | //____ | __________________
+Tenancy Status / Vacating Confirmation | __________________ | //____ | __________ | __________ | //____ | __________________
+Utility Clearance (if required) | __________________ | //____ | __________ | __________ | //____ | __________________
+Other: __________________ | __________________ | //____ | __________ | __________ | //____ | __________________
 
-2. NOC and Clearance Log
-Authority / Entity | Request Type | Submission Date | Status | Approval Date | Conditions / Notes
---- | --- | --- | --- | --- | ---
-__________________ | ____________ | ______________ | ______ | _____________ | __________________________
-__________________ | ____________ | ______________ | ______ | _____________ | __________________________
-__________________ | ____________ | ______________ | ______ | _____________ | __________________________
-__________________ | ____________ | ______________ | ______ | _____________ | __________________________
+## 2. Escalation Record
+If delays occur, record escalations and responses:
 
-3. Required Documents Checklist
-The following documents have been submitted as required:
-- Title deed / ownership proof
-- Emirates ID / Passport (parties)
-- Power of attorney (if applicable)
-- Service charge clearance (if applicable)
-- Any authority-specific forms
 
-4. Final Clearance Confirmation
-All required NOCs and clearances have been obtained and are valid for transaction completion.
+## 3. Completion Confirmation
+All required NOCs/clearances obtained: ☐ Yes ☐ No ☐ N/A  
+Confirmed By (Operations): ___________________________ Date: ____ / ____ / ______
 
-5. Governing Law
-This tracker is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+## 4. Governing Law and Jurisdiction
+This tracker is maintained in Abu Dhabi and governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi.
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+---
 
-Signatures
+## Sign-Off
 
-Transaction Manager (MiCasa Real Estate)
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+**Responsible Agent**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Compliance Review
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+**Operations / Compliance**  
+Name: __________________________  
+Signature: _______________________  
+Date: ____ / ____ / ______
 
-Company Stamp
-[Stamp Here]
+Company Stamp (Mi Casa Real Estate): __________________________

@@ -1,59 +1,48 @@
-Commission Authorization & Split Sheet
+# Commission Authorization & Split Sheet (Internal)
+**Purpose:** To document internal approval of commission allocation, VAT handling, and payouts to agents and third parties for a specific deal.
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
+Date: ____ / ____ / ______  
+Deal / CRM ID: __________________________  
+Property: ___________________________________________  
+Transaction Type: ☐ Sale ☐ Lease  
+Closing Date: ____ / ____ / ______
 
-Purpose
-This internal form authorizes commission payout and records the approved split among participating agents or parties for audit and payroll processing.
+## 1. Commission Summary
+Gross Commission (per agreement): AED ___________________________  
+VAT Applicable: ☐ Yes ☐ No  
+VAT Amount (if applicable): AED ___________________________  
+Net Commission (after VAT, if applicable): AED ___________________________  
+Commission Received and Cleared: ☐ Yes ☐ No Date: ____ / ____ / ______  
+Receiving Account Reference: ___________________________
 
-1. Deal Information
-Deal Reference: __________________________________________
-Property Address: _______________________________________
-Transaction Type: [  ] Sale  [  ] Lease
-Completion Date: ________________________________________
+## 2. Payor and Supporting Documents
+Commission Paid By: ☐ Seller ☐ Buyer ☐ Landlord ☐ Tenant ☐ Other: __________  
+Supporting Documents on File:  
+(a) Signed authorization/representation: ☐ Yes ☐ No  
+(b) Signed MOU/Lease: ☐ Yes ☐ No  
+(c) Tax invoice issued (if applicable): ☐ Yes ☐ No Invoice No.: __________  
+(d) Proof of receipt (bank statement/receipt): ☐ Yes ☐ No
 
-2. Commission Summary
-Total Commission (AED): _________________________________
-VAT Applicable: [  ] Yes  [  ] No
-VAT Amount (AED): _______________________________________
-Net Commission (AED): ___________________________________
+## 3. Split Details
+Recipient | Type | Split Basis | Amount (AED) | Payable Date | Notes
+--- | --- | --- | --- | --- | ---
+__________________ | ☐ Agent ☐ Team Lead ☐ Staff | ☐ % ☐ Fixed | ______ | //____ | ____
+__________________ | ☐ Agent ☐ Team Lead ☐ Staff | ☐ % ☐ Fixed | ______ | //____ | ____
+__________________ | ☐ External Agency | ☐ % ☐ Fixed | ______ | //____ | ____
+__________________ | ☐ Referral | ☐ % ☐ Fixed | ______ | //____ | ____
 
-3. Split Details
-Participant | Role | Split % | Amount (AED)
---- | --- | --- | ---
-__________________ | ____________ | ______ | __________________
-__________________ | ____________ | ______ | __________________
-__________________ | ____________ | ______ | __________________
+Total Approved Payouts: AED ___________________________  
+Holdback/Retention (if any): AED ___________________________ Reason: ___________________________
 
-4. Payment Instructions
-Payment Method: _________________________________________
-Payment Date: ___________________________________________
-Bank / Wallet Details: ___________________________________
+## 4. Clawback and Compliance Hold
+If the deal is cancelled, reversed, or commission is refunded due to agent misconduct, misrepresentation, or breach of policy, approved payouts may be clawed back or set-off against future earnings, subject to applicable law and internal policy.
 
-5. Approvals
-This payout is authorized in accordance with company policy and applicable regulations.
+## 5. Approvals
+Prepared By (Finance): __________________________ Signature: __________________ Date: //____  
+Reviewed By (Compliance/Operations): __________________________ Signature: __________________ Date: //____  
+Approved By (Management): __________________________ Signature: __________________ Date: //____
 
-6. Governing Law
-This internal authorization is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+## 6. Governing Law and Jurisdiction
+This internal approval record is maintained in Abu Dhabi and governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi.
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
-
-Signatures
-
-Prepared By
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Approved By
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
-
-Company Stamp
-[Stamp Here]
+Company Stamp (Mi Casa Real Estate): __________________________
