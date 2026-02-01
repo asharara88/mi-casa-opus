@@ -22,120 +22,20 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Default templates when database is empty
-const DEFAULT_TEMPLATES = [
-  {
-    template_id: 'TPL-SPA-001',
-    doc_type: 'SPA',
-    template_version: 2,
-    effective_from: '2024-01-01',
-    required_signers_schema: { roles: ['Buyer', 'Seller', 'Witness'] },
-    data_binding_schema: {},
-    template_content: '',
-    is_published: true,
-    created_at: '2023-12-15',
-    name: 'Sale and Purchase Agreement',
-  },
-  {
-    template_id: 'TPL-RES-001',
-    doc_type: 'ReservationForm',
-    template_version: 1,
-    effective_from: '2024-01-01',
-    required_signers_schema: { roles: ['Buyer', 'Agent'] },
-    data_binding_schema: {},
-    template_content: '',
-    is_published: true,
-    created_at: '2023-11-20',
-    name: 'Reservation / Booking Form',
-  },
-  {
-    template_id: 'TPL-MAN-001',
-    doc_type: 'MandateAgreement',
-    template_version: 1,
-    effective_from: '2024-01-01',
-    required_signers_schema: { roles: ['Owner', 'Brokerage'] },
-    data_binding_schema: {},
-    template_content: '',
-    is_published: true,
-    created_at: '2023-12-01',
-    name: 'Seller / Landlord Authorization',
-  },
-  {
-    template_id: 'TPL-BRA-001',
-    doc_type: 'BuyerRepAgreement',
-    template_version: 1,
-    effective_from: '2024-01-01',
-    required_signers_schema: { roles: ['Buyer', 'Agent'] },
-    data_binding_schema: {},
-    template_content: '',
-    is_published: true,
-    created_at: '2024-01-01',
-    name: 'Buyer / Tenant Representation Agreement',
-  },
-  {
-    template_id: 'TPL-EOI-001',
-    doc_type: 'OfferLetter',
-    template_version: 1,
-    effective_from: '2024-01-01',
-    required_signers_schema: { roles: ['Buyer', 'Seller'] },
-    data_binding_schema: {},
-    template_content: '',
-    is_published: true,
-    created_at: '2024-01-05',
-    name: 'Offer Letter / Expression of Interest',
-  },
-  {
-    template_id: 'TPL-MOU-001',
-    doc_type: 'MOU',
-    template_version: 1,
-    effective_from: '2024-01-01',
-    required_signers_schema: { roles: ['Buyer', 'Seller', 'Agent'] },
-    data_binding_schema: {},
-    template_content: '',
-    is_published: true,
-    created_at: '2024-01-08',
-    name: 'Memorandum of Understanding (Pre-SPA)',
-  },
-  {
-    template_id: 'TPL-INV-001',
-    doc_type: 'CommissionInvoice',
-    template_version: 1,
-    effective_from: '2024-01-01',
-    required_signers_schema: { roles: ['Brokerage'] },
-    data_binding_schema: {},
-    template_content: '',
-    is_published: true,
-    created_at: '2024-01-10',
-    name: 'Commission VAT Invoice',
-  },
-  {
-    template_id: 'TPL-A2A-001',
-    doc_type: 'AgentAgreement',
-    template_version: 1,
-    effective_from: '2024-01-01',
-    required_signers_schema: { roles: ['Agent A', 'Agent B'] },
-    data_binding_schema: {},
-    template_content: '',
-    is_published: false,
-    created_at: '2024-01-12',
-    name: 'Agent-to-Agent Agency Agreement',
-  },
-];
-
 export function DocumentsSection() {
   const { data: rawTemplates, isLoading: templatesLoading } = useDocumentTemplates();
   const { data: rawDocuments, isLoading: documentsLoading } = useDocumentInstances();
   
-  const [activeTab, setActiveTab] = useState('instances');
+  const [activeTab, setActiveTab] = useState('templates');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [docTypeFilter, setDocTypeFilter] = useState<string>('all');
 
-  // Transform templates to expected format, fallback to defaults if empty
-  const dbTemplates = (rawTemplates || []).map(t => ({
+  // Transform templates to expected format
+  const templates = (rawTemplates || []).map(t => ({
     template_id: t.template_id,
     doc_type: t.doc_type,
-    template_version: parseInt(t.template_version) || 1,
+    template_version: t.template_version ? String(t.template_version).replace('v', '') : '1',
     effective_from: t.effective_from,
     required_signers_schema: t.required_signers_schema || { roles: [] },
     data_binding_schema: t.data_binding_schema || {},
@@ -144,9 +44,6 @@ export function DocumentsSection() {
     created_at: t.created_at,
     name: t.name,
   }));
-
-  // Use default templates if database is empty
-  const templates = dbTemplates.length > 0 ? dbTemplates : DEFAULT_TEMPLATES;
 
   // Transform documents to expected format
   const documents = (rawDocuments || []).map(d => ({
@@ -329,12 +226,14 @@ export function DocumentsSection() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="Mandate">Mandate</SelectItem>
                   <SelectItem value="MOU">MOU</SelectItem>
                   <SelectItem value="SPA">SPA</SelectItem>
                   <SelectItem value="Reservation">Reservation</SelectItem>
-                  <SelectItem value="Mandate">Mandate</SelectItem>
                   <SelectItem value="ICA">ICA</SelectItem>
                   <SelectItem value="NDA">NDA</SelectItem>
+                  <SelectItem value="CommissionInvoice">Commission Invoice</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             )}

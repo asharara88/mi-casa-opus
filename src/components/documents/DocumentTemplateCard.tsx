@@ -20,15 +20,18 @@ interface DocumentTemplateCardProps {
   onDuplicate?: (template: DocumentTemplate) => void;
 }
 
+// Colors for doc types matching database enum
 const DOC_TYPE_COLORS: Record<DocType, { bg: string; text: string }> = {
-  OfferLetter: { bg: 'bg-blue-500/20', text: 'text-blue-400' },
-  ReservationForm: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
+  MOU: { bg: 'bg-blue-500/20', text: 'text-blue-400' },
   SPA: { bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
+  Reservation: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
+  Mandate: { bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
   ICA: { bg: 'bg-amber-500/20', text: 'text-amber-400' },
-  MandateAgreement: { bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
-  ViewingConfirmation: { bg: 'bg-pink-500/20', text: 'text-pink-400' },
-  NOCApplication: { bg: 'bg-orange-500/20', text: 'text-orange-400' },
-  HandoverCertificate: { bg: 'bg-gold/20', text: 'text-gold' },
+  NDA: { bg: 'bg-pink-500/20', text: 'text-pink-400' },
+  POA: { bg: 'bg-orange-500/20', text: 'text-orange-400' },
+  CommissionInvoice: { bg: 'bg-green-500/20', text: 'text-green-400' },
+  Receipt: { bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
+  Other: { bg: 'bg-slate-500/20', text: 'text-slate-400' },
 };
 
 export function DocumentTemplateCard({ 
@@ -58,7 +61,7 @@ export function DocumentTemplateCard({
           )}
         </div>
         <CardTitle className="text-base mt-3">
-          {formatDocType(template.doc_type)}
+          {template.name || formatDocType(template.doc_type)}
         </CardTitle>
         <CardDescription className="flex items-center gap-2 text-xs">
           <Hash className="w-3 h-3" />
@@ -69,6 +72,13 @@ export function DocumentTemplateCard({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
+          {/* Doc Type Badge */}
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className={cn("text-xs", colors.text)}>
+              {template.doc_type}
+            </Badge>
+          </div>
+          
           {/* Required Signers */}
           {(template.required_signers_schema as { roles?: string[] })?.roles?.length ? (
             <div className="text-xs">
@@ -125,6 +135,19 @@ export function DocumentTemplateCard({
   );
 }
 
+const DOC_TYPE_LABELS: Record<DocType, string> = {
+  MOU: 'Memorandum of Understanding',
+  SPA: 'Sale & Purchase Agreement',
+  Reservation: 'Reservation Form',
+  Mandate: 'Mandate Agreement',
+  ICA: 'Inter-Company Agreement',
+  NDA: 'Non-Disclosure Agreement',
+  POA: 'Power of Attorney',
+  CommissionInvoice: 'Commission Invoice',
+  Receipt: 'Receipt',
+  Other: 'Other Document',
+};
+
 function formatDocType(docType: DocType): string {
-  return docType.replace(/([A-Z])/g, ' $1').trim();
+  return DOC_TYPE_LABELS[docType] || docType.replace(/([A-Z])/g, ' $1').trim();
 }
