@@ -1,59 +1,135 @@
 
-
-# Fix PDF Templates - Move to Public Folder
+# Professional Document Branding System
 
 ## Problem
-The `PDFTemplatesSection.tsx` component tries to fetch templates from `/docs/templates/` but:
-- Templates are at project root: `docs/templates/`
-- Vite only serves static files from `public/`
-- Result: 404 errors when trying to preview or download
+Current PDF exports are unpresentable:
+- Plain text "Mi Casa" instead of proper logo
+- No letterhead with official company details
+- Underscores (`____`) instead of proper form fields
+- No professional styling reflecting brand identity
+- Missing official registration/license information
+- No footer with company details
 
 ## Solution
-Move all 18 template files to `public/docs/templates/` so they become accessible as static assets.
+Create a professional document template system with:
 
-## Implementation
+### 1. Company Logo Asset
+Create an inline SVG logo featuring:
+- "MI CASA" wordmark with Arabic "مي كاسا" tagline
+- Building/property icon element
+- Gold/teal brand colors (#CA8A04 gold, #0284C7 teal)
 
-### Task 1: Create Public Templates Directory
-Move all markdown files from `docs/templates/` to `public/docs/templates/`:
+### 2. Professional Letterhead
+```text
++----------------------------------------------------------+
+|  [LOGO]  MI CASA REALESTATE                              |
+|          مؤسسة فردية                                      |
+|----------------------------------------------------------+
+|  License: CN-5220826 | TRN: 104329382600003              |
+|  Office 1002, Addax Tower, Al Reem Island, Abu Dhabi     |
+|  +971 2 447 0028 | info@micasarealestate.ae              |
++----------------------------------------------------------+
+```
 
-| From | To |
-|------|-----|
-| `docs/templates/*.md` | `public/docs/templates/*.md` |
+### 3. Document Body Improvements
+| Current | Professional |
+|---------|-------------|
+| `Name: ____________` | Form field with bordered box |
+| Plain checkboxes `[ ]` | Styled checkbox squares |
+| Simple tables | Professional bordered tables |
+| Plain section headers | Numbered sections with styling |
 
-**Files to move (18 total):**
-- `01_seller_landlord_authorization.md`
-- `02_buyer_tenant_representation_agreement.md`
-- `03_property_listing_authorization_marketing_consent.md`
-- `04_agent_license_registration_record.md`
-- `05_company_trade_license_regulatory_record.md`
-- `06_agent_to_agent_agency_agreement.md`
-- `07_offer_letter_expression_of_interest.md`
-- `08_memorandum_of_understanding_pre_spa.md`
-- `09_reservation_booking_form.md`
-- `10_deal_completion_closing_checklist.md`
-- `11_noc_request_clearance_tracker.md`
-- `12_commission_vat_invoice.md`
-- `13_commission_authorization_split_sheet.md`
-- `14_refund_cancellation_approval_form.md`
-- `15_financial_reconciliation_deal_ledger.md`
-- `16_client_data_consent_privacy_acknowledgment.md`
-- `17_complaint_dispute_incident_register.md`
-- `18_internal_agent_governance_pack.md`
+### 4. Professional Footer
+- Document reference number
+- Page numbering
+- Generation timestamp
+- Confidentiality notice
+- Company registration details
+- QR code placeholder (for future)
 
-### Task 2: Keep Original Docs Reference (Optional)
-Keep the original `docs/templates/` folder as documentation reference, or remove it to avoid confusion.
+## Technical Implementation
+
+### Task 1: Create Logo SVG Component
+**File**: `src/components/branding/MiCasaLogo.tsx`
+
+Export reusable SVG logo for:
+- PDF documents (inline string)
+- Web components (React component)
+
+### Task 2: Refactor PDF HTML Generator
+**File**: `src/components/documents/PDFTemplatesSection.tsx`
+
+Update `convertMarkdownToHTML()` function:
+- Replace text logo with SVG letterhead
+- Add full company details in header
+- Convert `_____` patterns to styled input boxes
+- Improve table rendering with proper borders
+- Add professional footer with license info
+- Use brand fonts (Inter, Poppins)
+
+**New styles to add:**
+- `.letterhead` - Full header block with logo + details
+- `.form-field` - Bordered input field boxes
+- `.signature-block` - Professional signature area
+- `.section-number` - Numbered section styling
+- `.page-footer` - Running footer with page numbers
+
+### Task 3: Improve Markdown Conversion
+Replace underscore patterns with form fields:
+```javascript
+// Current: Name: ______________
+// New: <div class="form-field"><label>Name</label><div class="field-box"></div></div>
+```
+
+### Task 4: Add Print Optimization
+- `@page` rules for A4 paper
+- Page break controls
+- Print-specific color adjustments
+- Running headers/footers
+
+## Visual Preview
+
+### Header Design:
+```
+┌────────────────────────────────────────────────────────────┐
+│ ┌──────┐                                                   │
+│ │ LOGO │  MI CASA REALESTATE مؤسسة فردية                  │
+│ └──────┘  ─────────────────────────────────────────────── │
+│           License: CN-5220826 │ TRN: 104329382600003      │
+│           Office 1002, Addax Tower, Al Reem Island, AD    │
+│           Tel: +971 2 447 0028 │ info@micasarealestate.ae │
+└────────────────────────────────────────────────────────────┘
+```
+
+### Form Field Style:
+```
+┌────────────────────────────────────────────────────────────┐
+│ Full Name                                                  │
+│ ┌────────────────────────────────────────────────────────┐│
+│ │                                                        ││
+│ └────────────────────────────────────────────────────────┘│
+└────────────────────────────────────────────────────────────┘
+```
+
+### Footer Design:
+```
+────────────────────────────────────────────────────────────
+Document Ref: MC-2026-001234 │ Generated: 01 Feb 2026 │ Page 1/3
+MI CASA REALESTATE │ Licensed by Abu Dhabi DED │ CN-5220826
+CONFIDENTIAL - For authorized use only
+────────────────────────────────────────────────────────────
+```
+
+## Files to Create/Modify
+
+| Action | File | Purpose |
+|--------|------|---------|
+| Create | `src/components/branding/MiCasaLogo.tsx` | Reusable logo component |
+| Modify | `src/components/documents/PDFTemplatesSection.tsx` | Professional PDF template |
 
 ## Result
-After this change:
-- Preview will fetch from `/docs/templates/01_seller_landlord_authorization.md` successfully
-- Download links will work correctly
-- No code changes needed in `PDFTemplatesSection.tsx` - the paths are already correct
-
-## Files Summary
-
-| Action | Path |
-|--------|------|
-| Create | `public/docs/templates/` (directory) |
-| Create | `public/docs/templates/*.md` (18 files) |
-| Optional Delete | `docs/templates/` (original location) |
-
+- Client-ready documents with full branding
+- Professional letterhead on every page
+- Proper form fields instead of underscores
+- Official company registration displayed
+- Consistent brand identity across all templates
