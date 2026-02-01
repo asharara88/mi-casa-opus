@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { generateProfessionalPDFHTML } from '@/lib/pdf-document-generator';
 
 // Define all PDF templates from docs/templates
 const PDF_TEMPLATES = [
@@ -279,8 +280,13 @@ export function PDFTemplatesSection() {
       
       const content = await response.text();
       
-      // Convert markdown to simple HTML with styling
-      const htmlContent = convertMarkdownToHTML(content, template);
+      // Generate professional PDF HTML with branding
+      const htmlContent = generateProfessionalPDFHTML(content, {
+        id: template.id,
+        title: template.title,
+        subtitle: template.subtitle,
+        category: template.category
+      });
       
       // Create a new window for printing
       const printWindow = window.open('', '_blank', 'width=800,height=600');
@@ -308,133 +314,6 @@ export function PDFTemplatesSection() {
     } finally {
       setIsExporting(null);
     }
-  };
-
-  // Convert markdown to styled HTML for PDF export
-  const convertMarkdownToHTML = (markdown: string, template: typeof PDF_TEMPLATES[0]): string => {
-    // Basic markdown to HTML conversion
-    let html = markdown
-      // Headers
-      .replace(/^### (.*$)/gim, '<h3 style="font-size: 14px; font-weight: 600; margin: 16px 0 8px 0; color: #1a1a1a;">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 style="font-size: 16px; font-weight: 600; margin: 20px 0 12px 0; color: #1a1a1a; border-bottom: 1px solid #e5e5e5; padding-bottom: 8px;">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 style="font-size: 20px; font-weight: 700; margin: 0 0 16px 0; color: #1a1a1a;">$1</h1>')
-      // Bold and italic
-      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      // Code blocks
-      .replace(/```[\s\S]*?```/g, (match) => {
-        const code = match.replace(/```\w*\n?/g, '').replace(/```/g, '');
-        return `<pre style="background: #f5f5f5; padding: 12px; border-radius: 4px; font-size: 11px; overflow-x: auto; margin: 12px 0;">${code}</pre>`;
-      })
-      // Inline code
-      .replace(/`([^`]+)`/g, '<code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 12px;">$1</code>')
-      // Checkboxes
-      .replace(/- \[ \] (.*$)/gim, '<div style="margin: 4px 0; padding-left: 24px;">☐ $1</div>')
-      .replace(/- \[x\] (.*$)/gim, '<div style="margin: 4px 0; padding-left: 24px;">☑ $1</div>')
-      // Unordered lists
-      .replace(/^\s*[-*] (.*$)/gim, '<li style="margin: 4px 0;">$1</li>')
-      // Ordered lists
-      .replace(/^\s*\d+\. (.*$)/gim, '<li style="margin: 4px 0;">$1</li>')
-      // Horizontal rules
-      .replace(/^---$/gim, '<hr style="border: none; border-top: 1px solid #e5e5e5; margin: 20px 0;">')
-      // Tables (basic support)
-      .replace(/\|(.+)\|/g, (match) => {
-        const cells = match.split('|').filter(c => c.trim());
-        if (cells.every(c => /^[-:]+$/.test(c.trim()))) return ''; // Skip separator rows
-        const cellTags = cells.map(c => `<td style="border: 1px solid #ddd; padding: 8px;">${c.trim()}</td>`).join('');
-        return `<tr>${cellTags}</tr>`;
-      })
-      // Line breaks (preserve blank lines as paragraphs)
-      .replace(/\n\n/g, '</p><p style="margin: 12px 0;">')
-      .replace(/\n/g, '<br>');
-
-    // Wrap lists
-    html = html.replace(/(<li[^>]*>.*?<\/li>\s*)+/g, '<ul style="margin: 12px 0; padding-left: 24px;">$&</ul>');
-    
-    // Wrap tables
-    html = html.replace(/(<tr>.*?<\/tr>\s*)+/g, '<table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px;">$&</table>');
-
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${template.title} - Mi Casa</title>
-          <style>
-            @media print {
-              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-              @page { margin: 20mm 15mm; }
-            }
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-              font-size: 12px;
-              line-height: 1.6;
-              color: #333;
-              max-width: 800px;
-              margin: 0 auto;
-              padding: 20px;
-            }
-            .header {
-              border-bottom: 2px solid #2563eb;
-              padding-bottom: 16px;
-              margin-bottom: 24px;
-            }
-            .logo {
-              font-size: 24px;
-              font-weight: 700;
-              color: #2563eb;
-              margin-bottom: 4px;
-            }
-            .doc-title {
-              font-size: 18px;
-              font-weight: 600;
-              color: #1a1a1a;
-            }
-            .doc-subtitle {
-              font-size: 12px;
-              color: #666;
-            }
-            .doc-meta {
-              display: flex;
-              gap: 16px;
-              margin-top: 12px;
-              font-size: 11px;
-              color: #666;
-            }
-            .content {
-              margin-top: 24px;
-            }
-            .footer {
-              margin-top: 40px;
-              padding-top: 16px;
-              border-top: 1px solid #e5e5e5;
-              font-size: 10px;
-              color: #999;
-              text-align: center;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="logo">Mi Casa</div>
-            <div class="doc-title">${template.title}</div>
-            <div class="doc-subtitle">${template.subtitle}</div>
-            <div class="doc-meta">
-              <span>Category: ${template.category}</span>
-              <span>Template #${template.id}</span>
-              <span>Generated: ${new Date().toLocaleDateString()}</span>
-            </div>
-          </div>
-          <div class="content">
-            <p style="margin: 12px 0;">${html}</p>
-          </div>
-          <div class="footer">
-            <p>This document was generated from Mi Casa BOS. For official use only.</p>
-            <p>© ${new Date().getFullYear()} Mi Casa Real Estate</p>
-          </div>
-        </body>
-      </html>
-    `;
   };
 
   return (
