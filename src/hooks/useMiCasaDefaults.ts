@@ -28,13 +28,13 @@ export interface AgentDefaults {
  */
 export function useMiCasaDefaults() {
   const micasaDefaults: MiCasaDefaults = useMemo(() => ({
-    legal_name: "MI CASA REALESTATE - مؤسسة فردية",
-    license_no: "CN-5220826",
-    trn: "104329382600003", // Abu Dhabi TRN
+    legal_name: "MI CASA REALESTATE - مي كاسا للعقارات",
+    license_no: "CN-3762725",
+    trn: "100496681600003",
     vat_registered: true,
-    address: "Office 1002, Addax Tower, City of Lights, Al Reem Island, Abu Dhabi, UAE",
-    email: "info@micasarealestate.ae",
-    phone: "+971 2 447 0028"
+    address: "Office 1703, Al Masaood Building, Najda Street, Abu Dhabi, UAE",
+    email: "contact@micasa.ae",
+    phone: "+971 2 245 7987"
   }), []);
 
   const agentDefaults: AgentDefaults = useMemo(() => ({

@@ -487,7 +487,7 @@ export function generateProfessionalPDFHTML(
         ${MICASA_LOGO_SVG}
       </div>
       <div class="company-details">
-        <div class="company-name">${MICASA_COMPANY_INFO.legalName}</div>
+        <div class="company-name">${MICASA_COMPANY_INFO.tradeName || MICASA_COMPANY_INFO.legalName}</div>
         <div class="company-name-arabic">${MICASA_COMPANY_INFO.legalNameArabic}</div>
         <div class="company-info-line"><strong>License:</strong> ${MICASA_COMPANY_INFO.licenseNo} | <strong>TRN:</strong> ${MICASA_COMPANY_INFO.trn}</div>
         <div class="company-info-line">${MICASA_COMPANY_INFO.address}</div>
