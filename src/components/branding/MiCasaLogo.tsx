@@ -85,12 +85,20 @@ export function MiCasaLogo({ className = '', width = 200, height = 60 }: {
 // Company info constants for documents
 export const MICASA_COMPANY_INFO = {
   legalName: 'MI CASA REALESTATE',
-  legalNameArabic: 'مؤسسة فردية',
-  licenseNo: 'CN-5220826',
-  trn: '104329382600003',
-  address: 'Office 1002, Addax Tower, Al Reem Island, Abu Dhabi, UAE',
-  phone: '+971 2 447 0028',
-  email: 'info@micasarealestate.ae',
-  website: 'www.micasarealestate.ae',
-  regulator: 'Abu Dhabi Department of Economic Development',
+  tradeName: 'MI CASA Property Solutions',
+  legalNameArabic: 'مي كاسا للعقارات',
+  licenseNo: 'CN-3762725',
+  trn: '100496681600003',
+  address: 'Office 1703, Al Masaood Building, Najda Street, Abu Dhabi, UAE',
+  poBox: '4805',
+  phone: '+971 2 245 7987',
+  mobile: '+971 50 9026971',
+  email: 'contact@micasa.ae',
+  website: 'www.micasa.ae',
+  regulator: 'Abu Dhabi Department of Municipalities and Transport (DMT)',
+  bank: {
+    name: 'ADCB - Abu Dhabi Commercial Bank',
+    accountNo: '11859687820001',
+    iban: 'AE440030011859687820001',
+  },
 };
