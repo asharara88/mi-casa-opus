@@ -15,7 +15,7 @@ Full Name: ______________________________________________
 Contact: _______________________________________________
 
 Broker
-Company: MiCasa Real Estate LLC
+Company: MI CASA REALESTATE - مؤسسة فردية
 Representative: _________________________________________
 
 2. Property Details
@@ -59,7 +59,7 @@ Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________
 
-Broker Acknowledgment (MiCasa Real Estate LLC)
+Broker Acknowledgment (MI CASA REALESTATE)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

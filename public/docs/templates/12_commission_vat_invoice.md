@@ -1,17 +1,17 @@
 Commission & VAT Invoice
 
 Purpose
-This invoice records brokerage commission due and complies with UAE VAT requirements for tax invoices issued by MiCasa Real Estate LLC.
+This invoice records brokerage commission due and complies with UAE VAT requirements for tax invoices issued by MI CASA REALESTATE.
 
 TAX INVOICE
 
 1. Supplier (Broker)
-Legal Name: MiCasa Real Estate LLC
-Trade License No.: ______________________________
-TRN (VAT): _____________________________________
-Address: _______________________________________
-Email: _________________________________________
-Phone: _________________________________________
+Legal Name: MI CASA REALESTATE - مؤسسة فردية
+Trade License No.: CN-5220826
+TRN (VAT): 104329382600003
+Address: Office 1002, Addax Tower, City of Lights, Al Reem Island, Abu Dhabi, UAE
+Email: info@micasarealestate.ae
+Phone: +971 2 447 0028
 
 2. Customer
 Customer Name: _________________________________________
@@ -49,7 +49,7 @@ This invoice is governed by the laws of the United Arab Emirates and applicable 
 
 Signatures
 
-Authorized Signatory (MiCasa Real Estate LLC)
+Authorized Signatory (MI CASA REALESTATE)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

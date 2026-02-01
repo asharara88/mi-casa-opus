@@ -956,7 +956,7 @@ export const DEMO_EVENTS = [
 export const DEMO_BROKERAGE = {
   id: 'demo-brokerage-1',
   brokerage_id: 'BRK-MICASA-001',
-  legal_name: 'Establishment - مؤسسة فردية',
+  legal_name: 'MI CASA REALESTATE - مؤسسة فردية',
   trade_name: 'MI CASA REALESTATE',
   license_context: [
     {
@@ -969,6 +969,10 @@ export const DEMO_BROKERAGE = {
       effective_from: '2025-01-15',
     },
   ],
+  trn: '104329382600003',
+  address: 'Office 1002, Addax Tower, City of Lights, Al Reem Island, Abu Dhabi, UAE',
+  email: 'info@micasarealestate.ae',
+  phone: '+971 2 447 0028',
   created_at: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
   updated_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
 };
