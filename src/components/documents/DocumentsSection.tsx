@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useDocumentTemplates, useDocumentInstances } from '@/hooks/useDocuments';
-import { DocumentTemplateCard } from './DocumentTemplateCard';
+import { DocumentTemplateCard, DocumentTemplateCardData } from './DocumentTemplateCard';
 import { DocumentInstanceRow } from './DocumentInstanceRow';
 import { DocumentGeneratorPanel } from './DocumentGeneratorPanel';
 import { PDFTemplatesSection } from './PDFTemplatesSection';
+import { DocumentTemplatePreviewModal } from './DocumentTemplatePreviewModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ import {
   Files
 } from 'lucide-react';
 import { toast } from 'sonner';
+import type { DocType } from '@/types/bos';
 
 export function DocumentsSection() {
   const { data: rawTemplates, isLoading: templatesLoading } = useDocumentTemplates();
@@ -30,15 +32,16 @@ export function DocumentsSection() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [docTypeFilter, setDocTypeFilter] = useState<string>('all');
+  const [previewTemplate, setPreviewTemplate] = useState<DocumentTemplateCardData | null>(null);
 
   // Transform templates to expected format
-  const templates = (rawTemplates || []).map(t => ({
+  const templates: DocumentTemplateCardData[] = (rawTemplates || []).map(t => ({
     template_id: t.template_id,
-    doc_type: t.doc_type,
+    doc_type: t.doc_type as DocType,
     template_version: t.template_version ? String(t.template_version).replace('v', '') : '1',
     effective_from: t.effective_from,
-    required_signers_schema: t.required_signers_schema || { roles: [] },
-    data_binding_schema: t.data_binding_schema || {},
+    required_signers_schema: (t.required_signers_schema as { roles?: string[] }) || { roles: [] },
+    data_binding_schema: (t.data_binding_schema as Record<string, string>) || {},
     template_content: t.template_content || '',
     is_published: t.status === 'Published',
     created_at: t.created_at,
@@ -74,8 +77,8 @@ export function DocumentsSection() {
     return matchesSearch && matchesStatus;
   });
 
-  const handleViewTemplate = (template: typeof templates[0]) => {
-    toast.info(`Viewing template: ${template.doc_type}`);
+  const handleViewTemplate = (template: DocumentTemplateCardData) => {
+    setPreviewTemplate(template);
   };
 
   const handleViewDocument = (doc: typeof documents[0]) => {
@@ -278,8 +281,8 @@ export function DocumentsSection() {
             {filteredTemplates.map((template) => (
               <DocumentTemplateCard
                 key={template.template_id}
-                template={template as any}
-                onView={handleViewTemplate as any}
+                template={template}
+                onView={handleViewTemplate}
                 onEdit={(t) => toast.info(`Editing ${t.template_id}`)}
                 onDuplicate={(t) => toast.success(`Template duplicated: ${t.doc_type}`)}
               />
@@ -309,6 +312,13 @@ export function DocumentsSection() {
           <PDFTemplatesSection />
         </TabsContent>
       </Tabs>
+
+      {/* Template Preview Modal */}
+      <DocumentTemplatePreviewModal
+        template={previewTemplate}
+        open={!!previewTemplate}
+        onOpenChange={(open) => !open && setPreviewTemplate(null)}
+      />
     </div>
   );
 }
