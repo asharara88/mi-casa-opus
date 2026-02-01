@@ -7,11 +7,34 @@ interface DocumentTemplate {
   category: string;
 }
 
-// Generate unique document reference
+// Document reference counter storage key
+const DOC_REF_COUNTER_KEY = 'micasa_doc_ref_counter';
+const DOC_REF_YEAR_KEY = 'micasa_doc_ref_year';
+
+// Get next sequential document reference number
+function getNextDocRefNumber(): number {
+  const currentYear = new Date().getFullYear();
+  const storedYear = parseInt(localStorage.getItem(DOC_REF_YEAR_KEY) || '0', 10);
+  
+  // Reset counter if year changed
+  if (storedYear !== currentYear) {
+    localStorage.setItem(DOC_REF_YEAR_KEY, currentYear.toString());
+    localStorage.setItem(DOC_REF_COUNTER_KEY, '1');
+    return 1;
+  }
+  
+  const currentCounter = parseInt(localStorage.getItem(DOC_REF_COUNTER_KEY) || '0', 10);
+  const nextCounter = currentCounter + 1;
+  localStorage.setItem(DOC_REF_COUNTER_KEY, nextCounter.toString());
+  return nextCounter;
+}
+
+// Generate systematic document reference: MC-YYYY-NNNNNN
 function generateDocRef(templateId: string): string {
   const year = new Date().getFullYear();
-  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `MC-${year}-${templateId}-${random}`;
+  const seqNumber = getNextDocRefNumber();
+  const paddedSeq = seqNumber.toString().padStart(6, '0');
+  return `MC-${year}-${paddedSeq}`;
 }
 
 // Convert underscore patterns to form fields
