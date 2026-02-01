@@ -1,6 +1,6 @@
 Commission Authorization & Split Sheet
 
-MiCasa Real Estate LLC
+MiCasa Real Estate
 Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
 Company Registration No. (CN): 3762725 | TRN: ______________________________
 Office Address: __________________________________________
@@ -41,7 +41,7 @@ This payout is authorized in accordance with company policy and applicable regul
 This internal authorization is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
 
 ——————————————————————————————————————————————
-MiCasa Real Estate LLC | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
 
 Signatures
 

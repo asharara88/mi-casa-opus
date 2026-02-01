@@ -1,6 +1,6 @@
 Agent-to-Agent / Agency-to-Agency Agreement
 
-MiCasa Real Estate LLC
+MiCasa Real Estate
 Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
 Company Registration No. (CN): 3762725 | TRN: ______________________________
 Office Address: __________________________________________
@@ -8,10 +8,10 @@ Tel: ______________________ | Email: ______________________
 ——————————————————————————————————————————————
 
 Purpose
-This agreement sets the terms for cooperation between MiCasa Real Estate LLC and another licensed broker or agency for a specific transaction or ongoing cooperation, including commission sharing, non-circumvention, and confidentiality.
+This agreement sets the terms for cooperation between MiCasa Real Estate and another licensed broker or agency for a specific transaction or ongoing cooperation, including commission sharing, non-circumvention, and confidentiality.
 
 1. Parties
-MiCasa Real Estate LLC
+MiCasa Real Estate
 License No.: CN-3762725
 TRN: _________________________________________________
 Representative: _________________________________________
@@ -58,11 +58,11 @@ This agreement is governed by the laws of the United Arab Emirates and applicabl
 This agreement constitutes the entire agreement between the parties relating to the cooperation described herein.
 
 ——————————————————————————————————————————————
-MiCasa Real Estate LLC | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
 
 Signatures
 
-MiCasa Real Estate LLC
+MiCasa Real Estate
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

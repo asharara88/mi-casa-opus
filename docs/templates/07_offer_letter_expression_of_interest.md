@@ -1,6 +1,6 @@
 Offer Letter / Expression of Interest
 
-MiCasa Real Estate LLC
+MiCasa Real Estate
 Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
 Company Registration No. (CN): 3762725 | TRN: ______________________________
 Office Address: __________________________________________
@@ -22,7 +22,7 @@ Full Name: ______________________________________________
 Contact: _______________________________________________
 
 Broker
-Company: MiCasa Real Estate LLC
+Company: MiCasa Real Estate
 Representative: _________________________________________
 
 2. Property Details
@@ -55,7 +55,7 @@ This letter expresses intent only and does not create a binding contract for sal
 This letter is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
 
 ——————————————————————————————————————————————
-MiCasa Real Estate LLC | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
 
 Signatures
 
@@ -69,7 +69,7 @@ Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________
 
-Broker Acknowledgment (MiCasa Real Estate LLC)
+Broker Acknowledgment (MiCasa Real Estate)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

@@ -1,6 +1,6 @@
 Seller / Landlord Authorization (Form A Equivalent)
 
-MiCasa Real Estate LLC
+MiCasa Real Estate
 Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
 Company Registration No. (CN): 3762725 | TRN: ______________________________
 Office Address: __________________________________________
@@ -8,7 +8,7 @@ Tel: ______________________ | Email: ______________________
 ——————————————————————————————————————————————
 
 Purpose
-This authorization appoints MiCasa Real Estate LLC to market and negotiate the sale and/or lease of the described property in Abu Dhabi, and records the parties’ responsibilities and commission terms.
+This authorization appoints MiCasa Real Estate to market and negotiate the sale and/or lease of the described property in Abu Dhabi, and records the parties’ responsibilities and commission terms.
 
 1. Parties
 This authorization is made between the following parties:
@@ -21,7 +21,7 @@ Mobile: ________________________________________________
 Email: _________________________________________________
 
 Broker
-Company: MiCasa Real Estate LLC
+Company: MiCasa Real Estate
 License No.: CN-3762725
 TRN: _________________________________________________
 Address: _______________________________________________
@@ -94,7 +94,7 @@ This authorization is governed by the laws of the United Arab Emirates and appli
 This authorization constitutes the entire agreement between the parties regarding the subject matter and supersedes prior discussions or understandings.
 
 ——————————————————————————————————————————————
-MiCasa Real Estate LLC | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
 
 Signatures
 
@@ -103,7 +103,7 @@ Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________
 
-Broker Representative (MiCasa Real Estate LLC)
+Broker Representative (MiCasa Real Estate)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

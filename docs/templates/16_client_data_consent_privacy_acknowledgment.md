@@ -1,6 +1,6 @@
 Client Data Consent & Privacy Acknowledgment
 
-MiCasa Real Estate LLC
+MiCasa Real Estate
 Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
 Company Registration No. (CN): 3762725 | TRN: ______________________________
 Office Address: __________________________________________
@@ -8,10 +8,10 @@ Tel: ______________________ | Email: ______________________
 ——————————————————————————————————————————————
 
 Purpose
-This document records the Client’s consent and acknowledgment regarding the collection, use, and processing of personal data by MiCasa Real Estate LLC in compliance with UAE PDPL (Federal Decree-Law No. 45 of 2021).
+This document records the Client’s consent and acknowledgment regarding the collection, use, and processing of personal data by MiCasa Real Estate in compliance with UAE PDPL (Federal Decree-Law No. 45 of 2021).
 
 1. Data Controller
-MiCasa Real Estate LLC is the data controller for the personal data collected in connection with real estate brokerage services.
+MiCasa Real Estate is the data controller for the personal data collected in connection with real estate brokerage services.
 
 2. Personal Data Collected
 The data may include identity documents, contact details, financial information, property preferences, transaction records, and communications necessary for brokerage services and regulatory compliance.
@@ -44,7 +44,7 @@ Phone: _________________________________________________
 This acknowledgment is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
 
 ——————————————————————————————————————————————
-MiCasa Real Estate LLC | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
 
 Signatures
 
@@ -53,7 +53,7 @@ Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________
 
-Broker Representative (MiCasa Real Estate LLC)
+Broker Representative (MiCasa Real Estate)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

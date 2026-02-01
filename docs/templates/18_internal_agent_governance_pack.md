@@ -1,6 +1,6 @@
 Internal Agent Governance Pack
 
-MiCasa Real Estate LLC
+MiCasa Real Estate
 Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
 Company Registration No. (CN): 3762725 | TRN: ______________________________
 Office Address: __________________________________________
@@ -8,7 +8,7 @@ Tel: ______________________ | Email: ______________________
 ——————————————————————————————————————————————
 
 Purpose
-This internal governance pack sets out MiCasa Real Estate LLC policies for commission, clawbacks, conduct, and conflict of interest declarations for agents and brokers.
+This internal governance pack sets out MiCasa Real Estate policies for commission, clawbacks, conduct, and conflict of interest declarations for agents and brokers.
 
 1. Commission Policy
 MiCasa pays commission to agents based on executed transactions and verified receipts of commission from clients. Commission eligibility requires:
@@ -50,7 +50,7 @@ I acknowledge that I have read, understood, and will comply with this Governance
 This governance pack is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
 
 ——————————————————————————————————————————————
-MiCasa Real Estate LLC | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
 
 Signatures
 
