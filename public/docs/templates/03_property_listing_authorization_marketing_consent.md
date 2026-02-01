@@ -1,7 +1,7 @@
 Property Listing Authorization & Marketing Consent
 
 Purpose
-This document authorizes MiCasa Real Estate LLC to list, advertise, and market the Property and records the Owner’s consent for media, portals, and price approvals.
+This document authorizes MI CASA REALESTATE to list, advertise, and market the Property and records the Owner's consent for media, portals, and price approvals.
 
 1. Parties
 Owner / Landlord
@@ -12,12 +12,12 @@ Mobile: ________________________________________________
 Email: _________________________________________________
 
 Broker
-Company: MiCasa Real Estate LLC
-License No.: CN-3762725
-TRN: _________________________________________________
+Company: MI CASA REALESTATE - مؤسسة فردية
+License No.: CN-5220826
+TRN: 104329382600003
 Representative: _________________________________________
-Mobile: ________________________________________________
-Email: _________________________________________________
+Mobile: +971 2 447 0028
+Email: info@micasarealestate.ae
 
 2. Property Details
 Property Type: __________________________________________
@@ -69,7 +69,7 @@ Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________
 
-Broker Representative (MiCasa Real Estate LLC)
+Broker Representative (MI CASA REALESTATE)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

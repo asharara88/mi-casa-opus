@@ -28,13 +28,13 @@ export interface AgentDefaults {
  */
 export function useMiCasaDefaults() {
   const micasaDefaults: MiCasaDefaults = useMemo(() => ({
-    legal_name: "MiCasa Real Estate LLC",
-    license_no: "CN-1234567", // Placeholder - should come from brokerage_context
-    trn: "", // Tax Registration Number - optional
-    vat_registered: false,
-    address: "Abu Dhabi, UAE",
-    email: "info@micasa.ae",
-    phone: "+971 2 XXX XXXX"
+    legal_name: "MI CASA REALESTATE - مؤسسة فردية",
+    license_no: "CN-5220826",
+    trn: "104329382600003", // Abu Dhabi TRN
+    vat_registered: true,
+    address: "Office 1002, Addax Tower, City of Lights, Al Reem Island, Abu Dhabi, UAE",
+    email: "info@micasarealestate.ae",
+    phone: "+971 2 447 0028"
   }), []);
 
   const agentDefaults: AgentDefaults = useMemo(() => ({

@@ -1,14 +1,14 @@
 Agent-to-Agent / Agency-to-Agency Agreement
 
 Purpose
-This agreement sets the terms for cooperation between MiCasa Real Estate LLC and another licensed broker or agency for a specific transaction or ongoing cooperation, including commission sharing, non-circumvention, and confidentiality.
+This agreement sets the terms for cooperation between MI CASA REALESTATE and another licensed broker or agency for a specific transaction or ongoing cooperation, including commission sharing, non-circumvention, and confidentiality.
 
 1. Parties
-MiCasa Real Estate LLC
-License No.: CN-3762725
-TRN: _________________________________________________
+MI CASA REALESTATE - مؤسسة فردية
+License No.: CN-5220826
+TRN: 104329382600003
 Representative: _________________________________________
-Email: _________________________________________________
+Email: info@micasarealestate.ae
 
 Cooperating Broker / Agency
 Legal Name: ____________________________________________
@@ -52,7 +52,7 @@ This agreement constitutes the entire agreement between the parties relating to 
 
 Signatures
 
-MiCasa Real Estate LLC
+MI CASA REALESTATE
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

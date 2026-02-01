@@ -1,7 +1,7 @@
 Buyer / Tenant Representation Agreement
 
 Purpose
-This agreement appoints MiCasa Real Estate LLC to represent the Buyer and/or Tenant in locating and negotiating the purchase or lease of property in Abu Dhabi.
+This agreement appoints MI CASA REALESTATE to represent the Buyer and/or Tenant in locating and negotiating the purchase or lease of property in Abu Dhabi.
 
 1. Parties
 Client (Buyer / Tenant)
@@ -12,13 +12,13 @@ Mobile: ________________________________________________
 Email: _________________________________________________
 
 Broker
-Company: MiCasa Real Estate LLC
-License No.: CN-3762725
-TRN: _________________________________________________
-Address: _______________________________________________
+Company: MI CASA REALESTATE - مؤسسة فردية
+License No.: CN-5220826
+TRN: 104329382600003
+Address: Office 1002, Addax Tower, City of Lights, Al Reem Island, Abu Dhabi, UAE
 Representative: _________________________________________
-Mobile: ________________________________________________
-Email: _________________________________________________
+Mobile: +971 2 447 0028
+Email: info@micasarealestate.ae
 
 2. Representation Type
 This agreement applies to (select one):
@@ -79,7 +79,7 @@ Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________
 
-Broker Representative (MiCasa Real Estate LLC)
+Broker Representative (MI CASA REALESTATE)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________
