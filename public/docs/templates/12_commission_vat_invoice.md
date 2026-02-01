@@ -6,12 +6,12 @@ This invoice records brokerage commission due and complies with UAE VAT requirem
 TAX INVOICE
 
 1. Supplier (Broker)
-Legal Name: MI CASA REALESTATE - مؤسسة فردية
-Trade License No.: CN-5220826
-TRN (VAT): 104329382600003
-Address: Office 1002, Addax Tower, City of Lights, Al Reem Island, Abu Dhabi, UAE
-Email: info@micasarealestate.ae
-Phone: +971 2 447 0028
+Legal Name: MI CASA REALESTATE - مي كاسا للعقارات
+Trade License No.: CN-3762725
+TRN (VAT): 100496681600003
+Address: Office 1703, Al Masaood Building, Najda Street, Abu Dhabi, UAE
+Email: contact@micasa.ae
+Phone: +971 2 245 7987
 
 2. Customer
 Customer Name: _________________________________________
