@@ -3,6 +3,7 @@ import { useDocumentTemplates, useDocumentInstances } from '@/hooks/useDocuments
 import { DocumentTemplateCard } from './DocumentTemplateCard';
 import { DocumentInstanceRow } from './DocumentInstanceRow';
 import { DocumentGeneratorPanel } from './DocumentGeneratorPanel';
+import { PDFTemplatesSection } from './PDFTemplatesSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,8 @@ import {
   Filter,
   FolderOpen,
   Loader2,
-  Sparkles
+  Sparkles,
+  Files
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -176,9 +178,13 @@ export function DocumentsSection() {
           <TabsList>
             <TabsTrigger value="instances">Documents</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="pdf-templates" className="gap-1.5">
+              <Files className="w-3.5 h-3.5" />
+              PDF Templates
+            </TabsTrigger>
             <TabsTrigger value="generator" className="gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
-              Generate Documents
+              Generate
             </TabsTrigger>
           </TabsList>
 
@@ -292,6 +298,11 @@ export function DocumentsSection() {
               });
             }}
           />
+        </TabsContent>
+
+        {/* PDF Templates Tab */}
+        <TabsContent value="pdf-templates" className="mt-0">
+          <PDFTemplatesSection />
         </TabsContent>
       </Tabs>
     </div>
