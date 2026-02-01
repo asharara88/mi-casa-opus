@@ -1,5 +1,12 @@
 NOC Request & Clearance Tracker
 
+MiCasa Real Estate
+Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
+Company Registration No. (CN): 3762725 | TRN: ______________________________
+Office Address: __________________________________________
+Tel: ______________________ | Email: ______________________
+——————————————————————————————————————————————
+
 Purpose
 This tracker records all NOC and authority clearance requests required for a transaction and provides an audit trail of submission, approvals, and conditions.
 
@@ -32,9 +39,12 @@ All required NOCs and clearances have been obtained and are valid for transactio
 5. Governing Law
 This tracker is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
 
+——————————————————————————————————————————————
+MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
+
 Signatures
 
-Transaction Manager (MiCasa Real Estate LLC)
+Transaction Manager (MiCasa Real Estate)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________
