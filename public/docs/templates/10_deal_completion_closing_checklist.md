@@ -1,12 +1,5 @@
 Deal Completion & Closing Checklist
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
-
 Purpose
 This checklist confirms that all required steps and documents for the transaction have been completed and that the deal is ready for closure and audit filing.
 
@@ -39,12 +32,9 @@ The parties confirm that all prerequisites have been met and that the transactio
 4. Governing Law
 This checklist is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
-
 Signatures
 
-Transaction Manager (MiCasa Real Estate)
+Transaction Manager (MiCasa Real Estate LLC)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

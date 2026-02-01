@@ -1,12 +1,5 @@
 Offer Letter / Expression of Interest
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
-
 Purpose
 This letter records the Buyer’s or Tenant’s intent to proceed on specified commercial terms for the referenced property, subject to contract and authority approvals.
 
@@ -22,7 +15,7 @@ Full Name: ______________________________________________
 Contact: _______________________________________________
 
 Broker
-Company: MiCasa Real Estate
+Company: MI CASA REALESTATE - مؤسسة فردية
 Representative: _________________________________________
 
 2. Property Details
@@ -54,9 +47,6 @@ This letter expresses intent only and does not create a binding contract for sal
 7. Governing Law
 This letter is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
-
 Signatures
 
 Buyer / Tenant
@@ -69,7 +59,7 @@ Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________
 
-Broker Acknowledgment (MiCasa Real Estate)
+Broker Acknowledgment (MI CASA REALESTATE)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

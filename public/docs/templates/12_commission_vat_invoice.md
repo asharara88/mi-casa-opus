@@ -1,24 +1,17 @@
 Commission & VAT Invoice
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
-
 Purpose
-This invoice records brokerage commission due and complies with UAE VAT requirements for tax invoices issued by MiCasa Real Estate.
+This invoice records brokerage commission due and complies with UAE VAT requirements for tax invoices issued by MI CASA REALESTATE.
 
 TAX INVOICE
 
 1. Supplier (Broker)
-Legal Name: MiCasa Real Estate
-Trade License No.: ______________________________
-TRN (VAT): _____________________________________
-Address: _______________________________________
-Email: _________________________________________
-Phone: _________________________________________
+Legal Name: MI CASA REALESTATE - مؤسسة فردية
+Trade License No.: CN-5220826
+TRN (VAT): 104329382600003
+Address: Office 1002, Addax Tower, City of Lights, Al Reem Island, Abu Dhabi, UAE
+Email: info@micasarealestate.ae
+Phone: +971 2 447 0028
 
 2. Customer
 Customer Name: _________________________________________
@@ -54,12 +47,9 @@ This invoice is issued for brokerage services provided in connection with the ab
 7. Governing Law
 This invoice is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
-
 Signatures
 
-Authorized Signatory (MiCasa Real Estate)
+Authorized Signatory (MI CASA REALESTATE)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

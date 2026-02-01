@@ -1,17 +1,10 @@
 Company Trade License & Regulatory Registration Record
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
-
 Purpose
-This internal master record consolidates MiCasa Real Estate licensing, regulatory registrations, and key compliance identifiers for audit and operational reference.
+This internal master record consolidates MiCasa Real Estate LLC licensing, regulatory registrations, and key compliance identifiers for audit and operational reference.
 
 1. Company Identification
-Legal Name: MiCasa Real Estate
+Legal Name: MiCasa Real Estate LLC
 Trade Name: MiCasa Real Estate
 Company Registration No. (CN): 3762725
 Trade License No.: ______________________________
@@ -59,9 +52,6 @@ __________________________________________________________________
 
 8. Governing Law
 This internal record is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
-
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
 
 Signatures
 

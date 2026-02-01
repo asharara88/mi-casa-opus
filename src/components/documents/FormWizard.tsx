@@ -1,10 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,6 +14,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ManifestPrompt } from "@/types/manifest";
+import { FieldWithLabel } from "./form-wizard/FormFieldRenderer";
+import { StepValidation, validateStep, calculateCompletion } from "./form-wizard/StepValidation";
+import { FormDraftManager } from "./form-wizard/FormDraftManager";
+import { toast } from "sonner";
 
 interface FormWizardProps {
   prompt: ManifestPrompt;
@@ -34,6 +33,16 @@ interface FormStep {
   label: string;
   fields: string[];
   isRequired: boolean;
+  description?: string;
+}
+
+// Helper function to format labels
+function formatLabel(key: string): string {
+  return key
+    .replace(/_/g, " ")
+    .replace(/([A-Z])/g, " $1")
+    .replace(/\b\w/g, l => l.toUpperCase())
+    .trim();
 }
 
 export function FormWizard({
@@ -45,6 +54,7 @@ export function FormWizard({
   error
 }: FormWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   // Parse schema and organize into steps
   const { steps, schema } = useMemo(() => {
@@ -53,7 +63,8 @@ export function FormWizard({
       properties?: Record<string, {
         type: string;
         enum?: string[];
-        properties?: Record<string, unknown>;
+        description?: string;
+        properties?: Record<string, { type: string; description?: string }>;
         required?: string[];
         items?: { type: string; properties?: Record<string, unknown> };
       }>;
@@ -76,7 +87,8 @@ export function FormWizard({
         key,
         label: formatLabel(key),
         fields: isObject ? Object.keys(prop.properties || {}) : [key],
-        isRequired
+        isRequired,
+        description: prop.description
       });
     });
 
@@ -85,135 +97,67 @@ export function FormWizard({
 
   // Calculate completion percentage
   const completion = useMemo(() => {
-    if (steps.length === 0) return 0;
-    
-    const required = schema.required || [];
-    let filled = 0;
-    let total = required.length;
+    return calculateCompletion(formData, schema);
+  }, [formData, schema]);
 
-    if (total === 0) return 100;
-
-    required.forEach(key => {
-      const value = formData[key];
-      if (value !== undefined && value !== null && value !== "") {
-        if (typeof value === "object" && !Array.isArray(value)) {
-          const obj = value as Record<string, unknown>;
-          if (Object.values(obj).some(v => v !== undefined && v !== null && v !== "")) {
-            filled++;
-          }
-        } else {
-          filled++;
-        }
-      }
-    });
-
-    return Math.round((filled / total) * 100);
-  }, [formData, schema, steps]);
+  // Validate current step
+  const currentStepValidation = useMemo(() => {
+    if (!steps[currentStep]) return { isValid: true, missingFields: [], warnings: [] };
+    return validateStep(steps[currentStep].key, formData, schema);
+  }, [currentStep, formData, schema, steps]);
 
   const currentStepData = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
   const isFirstStep = currentStep === 0;
 
-  const goNext = () => {
-    if (!isLastStep) setCurrentStep(prev => prev + 1);
-  };
+  const goNext = useCallback(() => {
+    if (!isLastStep) {
+      // Validate before proceeding if required
+      if (currentStepData?.isRequired && !currentStepValidation.isValid) {
+        toast.warning("Please complete required fields", {
+          description: `Missing: ${currentStepValidation.missingFields.map(f => formatLabel(f.split('.').pop() || f)).join(', ')}`
+        });
+        setAttemptedSubmit(true);
+        return;
+      }
+      setCurrentStep(prev => prev + 1);
+      setAttemptedSubmit(false);
+    }
+  }, [isLastStep, currentStepData, currentStepValidation]);
 
   const goPrev = () => {
-    if (!isFirstStep) setCurrentStep(prev => prev - 1);
+    if (!isFirstStep) {
+      setCurrentStep(prev => prev - 1);
+      setAttemptedSubmit(false);
+    }
   };
 
   const goToStep = (index: number) => {
     setCurrentStep(index);
+    setAttemptedSubmit(false);
   };
 
-  // Render individual field
-  const renderField = (path: string, prop: any, value: unknown, isRequired: boolean) => {
-    const fieldName = path.split(".").pop() || "";
-    
-    // Enum field
-    if (prop.enum) {
-      return (
-        <Select
-          value={(value as string) || ""}
-          onValueChange={(v) => onFieldChange(path, v)}
-        >
-          <SelectTrigger className="bg-background">
-            <SelectValue placeholder={`Select ${formatLabel(fieldName)}`} />
-          </SelectTrigger>
-          <SelectContent className="bg-popover">
-            {prop.enum.map((option: string) => (
-              <SelectItem key={option} value={option}>
-                {formatLabel(option)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      );
+  const handleGenerate = () => {
+    // Validate current step first
+    if (currentStepData?.isRequired && !currentStepValidation.isValid) {
+      toast.warning("Please complete required fields");
+      setAttemptedSubmit(true);
+      return;
     }
-
-    // Boolean field
-    if (prop.type === "boolean") {
-      return (
-        <div className="flex items-center gap-3">
-          <Switch
-            checked={!!value}
-            onCheckedChange={(checked) => onFieldChange(path, checked)}
-          />
-          <span className="text-sm text-muted-foreground">
-            {value ? "Yes" : "No"}
-          </span>
-        </div>
-      );
-    }
-
-    // Number field
-    if (prop.type === "number" || prop.type === "integer") {
-      return (
-        <Input
-          type="number"
-          value={(value as number) ?? ""}
-          onChange={(e) => onFieldChange(path, parseFloat(e.target.value) || 0)}
-          placeholder={`Enter ${formatLabel(fieldName)}`}
-          className="bg-background"
-        />
-      );
-    }
-
-    // Date field
-    if (prop.format === "date" || fieldName.includes("date")) {
-      return (
-        <Input
-          type="date"
-          value={(value as string) || ""}
-          onChange={(e) => onFieldChange(path, e.target.value)}
-          className="bg-background"
-        />
-      );
-    }
-
-    // Long text fields
-    if (fieldName.includes("content") || fieldName.includes("notes") || fieldName.includes("conditions")) {
-      return (
-        <Textarea
-          value={(value as string) || ""}
-          onChange={(e) => onFieldChange(path, e.target.value)}
-          placeholder={`Enter ${formatLabel(fieldName)}`}
-          rows={3}
-          className="bg-background"
-        />
-      );
-    }
-
-    // Default string input
-    return (
-      <Input
-        value={(value as string) || ""}
-        onChange={(e) => onFieldChange(path, e.target.value)}
-        placeholder={`Enter ${formatLabel(fieldName)}`}
-        className="bg-background"
-      />
-    );
+    onGenerate();
   };
+
+  const handleRestoreDraft = useCallback((data: Record<string, unknown>) => {
+    Object.entries(data).forEach(([key, value]) => {
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        Object.entries(value as Record<string, unknown>).forEach(([nestedKey, nestedValue]) => {
+          onFieldChange(`${key}.${nestedKey}`, nestedValue);
+        });
+      } else {
+        onFieldChange(key, value);
+      }
+    });
+  }, [onFieldChange]);
 
   // Render step content
   const renderStepContent = () => {
@@ -236,18 +180,16 @@ export function FormWizard({
             const nestedValue = (value as Record<string, unknown>)?.[nestedKey];
             
             return (
-              <div key={nestedKey} className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {formatLabel(nestedKey)}
-                  {isNestedRequired && <span className="text-destructive ml-1">*</span>}
-                </Label>
-                {renderField(
-                  `${currentStepData.key}.${nestedKey}`,
-                  nestedProp,
-                  nestedValue,
-                  isNestedRequired
-                )}
-              </div>
+              <FieldWithLabel
+                key={nestedKey}
+                fieldName={nestedKey}
+                label={formatLabel(nestedKey)}
+                path={`${currentStepData.key}.${nestedKey}`}
+                schema={nestedProp}
+                value={nestedValue}
+                onChange={onFieldChange}
+                isRequired={isNestedRequired}
+              />
             );
           })}
         </div>
@@ -256,13 +198,15 @@ export function FormWizard({
 
     // Simple field
     return (
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">
-          {currentStepData.label}
-          {currentStepData.isRequired && <span className="text-destructive ml-1">*</span>}
-        </Label>
-        {renderField(currentStepData.key, prop, value, currentStepData.isRequired)}
-      </div>
+      <FieldWithLabel
+        fieldName={currentStepData.key}
+        label={currentStepData.label}
+        path={currentStepData.key}
+        schema={prop}
+        value={value}
+        onChange={onFieldChange}
+        isRequired={currentStepData.isRequired}
+      />
     );
   };
 
@@ -295,48 +239,74 @@ export function FormWizard({
           <span className="text-muted-foreground">
             Step {currentStep + 1} of {steps.length}
           </span>
-          <span className="font-medium text-foreground">
-            {completion}% complete
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="font-medium text-foreground">
+              {completion}% complete
+            </span>
+          </div>
         </div>
         <Progress value={completion} className="h-2" />
         
         {/* Step indicators */}
         <div className="flex gap-1 overflow-x-auto pb-1">
-          {steps.map((step, index) => (
-            <button
-              key={step.key}
-              onClick={() => goToStep(index)}
-              className={cn(
-                "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-colors",
-                index === currentStep
-                  ? "bg-primary text-primary-foreground"
-                  : index < currentStep
-                  ? "bg-primary/20 text-primary"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
-              {step.label}
-              {step.isRequired && <span className="text-destructive">*</span>}
-            </button>
-          ))}
+          {steps.map((step, index) => {
+            const stepValidation = validateStep(step.key, formData, schema);
+            const isComplete = stepValidation.isValid && (
+              formData[step.key] !== undefined || 
+              (typeof formData[step.key] === 'object' && Object.keys(formData[step.key] as object || {}).length > 0)
+            );
+
+            return (
+              <button
+                key={step.key}
+                onClick={() => goToStep(index)}
+                className={cn(
+                  "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-colors flex items-center gap-1",
+                  index === currentStep
+                    ? "bg-primary text-primary-foreground"
+                    : isComplete
+                    ? "bg-primary/20 text-primary"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                {isComplete && index !== currentStep && (
+                  <Check className="h-3 w-3" />
+                )}
+                {step.label}
+                {step.isRequired && !isComplete && (
+                  <span className="text-destructive">*</span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
+
+      {/* Draft Manager */}
+      <FormDraftManager
+        templateId={prompt.prompt_id}
+        formData={formData}
+        onRestoreDraft={handleRestoreDraft}
+      />
 
       {/* Step Content */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">
-            {currentStepData?.label}
-            {currentStepData?.isRequired && (
-              <Badge variant="destructive" className="ml-2 text-xs">Required</Badge>
-            )}
-          </CardTitle>
-          {currentStepData?.key && (
-            <CardDescription>
-              Fill in the {formatLabel(currentStepData.key).toLowerCase()} details
-            </CardDescription>
-          )}
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base">
+                {currentStepData?.label}
+                {currentStepData?.isRequired && (
+                  <Badge variant="destructive" className="ml-2 text-xs">Required</Badge>
+                )}
+              </CardTitle>
+              {(currentStepData?.description || currentStepData?.key) && (
+                <CardDescription>
+                  {currentStepData.description || `Fill in the ${formatLabel(currentStepData.key).toLowerCase()} details`}
+                </CardDescription>
+              )}
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <ScrollArea className="max-h-[280px]">
@@ -344,6 +314,11 @@ export function FormWizard({
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {/* Step Validation Feedback */}
+      {attemptedSubmit && currentStepData?.isRequired && (
+        <StepValidation validation={currentStepValidation} />
+      )}
 
       {/* Error Display */}
       {error && (
@@ -365,7 +340,7 @@ export function FormWizard({
         </Button>
 
         {isLastStep ? (
-          <Button onClick={onGenerate} disabled={isGenerating}>
+          <Button onClick={handleGenerate} disabled={isGenerating}>
             {isGenerating ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -387,13 +362,4 @@ export function FormWizard({
       </div>
     </div>
   );
-}
-
-// Helper function to format labels
-function formatLabel(key: string): string {
-  return key
-    .replace(/_/g, " ")
-    .replace(/([A-Z])/g, " $1")
-    .replace(/\b\w/g, l => l.toUpperCase())
-    .trim();
 }

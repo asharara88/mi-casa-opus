@@ -1,12 +1,5 @@
 Complaint, Dispute & Incident Register
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
-
 Purpose
 This register records complaints, disputes, and operational incidents for regulatory compliance, internal escalation, and resolution tracking.
 
@@ -29,9 +22,6 @@ For each case, the following information must be recorded in the case file:
 
 4. Governing Law
 This register is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
-
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
 
 Signatures
 

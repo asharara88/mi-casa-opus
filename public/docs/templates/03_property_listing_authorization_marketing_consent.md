@@ -1,14 +1,7 @@
 Property Listing Authorization & Marketing Consent
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
-
 Purpose
-This document authorizes MiCasa Real Estate to list, advertise, and market the Property and records the Owner’s consent for media, portals, and price approvals.
+This document authorizes MI CASA REALESTATE to list, advertise, and market the Property and records the Owner's consent for media, portals, and price approvals.
 
 1. Parties
 Owner / Landlord
@@ -19,12 +12,12 @@ Mobile: ________________________________________________
 Email: _________________________________________________
 
 Broker
-Company: MiCasa Real Estate
-License No.: CN-3762725
-TRN: _________________________________________________
+Company: MI CASA REALESTATE - مؤسسة فردية
+License No.: CN-5220826
+TRN: 104329382600003
 Representative: _________________________________________
-Mobile: ________________________________________________
-Email: _________________________________________________
+Mobile: +971 2 447 0028
+Email: info@micasarealestate.ae
 
 2. Property Details
 Property Type: __________________________________________
@@ -69,9 +62,6 @@ This authorization is governed by the laws of the United Arab Emirates and appli
 10. Entire Agreement
 This authorization constitutes the entire agreement regarding listing and marketing consent for the Property.
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
-
 Signatures
 
 Owner / Landlord
@@ -79,7 +69,7 @@ Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________
 
-Broker Representative (MiCasa Real Estate)
+Broker Representative (MI CASA REALESTATE)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

@@ -1,12 +1,5 @@
 Refund / Cancellation Approval Form
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
-
 Purpose
 This form documents approval for refunds or cancellations, including the basis, amounts, and compliance checks for audit and customer protection.
 
@@ -39,9 +32,6 @@ __________________________________________________________________
 
 6. Governing Law
 This approval form is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
-
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
 
 Signatures
 

@@ -1,12 +1,5 @@
 Memorandum of Understanding (MOU / SPA Pre-Stage)
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
-
 Purpose
 This MOU records the agreed sale terms prior to transfer and sets out the parties’ obligations pending execution of the final sale and transfer documentation.
 
@@ -22,7 +15,7 @@ Emirates ID / Passport No.: ______________________________
 Address: _______________________________________________
 
 Broker
-Company: MiCasa Real Estate
+Company: MiCasa Real Estate LLC
 Representative: _________________________________________
 
 2. Property Details
@@ -65,9 +58,6 @@ This MOU is governed by the laws of the United Arab Emirates and applicable regu
 11. Entire Agreement
 This MOU constitutes the entire agreement between the parties regarding the pre-transfer terms and supersedes prior communications relating to the subject matter.
 
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
-
 Signatures
 
 Seller
@@ -80,7 +70,7 @@ Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________
 
-Broker Acknowledgment (MiCasa Real Estate)
+Broker Acknowledgment (MiCasa Real Estate LLC)
 Name: __________________________________________
 Signature: ______________________________________
 Date: __________________________________________

@@ -1,12 +1,5 @@
 Financial Reconciliation & Deal Ledger
 
-MiCasa Real Estate
-Licensed Real Estate Broker | Abu Dhabi, United Arab Emirates
-Company Registration No. (CN): 3762725 | TRN: ______________________________
-Office Address: __________________________________________
-Tel: ______________________ | Email: ______________________
-——————————————————————————————————————————————
-
 Purpose
 This ledger records all financial movements for a specific deal, enabling reconciliation and audit verification.
 
@@ -36,9 +29,6 @@ __________________________________________________________________
 
 5. Governing Law
 This ledger is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
-
-——————————————————————————————————————————————
-MiCasa Real Estate | CN-3762725 | TRN: ______________________________ | www.micasa.ae
 
 Signatures
 

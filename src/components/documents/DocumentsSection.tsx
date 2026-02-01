@@ -3,6 +3,7 @@ import { useDocumentTemplates, useDocumentInstances } from '@/hooks/useDocuments
 import { DocumentTemplateCard } from './DocumentTemplateCard';
 import { DocumentInstanceRow } from './DocumentInstanceRow';
 import { DocumentGeneratorPanel } from './DocumentGeneratorPanel';
+import { PDFTemplatesSection } from './PDFTemplatesSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,9 +17,110 @@ import {
   Filter,
   FolderOpen,
   Loader2,
-  Sparkles
+  Sparkles,
+  Files
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+// Default templates when database is empty
+const DEFAULT_TEMPLATES = [
+  {
+    template_id: 'TPL-SPA-001',
+    doc_type: 'SPA',
+    template_version: 2,
+    effective_from: '2024-01-01',
+    required_signers_schema: { roles: ['Buyer', 'Seller', 'Witness'] },
+    data_binding_schema: {},
+    template_content: '',
+    is_published: true,
+    created_at: '2023-12-15',
+    name: 'Sale and Purchase Agreement',
+  },
+  {
+    template_id: 'TPL-RES-001',
+    doc_type: 'ReservationForm',
+    template_version: 1,
+    effective_from: '2024-01-01',
+    required_signers_schema: { roles: ['Buyer', 'Agent'] },
+    data_binding_schema: {},
+    template_content: '',
+    is_published: true,
+    created_at: '2023-11-20',
+    name: 'Reservation / Booking Form',
+  },
+  {
+    template_id: 'TPL-MAN-001',
+    doc_type: 'MandateAgreement',
+    template_version: 1,
+    effective_from: '2024-01-01',
+    required_signers_schema: { roles: ['Owner', 'Brokerage'] },
+    data_binding_schema: {},
+    template_content: '',
+    is_published: true,
+    created_at: '2023-12-01',
+    name: 'Seller / Landlord Authorization',
+  },
+  {
+    template_id: 'TPL-BRA-001',
+    doc_type: 'BuyerRepAgreement',
+    template_version: 1,
+    effective_from: '2024-01-01',
+    required_signers_schema: { roles: ['Buyer', 'Agent'] },
+    data_binding_schema: {},
+    template_content: '',
+    is_published: true,
+    created_at: '2024-01-01',
+    name: 'Buyer / Tenant Representation Agreement',
+  },
+  {
+    template_id: 'TPL-EOI-001',
+    doc_type: 'OfferLetter',
+    template_version: 1,
+    effective_from: '2024-01-01',
+    required_signers_schema: { roles: ['Buyer', 'Seller'] },
+    data_binding_schema: {},
+    template_content: '',
+    is_published: true,
+    created_at: '2024-01-05',
+    name: 'Offer Letter / Expression of Interest',
+  },
+  {
+    template_id: 'TPL-MOU-001',
+    doc_type: 'MOU',
+    template_version: 1,
+    effective_from: '2024-01-01',
+    required_signers_schema: { roles: ['Buyer', 'Seller', 'Agent'] },
+    data_binding_schema: {},
+    template_content: '',
+    is_published: true,
+    created_at: '2024-01-08',
+    name: 'Memorandum of Understanding (Pre-SPA)',
+  },
+  {
+    template_id: 'TPL-INV-001',
+    doc_type: 'CommissionInvoice',
+    template_version: 1,
+    effective_from: '2024-01-01',
+    required_signers_schema: { roles: ['Brokerage'] },
+    data_binding_schema: {},
+    template_content: '',
+    is_published: true,
+    created_at: '2024-01-10',
+    name: 'Commission VAT Invoice',
+  },
+  {
+    template_id: 'TPL-A2A-001',
+    doc_type: 'AgentAgreement',
+    template_version: 1,
+    effective_from: '2024-01-01',
+    required_signers_schema: { roles: ['Agent A', 'Agent B'] },
+    data_binding_schema: {},
+    template_content: '',
+    is_published: false,
+    created_at: '2024-01-12',
+    name: 'Agent-to-Agent Agency Agreement',
+  },
+];
 
 export function DocumentsSection() {
   const { data: rawTemplates, isLoading: templatesLoading } = useDocumentTemplates();
@@ -29,18 +131,22 @@ export function DocumentsSection() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [docTypeFilter, setDocTypeFilter] = useState<string>('all');
 
-  // Transform templates to expected format
-  const templates = (rawTemplates || []).map(t => ({
+  // Transform templates to expected format, fallback to defaults if empty
+  const dbTemplates = (rawTemplates || []).map(t => ({
     template_id: t.template_id,
     doc_type: t.doc_type,
     template_version: parseInt(t.template_version) || 1,
     effective_from: t.effective_from,
-    required_signers_schema: t.required_signers_schema || {},
+    required_signers_schema: t.required_signers_schema || { roles: [] },
     data_binding_schema: t.data_binding_schema || {},
     template_content: t.template_content || '',
     is_published: t.status === 'Published',
     created_at: t.created_at,
+    name: t.name,
   }));
+
+  // Use default templates if database is empty
+  const templates = dbTemplates.length > 0 ? dbTemplates : DEFAULT_TEMPLATES;
 
   // Transform documents to expected format
   const documents = (rawDocuments || []).map(d => ({
@@ -58,7 +164,8 @@ export function DocumentsSection() {
 
   const filteredTemplates = templates.filter(template => {
     const matchesSearch = template.doc_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          template.template_id.toLowerCase().includes(searchQuery.toLowerCase());
+                          template.template_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (template.name?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     const matchesType = docTypeFilter === 'all' || template.doc_type === docTypeFilter;
     return matchesSearch && matchesType;
   });
@@ -176,9 +283,13 @@ export function DocumentsSection() {
           <TabsList>
             <TabsTrigger value="instances">Documents</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="pdf-templates" className="gap-1.5">
+              <Files className="w-3.5 h-3.5" />
+              PDF Templates
+            </TabsTrigger>
             <TabsTrigger value="generator" className="gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
-              Generate Documents
+              Generate
             </TabsTrigger>
           </TabsList>
 
@@ -292,6 +403,11 @@ export function DocumentsSection() {
               });
             }}
           />
+        </TabsContent>
+
+        {/* PDF Templates Tab */}
+        <TabsContent value="pdf-templates" className="mt-0">
+          <PDFTemplatesSection />
         </TabsContent>
       </Tabs>
     </div>
