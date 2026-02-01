@@ -14,6 +14,7 @@ import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { DocType } from "@/types/bos";
+import { generateProfessionalPDFHTML } from "@/lib/pdf-document-generator";
 
 interface DocumentTemplatePreviewModalProps {
   template: {
@@ -42,6 +43,17 @@ const DOC_TYPE_COLORS: Record<DocType, { bg: string; text: string }> = {
   Other: { bg: 'bg-slate-500/20', text: 'text-slate-400' },
 };
 
+// Map template_id to category
+function getTemplateCategory(templateId: string): string {
+  if (templateId.includes('authorization') || templateId.includes('representation')) return 'Client Authorization';
+  if (templateId.includes('listing') || templateId.includes('marketing')) return 'Listing & Marketing';
+  if (templateId.includes('license') || templateId.includes('trade')) return 'Regulatory';
+  if (templateId.includes('offer') || templateId.includes('mou') || templateId.includes('reservation')) return 'Transaction';
+  if (templateId.includes('commission') || templateId.includes('invoice') || templateId.includes('financial')) return 'Financial';
+  if (templateId.includes('compliance') || templateId.includes('consent') || templateId.includes('dispute')) return 'Compliance';
+  return 'General';
+}
+
 export function DocumentTemplatePreviewModal({
   template,
   open,
@@ -60,7 +72,7 @@ export function DocumentTemplatePreviewModal({
 
   const handleDownload = useCallback(() => {
     if (template) {
-      const blob = new Blob([template.template_content], { type: "text/markdown" });
+      const blob = new Blob([template.template_content || ''], { type: "text/markdown" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -75,39 +87,23 @@ export function DocumentTemplatePreviewModal({
 
   const handlePrint = useCallback(() => {
     if (template) {
+      const templateData = {
+        id: template.template_id,
+        title: template.name || template.template_id.replace(/_/g, ' ').replace(/^\d+\s*/, ''),
+        subtitle: `Version ${template.template_version}`,
+        category: getTemplateCategory(template.template_id),
+      };
+      
+      const professionalHTML = generateProfessionalPDFHTML(
+        template.template_content || '',
+        templateData
+      );
+      
       const printWindow = window.open('', '_blank');
       if (printWindow) {
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>${template.name || template.template_id}</title>
-            <style>
-              body { font-family: 'Georgia', serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
-              h1 { font-size: 24px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-              h2 { font-size: 18px; margin-top: 24px; }
-              h3, h4 { font-size: 14px; margin-top: 16px; }
-              p { margin: 12px 0; }
-              hr { margin: 24px 0; border: none; border-top: 1px solid #ccc; }
-              @media print { body { margin: 0; padding: 20px; } }
-            </style>
-          </head>
-          <body>
-            ${template.template_content
-              .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-              .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-              .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-              .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
-              .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-              .replace(/\n\n/g, '</p><p>')
-              .replace(/---/g, '<hr>')
-              .replace(/^(.+)$/gm, '<p>$1</p>')
-            }
-          </body>
-          </html>
-        `);
+        printWindow.document.write(professionalHTML);
         printWindow.document.close();
-        printWindow.print();
+        setTimeout(() => printWindow.print(), 250);
       }
     }
   }, [template]);
