@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,12 +13,16 @@ import {
   SkipForward,
   ArrowLeft,
   FileText,
-  Loader2
+  Loader2,
+  RotateCcw,
+  CheckCircle2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ManifestPrompt } from "@/types/manifest";
+import { useWorkflowState, type WorkflowType, type WorkflowState, getWorkflowState } from "@/hooks/useWorkflowState";
+import { toast } from "sonner";
 
-export type WorkflowType = "sales" | "leasing" | "co_broker";
+export type { WorkflowType };
 
 interface WorkflowStep {
   prompt_id: string;
@@ -36,7 +40,7 @@ interface WorkflowConfig {
 }
 
 // Workflow configurations based on manifest routing
-const WORKFLOW_CONFIGS: Record<WorkflowType, Omit<WorkflowConfig, "type">> = {
+export const WORKFLOW_CONFIGS: Record<WorkflowType, Omit<WorkflowConfig, "type">> = {
   sales: {
     label: "Sales Deal",
     icon: Home,
@@ -76,21 +80,56 @@ const WORKFLOW_CONFIGS: Record<WorkflowType, Omit<WorkflowConfig, "type">> = {
 
 interface WorkflowWizardProps {
   prompts: ManifestPrompt[];
-  onSelectTemplate: (promptId: string) => void;
+  onSelectTemplate: (promptId: string, workflowContext?: { type: WorkflowType; stepIndex: number }) => void;
   onBack?: () => void;
+  activeWorkflowType?: WorkflowType | null;
+  onWorkflowSelect?: (type: WorkflowType | null) => void;
 }
 
-export function WorkflowWizard({ prompts, onSelectTemplate, onBack }: WorkflowWizardProps) {
-  const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowType | null>(null);
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-  const [skippedSteps, setSkippedSteps] = useState<string[]>([]);
+export function WorkflowWizard({ 
+  prompts, 
+  onSelectTemplate, 
+  onBack,
+  activeWorkflowType,
+  onWorkflowSelect
+}: WorkflowWizardProps) {
+  const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowType | null>(activeWorkflowType || null);
+  
+  const {
+    state: workflowState,
+    startWorkflow,
+    completeStep,
+    skipStep,
+    goToStep,
+    advanceStep,
+    resetWorkflow,
+    isStepCompleted,
+    isStepSkipped,
+    getDocumentId
+  } = useWorkflowState(selectedWorkflow);
+
+  // Sync with external activeWorkflowType
+  useEffect(() => {
+    if (activeWorkflowType && activeWorkflowType !== selectedWorkflow) {
+      setSelectedWorkflow(activeWorkflowType);
+    }
+  }, [activeWorkflowType]);
 
   const workflowConfig = selectedWorkflow ? { type: selectedWorkflow, ...WORKFLOW_CONFIGS[selectedWorkflow] } : null;
   
+  const currentStepIndex = workflowState?.currentStepIndex ?? 0;
   const currentStep = workflowConfig?.steps[currentStepIndex];
-  const progress = workflowConfig ? ((currentStepIndex) / workflowConfig.steps.length) * 100 : 0;
+  const completedSteps = workflowState?.completedSteps ?? [];
+  const skippedSteps = workflowState?.skippedSteps ?? [];
+  
+  const progress = workflowConfig 
+    ? ((completedSteps.length + skippedSteps.length) / workflowConfig.steps.length) * 100 
+    : 0;
   const isLastStep = workflowConfig && currentStepIndex === workflowConfig.steps.length - 1;
+  const isWorkflowComplete = workflowConfig && 
+    workflowConfig.steps.every(s => 
+      completedSteps.includes(s.prompt_id) || skippedSteps.includes(s.prompt_id) || s.isOptional
+    );
 
   // Check if prompt exists in manifest
   const isPromptAvailable = useCallback((promptId: string) => {
@@ -99,42 +138,41 @@ export function WorkflowWizard({ prompts, onSelectTemplate, onBack }: WorkflowWi
 
   const handleSelectWorkflow = (type: WorkflowType) => {
     setSelectedWorkflow(type);
-    setCurrentStepIndex(0);
-    setCompletedSteps([]);
-    setSkippedSteps([]);
+    startWorkflow(type);
+    onWorkflowSelect?.(type);
   };
 
   const handleBackToSelection = () => {
     setSelectedWorkflow(null);
-    setCurrentStepIndex(0);
-  };
-
-  const handleStepComplete = (promptId: string) => {
-    setCompletedSteps(prev => [...prev, promptId]);
-    if (!isLastStep) {
-      setCurrentStepIndex(prev => prev + 1);
-    }
+    onWorkflowSelect?.(null);
   };
 
   const handleSkipStep = () => {
-    if (currentStep?.isOptional) {
-      setSkippedSteps(prev => [...prev, currentStep.prompt_id]);
+    if (currentStep?.isOptional && workflowConfig) {
+      skipStep(currentStep.prompt_id);
       if (!isLastStep) {
-        setCurrentStepIndex(prev => prev + 1);
+        advanceStep(workflowConfig.steps.length);
       }
+      toast.info(`Skipped: ${currentStep.title}`);
     }
   };
 
   const handleGoToStep = (index: number) => {
-    setCurrentStepIndex(index);
+    goToStep(index);
   };
 
   const handleStartStep = () => {
-    if (currentStep) {
-      onSelectTemplate(currentStep.prompt_id);
-      // Mark as complete when user starts (they can always come back)
-      handleStepComplete(currentStep.prompt_id);
+    if (currentStep && selectedWorkflow) {
+      onSelectTemplate(currentStep.prompt_id, {
+        type: selectedWorkflow,
+        stepIndex: currentStepIndex
+      });
     }
+  };
+
+  const handleResetWorkflow = () => {
+    resetWorkflow();
+    toast.success("Workflow reset");
   };
 
   // Workflow Selection View
@@ -152,16 +190,26 @@ export function WorkflowWizard({ prompts, onSelectTemplate, onBack }: WorkflowWi
           {(Object.entries(WORKFLOW_CONFIGS) as [WorkflowType, Omit<WorkflowConfig, "type">][]).map(([type, config]) => {
             const Icon = config.icon;
             const availableSteps = config.steps.filter(s => isPromptAvailable(s.prompt_id)).length;
+            const existingState = getWorkflowState(type);
+            const hasProgress = existingState && existingState.completedSteps.length > 0;
             
             return (
               <Card 
                 key={type}
                 className={cn(
                   "cursor-pointer transition-all hover:border-primary hover:shadow-md",
-                  "group"
+                  "group relative"
                 )}
                 onClick={() => handleSelectWorkflow(type)}
               >
+                {hasProgress && (
+                  <Badge 
+                    variant="secondary" 
+                    className="absolute -top-2 -right-2 text-xs bg-primary text-primary-foreground"
+                  >
+                    In Progress
+                  </Badge>
+                )}
                 <CardContent className="pt-6 text-center space-y-4">
                   <div className={cn(
                     "w-16 h-16 mx-auto rounded-2xl flex items-center justify-center transition-colors",
@@ -179,9 +227,16 @@ export function WorkflowWizard({ prompts, onSelectTemplate, onBack }: WorkflowWi
                       {config.description}
                     </p>
                   </div>
-                  <Badge variant="secondary" className="text-xs">
-                    {availableSteps} steps
-                  </Badge>
+                  <div className="flex items-center justify-center gap-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {availableSteps} steps
+                    </Badge>
+                    {hasProgress && existingState && (
+                      <Badge variant="outline" className="text-xs text-emerald-600">
+                        {existingState.completedSteps.length} done
+                      </Badge>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             );
@@ -219,20 +274,45 @@ export function WorkflowWizard({ prompts, onSelectTemplate, onBack }: WorkflowWi
             </p>
           </div>
         </div>
-        <Badge variant="outline" className="text-xs">
-          {Math.round(progress)}% complete
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs">
+            {Math.round(progress)}% complete
+          </Badge>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleResetWorkflow}
+            className="text-muted-foreground hover:text-destructive"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Progress Bar */}
       <Progress value={progress} className="h-2" />
 
+      {/* Workflow Complete Banner */}
+      {isWorkflowComplete && (
+        <Card className="bg-emerald-500/10 border-emerald-500/30">
+          <CardContent className="py-4 flex items-center gap-3">
+            <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+            <div>
+              <p className="font-medium text-emerald-700">Workflow Complete!</p>
+              <p className="text-sm text-emerald-600">
+                All required steps have been completed
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Step Navigation */}
       <ScrollArea className="w-full">
         <div className="flex gap-2 pb-2">
           {workflowConfig?.steps.map((step, index) => {
-            const isCompleted = completedSteps.includes(step.prompt_id);
-            const isSkipped = skippedSteps.includes(step.prompt_id);
+            const isCompleted = isStepCompleted(step.prompt_id);
+            const isSkipped = isStepSkipped(step.prompt_id);
             const isCurrent = index === currentStepIndex;
             const isAvailable = isPromptAvailable(step.prompt_id);
 
@@ -275,6 +355,9 @@ export function WorkflowWizard({ prompts, onSelectTemplate, onBack }: WorkflowWi
                 <CardTitle className="text-lg flex items-center gap-2">
                   <FileText className="w-5 h-5" />
                   {currentStep.title}
+                  {isStepCompleted(currentStep.prompt_id) && (
+                    <Check className="w-4 h-4 text-emerald-500" />
+                  )}
                 </CardTitle>
                 <CardDescription className="mt-1">
                   {currentStep.description}
@@ -295,23 +378,23 @@ export function WorkflowWizard({ prompts, onSelectTemplate, onBack }: WorkflowWi
               <div className="flex items-center gap-3">
                 <Button onClick={handleStartStep} className="gap-2">
                   <ChevronRight className="w-4 h-4" />
-                  {completedSteps.includes(currentStep.prompt_id) 
+                  {isStepCompleted(currentStep.prompt_id) 
                     ? "Open Again" 
                     : "Start This Step"
                   }
                 </Button>
                 
-                {currentStep.isOptional && !completedSteps.includes(currentStep.prompt_id) && (
+                {currentStep.isOptional && !isStepCompleted(currentStep.prompt_id) && (
                   <Button variant="ghost" onClick={handleSkipStep} className="gap-2">
                     <SkipForward className="w-4 h-4" />
                     Skip
                   </Button>
                 )}
 
-                {isLastStep && completedSteps.length > 0 && (
-                  <Badge variant="outline" className="ml-auto text-emerald-600">
-                    <Check className="w-3 h-3 mr-1" />
-                    Workflow Complete
+                {/* Show document ID if already generated */}
+                {getDocumentId(currentStep.prompt_id) && (
+                  <Badge variant="outline" className="text-xs text-muted-foreground">
+                    Doc: {getDocumentId(currentStep.prompt_id)?.slice(-8)}
                   </Badge>
                 )}
               </div>
