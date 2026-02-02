@@ -62,6 +62,7 @@ const CATEGORY_CONFIG = {
 
 // Subcategory mapping
 const SUBCATEGORIES: Record<string, string> = {
+  // Document Templates
   DOC_SELLER_MANDATE: "Mandates",
   DOC_LANDLORD_MANDATE: "Mandates",
   DOC_BROKERAGE_SALES: "Brokerage",
@@ -76,15 +77,31 @@ const SUBCATEGORIES: Record<string, string> = {
   DOC_COMMISSION_INVOICE: "Finance",
   DOC_COMMISSION_SPLIT: "Finance",
   DOC_PAYMENT_RECEIPT: "Finance",
+  // Checklists
   CHECKLIST_SALES_DEAL: "Deals",
   CHECKLIST_LEASING_DEAL: "Deals",
   CHECKLIST_AGENT_ONBOARDING: "Onboarding",
+  // Compliance
   AML_SALES_CHECK: "Risk",
   KYC_LEASING_CHECK: "KYC",
   COMPLIANCE_PORTALS_MAP: "Portals",
   CONTROL_COMMISSION_DISPUTE: "Controls",
   CONTROL_AUDIT_TRAIL: "Controls",
   CONTROL_AUTHORITY_CHAIN: "Controls",
+  // Admin Ops
+  ADMIN_DOC_INDEX: "Audit",
+  ADMIN_AUDIT_EXPORT: "Audit",
+  // Static Templates
+  STATIC_ADM_FORM_A: "ADM Forms",
+  STATIC_ADM_FORM_B: "ADM Forms",
+  STATIC_NDA: "Legal",
+  STATIC_VIEWING_RECEIPT: "Receipts",
+  STATIC_COMMISSION_RECEIPT: "Receipts",
+  STATIC_HANDOVER_CHECKLIST: "Handover",
+  STATIC_RESERVATION: "Reservation",
+  // Workflow Gates
+  FLOW_SALES_GATE: "Sales",
+  FLOW_LEASING_GATE: "Leasing",
 };
 
 // Deal type filtering

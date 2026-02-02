@@ -12,13 +12,15 @@ import {
   ArrowLeft,
   Rocket,
   FolderOpen,
-  Lock
+  Lock,
+  FileCheck
 } from "lucide-react";
 import { toast } from "sonner";
 import { useDocumentGenerator, useManifestPrompts } from "@/hooks/useManifestExecutor";
+import { useWorkflowState, type WorkflowType, getWorkflowState } from "@/hooks/useWorkflowState";
 import { TemplateBrowser } from "./TemplateBrowser";
 import { FormWizard } from "./FormWizard";
-import { WorkflowWizard, type WorkflowType } from "./WorkflowWizard";
+import { WorkflowWizard, WORKFLOW_CONFIGS } from "./WorkflowWizard";
 import { QuickAccessGrid } from "./QuickAccessGrid";
 import { TemplatePreviewModal } from "./TemplatePreviewModal";
 import { useMiCasaDefaults, addRecentTemplate } from "@/hooks/useMiCasaDefaults";
@@ -33,6 +35,11 @@ interface DocumentGeneratorPanelProps {
 
 type ViewState = "home" | "workflow" | "browse" | "form" | "preview";
 
+interface WorkflowContext {
+  type: WorkflowType;
+  stepIndex: number;
+}
+
 export function DocumentGeneratorPanel({
   entityType,
   entityId,
@@ -42,15 +49,26 @@ export function DocumentGeneratorPanel({
 }: DocumentGeneratorPanelProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
-  const [generatedDoc, setGeneratedDoc] = useState<{ title: string; body: string } | null>(null);
+  const [generatedDoc, setGeneratedDoc] = useState<{ title: string; body: string; documentId?: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [viewState, setViewState] = useState<ViewState>("home");
   const [previousViewState, setPreviousViewState] = useState<ViewState | null>(null);
   const [previewPrompt, setPreviewPrompt] = useState<{ prompt: typeof prompts[0] | null; isStatic: boolean }>({ prompt: null, isStatic: false });
+  
+  // Workflow context tracking
+  const [activeWorkflowType, setActiveWorkflowType] = useState<WorkflowType | null>(null);
+  const [workflowContext, setWorkflowContext] = useState<WorkflowContext | null>(null);
 
   const { prompts, fetchAllPrompts, isLoading: isLoadingPrompts } = useManifestPrompts();
   const { generateDocument, isLoading: isGenerating, error } = useDocumentGenerator();
   const { getPrefilledData } = useMiCasaDefaults();
+  
+  // Workflow state management
+  const { 
+    state: workflowState, 
+    completeStep, 
+    advanceStep 
+  } = useWorkflowState(activeWorkflowType);
 
   // Fetch all prompts on mount (single call)
   useEffect(() => {
@@ -68,9 +86,14 @@ export function DocumentGeneratorPanel({
   const selectedPrompt = prompts.find(p => p.prompt_id === selectedTemplate);
   const isStaticTemplate = selectedTemplate?.startsWith("STATIC_") || false;
 
-  const handleTemplateSelect = async (templateId: string) => {
+  const handleTemplateSelect = async (templateId: string, context?: WorkflowContext) => {
     const prompt = prompts.find(p => p.prompt_id === templateId);
     if (!prompt) return;
+
+    // Track workflow context if provided
+    if (context) {
+      setWorkflowContext(context);
+    }
 
     // Track where we came from
     setPreviousViewState(viewState);
@@ -105,9 +128,14 @@ export function DocumentGeneratorPanel({
       setViewState("form"); // Show loading state briefly
       const result = await generateDocument(prompt.prompt_id, {}, entityType, entityId);
       if (result) {
-        setGeneratedDoc({ title: result.title, body: result.body });
+        setGeneratedDoc({ title: result.title, body: result.body, documentId: result.documentId });
         setViewState("preview");
         toast.success("Document loaded");
+        
+        // Mark workflow step complete if in workflow context
+        if (workflowContext && result.documentId) {
+          completeStep(prompt.prompt_id, result.documentId);
+        }
       }
     } else {
       setViewState("form");
@@ -122,9 +150,15 @@ export function DocumentGeneratorPanel({
       setSelectedTemplate(null);
       setFormData({});
       setGeneratedDoc(null);
+      // Clear workflow context when leaving form/preview
+      if (returnTo !== "workflow") {
+        setWorkflowContext(null);
+      }
     } else {
       setViewState("home");
       setPreviousViewState(null);
+      setActiveWorkflowType(null);
+      setWorkflowContext(null);
     }
   };
 
@@ -134,6 +168,12 @@ export function DocumentGeneratorPanel({
     setSelectedTemplate(null);
     setFormData({});
     setGeneratedDoc(null);
+    setActiveWorkflowType(null);
+    setWorkflowContext(null);
+  };
+
+  const handleWorkflowSelect = (type: WorkflowType | null) => {
+    setActiveWorkflowType(type);
   };
 
   const handleFieldChange = (path: string, value: unknown) => {
@@ -165,9 +205,20 @@ export function DocumentGeneratorPanel({
     );
 
     if (result) {
-      setGeneratedDoc({ title: result.title, body: result.body });
+      setGeneratedDoc({ title: result.title, body: result.body, documentId: result.documentId });
       setViewState("preview");
       toast.success("Document generated successfully");
+      
+      // Mark workflow step complete and advance to next
+      if (workflowContext && activeWorkflowType) {
+        completeStep(selectedTemplate, result.documentId);
+        
+        const workflowConfig = WORKFLOW_CONFIGS[activeWorkflowType];
+        if (workflowConfig) {
+          advanceStep(workflowConfig.steps.length);
+          toast.info("Workflow advanced to next step");
+        }
+      }
       
       if (result.documentId && onDocumentGenerated) {
         onDocumentGenerated(result.documentId, result.title);
@@ -203,6 +254,10 @@ export function DocumentGeneratorPanel({
 
   const handleEditAndRegenerate = () => {
     setViewState("form");
+  };
+
+  const handleContinueWorkflow = () => {
+    setViewState("workflow");
   };
 
   // Header title and description based on view state
@@ -353,6 +408,8 @@ export function DocumentGeneratorPanel({
             prompts={prompts}
             onSelectTemplate={handleTemplateSelect}
             onBack={handleBackToHome}
+            activeWorkflowType={activeWorkflowType}
+            onWorkflowSelect={handleWorkflowSelect}
           />
         )}
 
@@ -382,7 +439,15 @@ export function DocumentGeneratorPanel({
         {/* Preview View */}
         {viewState === "preview" && generatedDoc && (
           <div className="space-y-4">
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {workflowContext && (
+                  <Button variant="outline" size="sm" onClick={handleContinueWorkflow} className="gap-2">
+                    <FileCheck className="h-4 w-4" />
+                    Continue Workflow
+                  </Button>
+                )}
+              </div>
               <Button variant="outline" size="sm" onClick={handleEditAndRegenerate}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Edit & Regenerate
@@ -404,6 +469,12 @@ export function DocumentGeneratorPanel({
                 <Download className="h-4 w-4 mr-2" />
                 Download Document
               </Button>
+              {workflowContext && (
+                <Button variant="secondary" onClick={handleContinueWorkflow}>
+                  <Rocket className="h-4 w-4 mr-2" />
+                  Next Step
+                </Button>
+              )}
             </div>
           </div>
         )}
