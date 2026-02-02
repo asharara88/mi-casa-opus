@@ -32,12 +32,16 @@ const REMINDER_TEMPLATES = {
     sms: "Reminder: Property viewing tomorrow at {{time}}. Location: {{location}}. Reply YES to confirm.",
   },
   viewing_confirmation: {
-    whatsapp: "Your viewing is confirmed for {{date}} at {{time}}. Your agent will meet you at {{location}}. See you there! 🏠",
+    whatsapp: "✅ Your viewing is confirmed for *{{date}}* at *{{time}}*. Your agent will meet you at {{location}}. See you there! 🏠",
     sms: "Viewing confirmed: {{date}} at {{time}} at {{location}}.",
   },
   viewing_feedback: {
-    whatsapp: "Thank you for the viewing today! 🏠 How would you rate your experience? Reply 1-5 (5 being excellent). Your feedback helps us improve!",
-    sms: "Thanks for the viewing! Rate your experience 1-5. Reply with your score.",
+    whatsapp: "Hi {{client_name}}! 🏠 Thank you for viewing *{{property}}* today! On a scale of 1-5, how interested are you in this property? Your feedback helps us find you the perfect home!",
+    sms: "Thanks for viewing {{property}}! Rate your interest 1-5. Reply with your score.",
+  },
+  viewing_no_show: {
+    whatsapp: "Hi {{client_name}}, we noticed you weren't able to make it to your viewing for *{{property}}* today. No worries! Would you like to reschedule? Reply YES.",
+    sms: "Missed your viewing for {{property}}? Reply YES to reschedule.",
   },
 };
 
