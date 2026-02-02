@@ -1,63 +1,99 @@
-Commission & VAT Invoice
+# 12 - Commission & VAT Invoice
 
-Purpose
-This invoice records brokerage commission due and complies with UAE VAT requirements for tax invoices issued by MI CASA REALESTATE.
+**Purpose:** To issue a compliant tax invoice for brokerage commission earned on a property transaction.
 
-TAX INVOICE
+---
 
-1. Supplier (Broker)
-Legal Name: MI CASA REALESTATE - مي كاسا للعقارات
-Trade License No.: CN-3762725
-TRN (VAT): 100496681600003
-Address: Office 1703, Al Masaood Building, Najda Street, Abu Dhabi, UAE
-Email: contact@micasa.ae
-Phone: +971 2 245 7987
+## TAX INVOICE
 
-2. Customer
-Customer Name: _________________________________________
-Customer TRN (if applicable): ___________________________
-Address: _______________________________________________
-Email: _________________________________________________
-Phone: _________________________________________________
+---
 
-3. Invoice Details
-Invoice No.: ____________________________________________
-Invoice Date: ___________________________________________
-Date of Supply: ________________________________________
-Deal Reference: _________________________________________
-Property Address: _______________________________________
-Transaction Type: [  ] Sale  [  ] Lease
+## 1. Supplier (Broker)
 
-4. Commission and VAT
-Description | Amount (AED)
---- | ---
-Brokerage Commission (Taxable) | ______________________
-VAT Rate | 5%
-VAT Amount | ______________________
-Total Amount Payable | ______________________
+- **Legal Name:** Mi Casa Real Estate
+- **Trade License No.:** CN-3762725
+- **VAT TRN:** 100496681600003
+- **Address:** Office 1703, Al Masaood Building, Najda Street, Abu Dhabi, UAE
+- **Email:** contact@micasa.ae
+- **Tel:** +971 2 245 7987
 
-5. Payment Terms
-Payment Due Date: _______________________________________
-Payment Method: _________________________________________
-Bank Details (if applicable): ____________________________
+---
 
-6. Notes
-This invoice is issued for brokerage services provided in connection with the above transaction and is subject to the UAE Federal Tax Authority regulations.
+## 2. Customer
 
-7. Governing Law
-This invoice is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+- Customer Name: __________________________
+- Customer Address: ___________________________________________
+- Customer VAT TRN (if applicable): __________________________
+- Emirates ID / Passport / Trade License No.: __________________________
+- Email: __________________________ Mobile: __________________________
 
-Signatures
+---
 
-Authorized Signatory (MI CASA REALESTATE)
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+## 3. Property / Service Description
 
-Customer Acknowledgment (if required)
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+- Property: ___________________________________________
+- Transaction Type: [ ] Sale [ ] Lease
+- Service: Real estate brokerage / agency services in relation to the above property.
 
-Company Stamp
-[Stamp Here]
+---
+
+## 4. Invoice Details
+
+- Invoice No.: __________________________
+- Invoice Date: ____ / ____ / ______
+- Deal / CRM Reference: __________________________
+
+---
+
+## 5. Fee Calculation (AED)
+
+| Description | Basis | Amount (AED) |
+|-------------|-------|--------------|
+| Brokerage Commission | [ ] % of price/rent [ ] Fixed fee | ________________ |
+| Subtotal (Excl. VAT) | | ________________ |
+| VAT Rate (%) | ____ % | |
+| VAT Amount | | ________________ |
+| **Total Payable (Incl. VAT)** | | ________________ |
+
+---
+
+## 6. Payment Instructions
+
+- Payment Due Date: ____ / ____ / ______
+- Payment Method: [ ] Bank Transfer [ ] Cash (if permitted) [ ] Cheque [ ] Other: __________
+
+**Bank Details (Mi Casa Real Estate):**
+- Bank Name: __________________________
+- Account Name: __________________________
+- IBAN: __________________________
+- SWIFT: __________________________
+
+---
+
+## 7. Notes
+
+(a) This invoice relates solely to brokerage services and does not constitute a transfer receipt.
+
+(b) Any dispute regarding this invoice must be raised in writing within five (5) business days of receipt.
+
+---
+
+## 8. Governing Law and Jurisdiction
+
+This invoice is governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi. The courts of Abu Dhabi shall have jurisdiction.
+
+---
+
+## Authorized Signatory (Supplier)
+
+- Name: __________________________
+- Title: __________________________
+- Signature: _______________________
+- Date: ____ / ____ / ______
+
+**Company Stamp (Mi Casa Real Estate):** [Stamp Here]
+
+---
+
+Mi Casa Real Estate | CN-3762725 | TRN: 100496681600003 | www.micasa.ae
+Office 1703, Al Masaood Bldg, Najda St, Abu Dhabi, UAE | contact@micasa.ae | +971 2 245 7987
