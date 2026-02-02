@@ -16,7 +16,8 @@ import {
   Gavel,
   MapPin,
   FileArchive,
-  UserCheck
+  UserCheck,
+  CreditCard
 } from 'lucide-react';
 import { Deal, DealState, ValidationContext, DEAL_STATE_REQUIREMENTS } from '@/types/bos';
 import { DealStateRail } from './DealStateRail';
@@ -24,6 +25,9 @@ import { DealPartiesPanel } from './DealPartiesPanel';
 import { DealEconomicsSnapshot } from './DealEconomicsSnapshot';
 import { RegistryActionsChecklist } from './RegistryActionsChecklist';
 import { EvidenceDrawer } from './EvidenceDrawer';
+import { EOIPaymentModal } from './EOIPaymentModal';
+import { NOCTrackerPanel } from './NOCTrackerPanel';
+import { DepositReceiptUploader } from './DepositReceiptUploader';
 import { validateDealTransition } from '@/lib/state-machine';
 import { StateBadge } from '@/components/dashboard/StateBadge';
 import { CompliancePanel, WorkflowGatePanel, AMLCheckPanel, KYCCheckPanel, PortalStepsPanel, AuditExportPanel } from '@/components/compliance';
@@ -279,6 +283,10 @@ export const DealDetail: React.FC<DealDetailProps> = ({
                 <FileArchive className="h-4 w-4 mr-1" />
                 Audit
               </TabsTrigger>
+              <TabsTrigger value="payments">
+                <CreditCard className="h-4 w-4 mr-1" />
+                Payments
+              </TabsTrigger>
               <TabsTrigger value="parties">Parties</TabsTrigger>
               <TabsTrigger value="registry">Registry</TabsTrigger>
               <TabsTrigger value="timeline">Timeline</TabsTrigger>
@@ -348,6 +356,36 @@ export const DealDetail: React.FC<DealDetailProps> = ({
                      d.template_ref.toLowerCase().includes('ownership'))
                   )}
                 />
+              )}
+
+              {/* EOI Payment & NOC Tracker for Sales */}
+              {deal.deal_type === 'Sale' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-primary" />
+                        EOI Payment
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <EOIPaymentModal
+                        dealId={deal.deal_id}
+                        dealDbId={dealDbId}
+                        currentEoiAmount={(deal as any).eoi_amount}
+                        isEoiPaid={!!(deal as any).eoi_paid_at}
+                      />
+                    </CardContent>
+                  </Card>
+                  <NOCTrackerPanel
+                    dealId={deal.deal_id}
+                    dealDbId={dealDbId}
+                    nocStatus={(deal as any).noc_status}
+                    nocReference={(deal as any).noc_reference}
+                    nocObtainedAt={(deal as any).noc_obtained_at}
+                    developerName={(deal as any).developer_project_name}
+                  />
+                </div>
               )}
             </TabsContent>
 
@@ -436,6 +474,14 @@ export const DealDetail: React.FC<DealDetailProps> = ({
                 documentsPresent={context.documents
                   .filter(d => d.entity_ref.entity_id === deal.deal_id)
                   .map(d => d.template_ref)}
+              />
+            </TabsContent>
+
+            <TabsContent value="payments" className="space-y-4">
+              <DepositReceiptUploader
+                dealId={deal.deal_id}
+                dealDbId={dealDbId}
+                depositType="eoi"
               />
             </TabsContent>
 
