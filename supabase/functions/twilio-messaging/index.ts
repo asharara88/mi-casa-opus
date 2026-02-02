@@ -26,6 +26,18 @@ const messageTemplates: Record<string, { whatsapp: string; sms: string }> = {
     whatsapp: "Hi {{name}}! 📅 Reminder: Your property viewing for *{{property}}* is scheduled for {{datetime}}. Location: {{location}}. See you there!",
     sms: "Reminder: Viewing for {{property}} on {{datetime}} at {{location}}.",
   },
+  viewing_reminder_24h: {
+    whatsapp: "Hi {{name}}! 📅 Reminder: Your property viewing is tomorrow at {{time}}. Location: {{location}}. Reply YES to confirm or call us to reschedule.",
+    sms: "Reminder: Property viewing tomorrow at {{time}}. Location: {{location}}. Reply YES to confirm.",
+  },
+  viewing_confirmation: {
+    whatsapp: "Your viewing is confirmed for {{date}} at {{time}}. Your agent {{agent_name}} will meet you at {{location}}. See you there! 🏠",
+    sms: "Viewing confirmed: {{date}} at {{time}} at {{location}}.",
+  },
+  viewing_feedback: {
+    whatsapp: "Thank you for the viewing today! 🏠 How would you rate your experience? Reply 1-5 (5 being excellent). Your feedback helps us improve!",
+    sms: "Thanks for the viewing! Rate your experience 1-5. Reply with your score.",
+  },
   follow_up: {
     whatsapp: "Hi {{name}}! 👋 Following up on our conversation about *{{property}}*. Do you have any questions? I'm happy to help!",
     sms: "Hi {{name}}, following up on {{property}}. Any questions? Let me know!",
@@ -37,6 +49,10 @@ const messageTemplates: Record<string, { whatsapp: string; sms: string }> = {
   booking_confirmation: {
     whatsapp: "🎉 Congratulations {{name}}! Your booking for *{{property}}* is confirmed. Our team will be in touch with next steps.",
     sms: "Congrats {{name}}! Booking confirmed for {{property}}. We'll be in touch soon.",
+  },
+  eoi_payment_reminder: {
+    whatsapp: "Hi {{name}}! 💰 Friendly reminder: The EOI payment for *{{property}}* is due by {{date}}. Amount: AED {{amount}}. Please complete the payment to secure your booking.",
+    sms: "EOI payment reminder for {{property}}: AED {{amount}} due {{date}}.",
   },
 };
 

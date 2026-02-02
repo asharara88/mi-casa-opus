@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useCreateViewingBooking } from '@/hooks/useViewingBookings';
+import { useFunnelAutomation } from '@/hooks/useFunnelAutomation';
 import { cn } from '@/lib/utils';
 
 interface ViewingSchedulerProps {
@@ -18,6 +19,8 @@ interface ViewingSchedulerProps {
   propertyName?: string;
   propertyAddress?: string;
   onScheduled?: () => void;
+  /** Callback fired after booking is created, receives the booking data */
+  onBookingCreated?: (bookingId: string) => void;
 }
 
 const timeSlots = [
@@ -41,6 +44,7 @@ export function ViewingScheduler({
   propertyName,
   propertyAddress,
   onScheduled,
+  onBookingCreated,
 }: ViewingSchedulerProps) {
   const [date, setDate] = useState<Date | undefined>(addDays(new Date(), 1));
   const [time, setTime] = useState<string>('');
@@ -49,6 +53,7 @@ export function ViewingScheduler({
   const [notes, setNotes] = useState('');
 
   const createBooking = useCreateViewingBooking();
+  const { onViewingScheduled } = useFunnelAutomation();
 
   const handleSchedule = () => {
     if (!date || !time) return;
@@ -72,7 +77,17 @@ export function ViewingScheduler({
       cancelled_at: null,
       cancelled_reason: null,
     }, {
-      onSuccess: () => {
+      onSuccess: (data) => {
+        // Auto-advance deal state if dealId is provided
+        if (dealId) {
+          onViewingScheduled(dealId);
+        }
+        
+        // Fire callback with booking ID
+        if (data?.id) {
+          onBookingCreated?.(data.id);
+        }
+        
         onScheduled?.();
       },
     });

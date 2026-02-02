@@ -27,6 +27,25 @@ interface UseStaticFormFillerReturn {
   error: string | null;
 }
 
+// Map template IDs to evidence types
+const TEMPLATE_EVIDENCE_MAP: Record<string, string> = {
+  '01_seller_landlord_authorization': 'Contract',
+  '02_buyer_tenant_representation_agreement': 'Contract',
+  '07_offer_letter_expression_of_interest': 'Contract',
+  '08_memorandum_of_understanding_pre_spa': 'Contract',
+  '09_reservation_booking_form': 'Contract',
+  '12_commission_vat_invoice': 'PaymentProof',
+};
+
+// Generate SHA-256 hash for document integrity
+async function generateContentHash(content: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(content);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 // Generate sequential reference number: MC-YYYY-NNNNNN
 function generateReferenceNumber(): string {
   const year = new Date().getFullYear();
@@ -70,6 +89,9 @@ export function useStaticFormFiller(): UseStaticFormFillerReturn {
       // Add reference number to the document content
       const contentWithRef = `**Reference: ${referenceNumber}**\n\n${filledContent}`;
       
+      // Generate content hash for integrity verification
+      const contentHash = await generateContentHash(contentWithRef);
+      
       // Determine entity ID
       const finalEntityId = entityId || formData.deal_crm_id as string || crypto.randomUUID();
       
@@ -85,7 +107,8 @@ export function useStaticFormFiller(): UseStaticFormFillerReturn {
           output: { 
             reference_number: referenceNumber,
             template_version: "1.0",
-            filled_at: new Date().toISOString()
+            filled_at: new Date().toISOString(),
+            content_hash: contentHash
           } as Json,
           document_title: `${schema.title} - ${referenceNumber}`,
           document_body: contentWithRef,
@@ -97,6 +120,42 @@ export function useStaticFormFiller(): UseStaticFormFillerReturn {
       if (dbError) {
         // If RLS blocks, try without auth context
         console.warn("DB insert warning:", dbError);
+      }
+      
+      // Dual-write: Create document_instance linking to deal/lead
+      if (entityId && (entityType === 'deal' || entityType === 'lead')) {
+        const instanceId = `INST-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+        
+        await supabase.from("document_instances").insert([{
+          document_id: instanceId,
+          template_id: crypto.randomUUID(), // Placeholder for template reference
+          entity_type: entityType,
+          entity_id: entityId,
+          status: 'Draft' as const,
+          data_snapshot: formData as unknown as Json,
+          data_snapshot_hash: contentHash,
+        }]);
+        
+        // Create evidence record for audit trail
+        const evidenceType = TEMPLATE_EVIDENCE_MAP[templateId] || 'Other';
+        const evidenceId = `EVD-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+        
+        await supabase.from("evidence_objects").insert([{
+          evidence_id: evidenceId,
+          entity_type: entityType,
+          entity_id: entityId,
+          evidence_type: evidenceType as any,
+          source: `document_generator:${templateId}`,
+          immutability_class: 'System' as const,
+          captured_by: 'system',
+          file_hash: contentHash,
+          metadata: {
+            document_id: documentId,
+            reference_number: referenceNumber,
+            template_id: templateId,
+            generated_at: new Date().toISOString(),
+          },
+        }]);
       }
       
       const result: GeneratedDocument = {
