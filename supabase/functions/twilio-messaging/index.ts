@@ -31,12 +31,32 @@ const messageTemplates: Record<string, { whatsapp: string; sms: string }> = {
     sms: "Reminder: Property viewing tomorrow at {{time}}. Location: {{location}}. Reply YES to confirm.",
   },
   viewing_confirmation: {
-    whatsapp: "Your viewing is confirmed for {{date}} at {{time}}. Your agent {{agent_name}} will meet you at {{location}}. See you there! 🏠",
+    whatsapp: "✅ Your viewing is confirmed for *{{date}}* at *{{time}}*. Your agent {{agent_name}} will meet you at {{location}}. See you there! 🏠",
     sms: "Viewing confirmed: {{date}} at {{time}} at {{location}}.",
   },
+  viewing_scheduled: {
+    whatsapp: "Hi {{name}}! 🗓️ Great news! Your viewing for *{{property}}* has been scheduled for *{{date}}* at *{{time}}*. Location: {{location}}. We'll send you a reminder 24 hours before.",
+    sms: "Viewing scheduled: {{property}} on {{date}} at {{time}}. Location: {{location}}.",
+  },
+  viewing_rescheduled: {
+    whatsapp: "Hi {{name}}! 📅 Your viewing for *{{property}}* has been rescheduled to *{{date}}* at *{{time}}*. Location: {{location}}. Reply YES to confirm.",
+    sms: "Viewing rescheduled: {{property}} now on {{date}} at {{time}} at {{location}}.",
+  },
+  viewing_cancelled: {
+    whatsapp: "Hi {{name}}, your viewing for *{{property}}* on {{date}} has been cancelled. {{reason}} Would you like to reschedule? Reply YES.",
+    sms: "Viewing cancelled: {{property}} on {{date}}. Reply YES to reschedule.",
+  },
   viewing_feedback: {
-    whatsapp: "Thank you for the viewing today! 🏠 How would you rate your experience? Reply 1-5 (5 being excellent). Your feedback helps us improve!",
-    sms: "Thanks for the viewing! Rate your experience 1-5. Reply with your score.",
+    whatsapp: "Hi {{name}}! 🏠 Thank you for viewing *{{property}}* today! On a scale of 1-5, how interested are you in this property? (1=Not interested, 5=Very interested). Your feedback helps us find you the perfect home!",
+    sms: "Thanks for viewing {{property}}! Rate your interest 1-5. Reply with your score.",
+  },
+  viewing_feedback_followup: {
+    whatsapp: "Hi {{name}}! 👋 Following up on your viewing of *{{property}}*. You rated your interest as {{score}}/5. {{followup_message}} Let me know how I can help!",
+    sms: "Following up on {{property}} viewing ({{score}}/5). {{followup_message}}",
+  },
+  viewing_no_show: {
+    whatsapp: "Hi {{name}}, we noticed you weren't able to make it to your viewing for *{{property}}* today. No worries! Would you like to reschedule? Reply YES or let us know if you're no longer interested.",
+    sms: "Missed your viewing for {{property}}? Reply YES to reschedule.",
   },
   follow_up: {
     whatsapp: "Hi {{name}}! 👋 Following up on our conversation about *{{property}}*. Do you have any questions? I'm happy to help!",
@@ -53,6 +73,18 @@ const messageTemplates: Record<string, { whatsapp: string; sms: string }> = {
   eoi_payment_reminder: {
     whatsapp: "Hi {{name}}! 💰 Friendly reminder: The EOI payment for *{{property}}* is due by {{date}}. Amount: AED {{amount}}. Please complete the payment to secure your booking.",
     sms: "EOI payment reminder for {{property}}: AED {{amount}} due {{date}}.",
+  },
+  eoi_payment_received: {
+    whatsapp: "Hi {{name}}! ✅ We've received your EOI payment of AED {{amount}} for *{{property}}*. Reference: {{reference}}. Our team will be in touch with next steps.",
+    sms: "EOI payment received: AED {{amount}} for {{property}}. Ref: {{reference}}.",
+  },
+  noc_status_update: {
+    whatsapp: "Hi {{name}}! 📋 Update on your NOC for *{{property}}*: Status is now *{{status}}*. {{details}} We'll keep you posted on any progress.",
+    sms: "NOC update for {{property}}: {{status}}. {{details}}",
+  },
+  deal_milestone: {
+    whatsapp: "Hi {{name}}! 🎯 Great progress on *{{property}}*! You've reached the *{{milestone}}* stage. {{next_steps}}",
+    sms: "Deal update for {{property}}: {{milestone}} stage reached. {{next_steps}}",
   },
 };
 
