@@ -534,3 +534,158 @@ export function generateProfessionalPDFHTML(
 </html>
   `;
 }
+
+// Generate filled PDF from pre-filled markdown content
+export function generateFilledPDF(
+  filledMarkdown: string,
+  title: string,
+  referenceNumber: string
+): void {
+  const generatedDate = new Date().toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+  
+  const contentHtml = convertMarkdownContent(filledMarkdown);
+  
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title} - MI CASA REALESTATE</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4; margin: 15mm 15mm 25mm 15mm; }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #1a1a1a;
+      background: white;
+    }
+    .document-container { max-width: 210mm; margin: 0 auto; }
+    .letterhead {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding-bottom: 15px;
+      border-bottom: 3px solid #0284C7;
+      margin-bottom: 20px;
+    }
+    .company-details { flex: 1; text-align: right; }
+    .company-name { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+    .company-name-arabic { font-size: 11px; color: #666; margin-bottom: 8px; }
+    .company-info-line { font-size: 9px; color: #444; margin-bottom: 2px; }
+    .company-info-line strong { color: #0284C7; }
+    .document-header {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #CA8A04;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      border-radius: 0 4px 4px 0;
+    }
+    .document-title { font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+    .document-meta { display: flex; gap: 20px; font-size: 9px; color: #64748b; }
+    .document-meta strong { color: #1a1a1a; }
+    .content { padding: 0 5px; }
+    .content pre { white-space: pre-wrap; font-family: inherit; font-size: 11px; line-height: 1.6; }
+    .section-header { margin: 20px 0 10px 0; padding-bottom: 5px; border-bottom: 1px solid #e2e8f0; }
+    .section-header.h2 { font-size: 14px; font-weight: 600; color: #0284C7; }
+    .section-header.h3 { font-size: 12px; font-weight: 600; color: #1a1a1a; }
+    .form-field { margin: 12px 0; }
+    .field-label { display: block; font-size: 9px; font-weight: 600; color: #64748b; text-transform: uppercase; }
+    .field-box { border: 1px solid #cbd5e1; border-radius: 4px; min-height: 32px; background: #f8fafc; padding: 6px 10px; }
+    .checkbox-item { display: flex; align-items: flex-start; gap: 10px; margin: 8px 0; padding: 8px 12px; background: #f8fafc; border-radius: 4px; }
+    .checkbox { width: 16px; height: 16px; border: 2px solid #cbd5e1; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    .checkbox.checked { background: #0284C7; border-color: #0284C7; color: white; }
+    .styled-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 10px; }
+    .styled-table th, .styled-table td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+    .styled-table th { background: #f1f5f9; font-weight: 600; }
+    .document-footer {
+      margin-top: 40px;
+      padding-top: 15px;
+      border-top: 2px solid #0284C7;
+      font-size: 8px;
+      color: #64748b;
+    }
+    .footer-main { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .footer-ref { font-weight: 600; color: #1a1a1a; }
+    .footer-company { text-align: center; margin-bottom: 8px; }
+    .footer-company-name { font-weight: 600; color: #0284C7; }
+    .footer-confidential {
+      text-align: center;
+      margin-top: 8px;
+      padding: 6px;
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 3px;
+      font-size: 8px;
+      font-weight: 600;
+      color: #92400e;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="document-container">
+    <div class="letterhead">
+      <div class="logo-container">
+        ${MICASA_LOGO_SVG}
+      </div>
+      <div class="company-details">
+        <div class="company-name">${MICASA_COMPANY_INFO.tradeName || MICASA_COMPANY_INFO.legalName}</div>
+        <div class="company-name-arabic">${MICASA_COMPANY_INFO.legalNameArabic}</div>
+        <div class="company-info-line"><strong>License:</strong> ${MICASA_COMPANY_INFO.licenseNo} | <strong>TRN:</strong> ${MICASA_COMPANY_INFO.trn}</div>
+        <div class="company-info-line">${MICASA_COMPANY_INFO.address}</div>
+        <div class="company-info-line">Tel: ${MICASA_COMPANY_INFO.phone} | ${MICASA_COMPANY_INFO.email}</div>
+      </div>
+    </div>
+    
+    <div class="document-header">
+      <div class="document-title">${title}</div>
+      <div class="document-meta">
+        <span><strong>Reference:</strong> ${referenceNumber}</span>
+        <span><strong>Generated:</strong> ${generatedDate}</span>
+      </div>
+    </div>
+    
+    <div class="content">
+      ${contentHtml}
+    </div>
+    
+    <div class="document-footer">
+      <div class="footer-main">
+        <span class="footer-ref">${referenceNumber}</span>
+        <span>Generated: ${generatedDate}</span>
+      </div>
+      <div class="footer-company">
+        <span class="footer-company-name">${MICASA_COMPANY_INFO.legalName}</span>
+        <span> | Licensed by ${MICASA_COMPANY_INFO.regulator}</span>
+        <span> | ${MICASA_COMPANY_INFO.licenseNo}</span>
+      </div>
+      <div class="footer-confidential">
+        Confidential — For authorized use only
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+  
+  // Open print dialog
+  const printWindow = window.open('', '_blank');
+  if (printWindow) {
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.print();
+    };
+  }
+}

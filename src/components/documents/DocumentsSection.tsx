@@ -4,6 +4,7 @@ import { DocumentTemplateCard, DocumentTemplateCardData } from './DocumentTempla
 import { DocumentInstanceRow } from './DocumentInstanceRow';
 import { DocumentGeneratorPanel } from './DocumentGeneratorPanel';
 import { PDFTemplatesSection } from './PDFTemplatesSection';
+import { FilledFormsPanel } from './FilledFormsPanel';
 import { DocumentTemplatePreviewModal } from './DocumentTemplatePreviewModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -19,7 +20,8 @@ import {
   FolderOpen,
   Loader2,
   Sparkles,
-  Files
+  Files,
+  ClipboardList
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { DocType } from '@/types/bos';
@@ -183,6 +185,10 @@ export function DocumentsSection() {
           <TabsList>
             <TabsTrigger value="instances">Documents</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="official-forms" className="gap-1.5">
+              <ClipboardList className="w-3.5 h-3.5" />
+              Official Forms
+            </TabsTrigger>
             <TabsTrigger value="pdf-templates" className="gap-1.5">
               <Files className="w-3.5 h-3.5" />
               PDF Templates
@@ -302,6 +308,17 @@ export function DocumentsSection() {
             onDocumentGenerated={(docId, title) => {
               toast.success(`Document created: ${title}`, {
                 description: `ID: ${docId}`,
+              });
+            }}
+          />
+        </TabsContent>
+
+        {/* Official Forms Tab - 18 Chairman-Ready Templates */}
+        <TabsContent value="official-forms" className="mt-0">
+          <FilledFormsPanel 
+            onDocumentGenerated={(docId, templateId) => {
+              toast.success(`Form generated: ${templateId}`, {
+                description: `Document ID: ${docId}`,
               });
             }}
           />
