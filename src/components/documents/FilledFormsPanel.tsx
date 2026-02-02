@@ -10,11 +10,13 @@ import {
   Printer, 
   CheckCircle2,
   ExternalLink,
-  Clock
+  Clock,
+  Zap
 } from "lucide-react";
 import { OfficialFormsBrowser, QuickAccessForms } from "./OfficialFormsBrowser";
 import { StaticFormFiller } from "./StaticFormFiller";
 import { useStaticFormFiller } from "@/hooks/useStaticFormFiller";
+import { useDocumentStageAutomation } from "@/hooks/useDocumentStageAutomation";
 import { TEMPLATE_SCHEMAS } from "@/lib/template-schemas";
 import { generateFilledPDF } from "@/lib/pdf-document-generator";
 import { toast } from "sonner";
@@ -41,6 +43,7 @@ export function FilledFormsPanel({ linkedDealId, linkedLeadId, onDocumentGenerat
   const [generatedResult, setGeneratedResult] = useState<GeneratedResult | null>(null);
   
   const { saveDocument, createFollowUpTask, isLoading } = useStaticFormFiller();
+  const { onDocumentGenerated: triggerStageAutomation, hasStageAutomation, DOCUMENT_STAGE_MAP } = useDocumentStageAutomation();
   
   const handleSelectTemplate = useCallback((templateId: string) => {
     setSelectedTemplateId(templateId);
@@ -71,10 +74,21 @@ export function FilledFormsPanel({ linkedDealId, linkedLeadId, onDocumentGenerat
       // Create follow-up task if template has one
       await createFollowUpTask(selectedTemplateId, result.documentId, linkedDealId || linkedLeadId);
       
+      // Trigger funnel stage automation if applicable
+      await triggerStageAutomation(selectedTemplateId, linkedDealId);
+      
+      // Show automation indicator if template triggers stage change
+      if (hasStageAutomation(selectedTemplateId) && linkedDealId) {
+        const mapping = DOCUMENT_STAGE_MAP[selectedTemplateId];
+        toast.info(`🔄 ${mapping.description}`, {
+          description: 'Deal stage will advance when document is signed',
+        });
+      }
+      
       // Notify parent
       onDocumentGenerated?.(result.documentId, selectedTemplateId);
     }
-  }, [selectedTemplateId, saveDocument, createFollowUpTask, linkedDealId, linkedLeadId, onDocumentGenerated]);
+  }, [selectedTemplateId, saveDocument, createFollowUpTask, triggerStageAutomation, hasStageAutomation, DOCUMENT_STAGE_MAP, linkedDealId, linkedLeadId, onDocumentGenerated]);
   
   const handleBack = useCallback(() => {
     if (viewState === "preview") {

@@ -28,6 +28,7 @@ import { EvidenceDrawer } from './EvidenceDrawer';
 import { EOIPaymentModal } from './EOIPaymentModal';
 import { NOCTrackerPanel } from './NOCTrackerPanel';
 import { DepositReceiptUploader } from './DepositReceiptUploader';
+import { ViewingsPanel } from './ViewingsPanel';
 import { validateDealTransition } from '@/lib/state-machine';
 import { StateBadge } from '@/components/dashboard/StateBadge';
 import { CompliancePanel, WorkflowGatePanel, AMLCheckPanel, KYCCheckPanel, PortalStepsPanel, AuditExportPanel } from '@/components/compliance';
@@ -355,6 +356,14 @@ export const DealDetail: React.FC<DealDetailProps> = ({
                     (d.template_ref.toLowerCase().includes('title') || 
                      d.template_ref.toLowerCase().includes('ownership'))
                   )}
+                />
+              )}
+
+              {/* Viewings Panel - auto-advances deal on completion */}
+              {dealDbId && (
+                <ViewingsPanel
+                  dealId={dealDbId}
+                  propertyName={(deal as any).property_name || deal.deal_id}
                 />
               )}
 

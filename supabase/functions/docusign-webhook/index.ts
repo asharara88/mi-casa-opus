@@ -51,6 +51,30 @@ interface DocuSignWebhookEvent {
   };
 }
 
+/**
+ * Maps template IDs to deal state changes when documents are executed.
+ * This enables automatic funnel stage advancement on signature completion.
+ */
+const TEMPLATE_STAGE_AUTOMATION: Record<string, {
+  secondaryState?: string;
+  offplanState?: string;
+  nextAction?: string;
+}> = {
+  '08_memorandum_of_understanding_pre_spa': {
+    secondaryState: 'MOUSigned',
+    nextAction: 'CollectDocs',
+  },
+  '07_offer_letter_expression_of_interest': {
+    secondaryState: 'Negotiation',
+    nextAction: 'PrepareOffer',
+  },
+  '09_reservation_booking_form': {
+    secondaryState: 'Reserved',
+    offplanState: 'Reserved',
+    nextAction: 'CollectDeposit',
+  },
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -137,8 +161,9 @@ Deno.serve(async (req) => {
       throw updateError;
     }
 
-    // If completed, update document instance
+    // If completed, update document instance and trigger deal stage automation
     if (envelopeSummary.status === 'completed' && envelope.document_instance_id) {
+      // Update document instance status
       await supabase
         .from('document_instances')
         .update({
@@ -146,6 +171,55 @@ Deno.serve(async (req) => {
           executed_at: envelopeSummary.completedDateTime,
         })
         .eq('id', envelope.document_instance_id);
+
+      // Get the document instance to find the deal and template
+      const { data: docInstance } = await supabase
+        .from('document_instances')
+        .select('entity_type, entity_id, data_snapshot')
+        .eq('id', envelope.document_instance_id)
+        .single();
+
+      if (docInstance?.entity_type === 'deal' && docInstance.entity_id) {
+        // Check if template triggers stage automation
+        const dataSnapshot = docInstance.data_snapshot as Record<string, any>;
+        const templateId = dataSnapshot?.template_id || '';
+        
+        const automation = TEMPLATE_STAGE_AUTOMATION[templateId];
+        if (automation) {
+          console.log(`Triggering stage automation for deal ${docInstance.entity_id}:`, automation);
+          
+          // Get current deal to determine pipeline type
+          const { data: deal } = await supabase
+            .from('deals')
+            .select('pipeline, deal_type')
+            .eq('id', docInstance.entity_id)
+            .single();
+
+          if (deal) {
+            const dealUpdate: Record<string, any> = {};
+            
+            // Apply stage change based on pipeline type
+            if (deal.pipeline === 'secondary' && automation.secondaryState) {
+              dealUpdate.secondary_state = automation.secondaryState;
+            } else if (deal.pipeline === 'offplan' && automation.offplanState) {
+              dealUpdate.offplan_state = automation.offplanState;
+            }
+            
+            if (automation.nextAction) {
+              dealUpdate.next_action = automation.nextAction;
+            }
+
+            if (Object.keys(dealUpdate).length > 0) {
+              await supabase
+                .from('deals')
+                .update(dealUpdate)
+                .eq('id', docInstance.entity_id);
+
+              console.log(`Deal ${docInstance.entity_id} advanced:`, dealUpdate);
+            }
+          }
+        }
+      }
     }
 
     return new Response(
