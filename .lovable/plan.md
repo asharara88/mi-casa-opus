@@ -14,6 +14,11 @@ All 5 phases have been implemented, database schema updated, and remaining UI co
 - `ViewingScheduler.tsx` now calls `onViewingScheduled()` automatically
 - Created `ViewingCompletionDialog.tsx` for feedback capture
 - `useFunnelAutomation.ts` hooks are now wired to UI actions
+- Created `useViewingCompletion.ts` - combines viewing updates with auto deal advancement
+- Created `useDocumentStageAutomation.ts` - maps document templates to stage transitions
+- Created `ViewingsPanel.tsx` - integrated viewing management with completion actions
+- Updated `docusign-webhook` - auto-advances deals when MOU/Offer/Reservation signed
+- Updated `FilledFormsPanel.tsx` - triggers automation hints on document generation
 
 ### Phase 3: Commission Auto-Generation ✅
 - Created `useCommissionGeneration.ts` hook
