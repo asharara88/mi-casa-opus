@@ -1106,17 +1106,21 @@ export type Database = {
       }
       generated_documents: {
         Row: {
+          content_hash: string | null
           created_at: string
+          deal_id: string | null
           document_body: string
           document_id: string
           document_title: string
           entity_id: string
           entity_type: string
+          evidence_type: string | null
           finalized_at: string | null
           generated_at: string
           generated_by: string | null
           id: string
           input_payload: Json
+          lead_id: string | null
           output: Json
           prompt_id: string
           status: Database["public"]["Enums"]["generated_document_status"]
@@ -1125,17 +1129,21 @@ export type Database = {
           voided_at: string | null
         }
         Insert: {
+          content_hash?: string | null
           created_at?: string
+          deal_id?: string | null
           document_body: string
           document_id: string
           document_title: string
           entity_id: string
           entity_type: string
+          evidence_type?: string | null
           finalized_at?: string | null
           generated_at?: string
           generated_by?: string | null
           id?: string
           input_payload?: Json
+          lead_id?: string | null
           output?: Json
           prompt_id: string
           status?: Database["public"]["Enums"]["generated_document_status"]
@@ -1144,17 +1152,21 @@ export type Database = {
           voided_at?: string | null
         }
         Update: {
+          content_hash?: string | null
           created_at?: string
+          deal_id?: string | null
           document_body?: string
           document_id?: string
           document_title?: string
           entity_id?: string
           entity_type?: string
+          evidence_type?: string | null
           finalized_at?: string | null
           generated_at?: string
           generated_by?: string | null
           id?: string
           input_payload?: Json
+          lead_id?: string | null
           output?: Json
           prompt_id?: string
           status?: Database["public"]["Enums"]["generated_document_status"]
@@ -1162,7 +1174,22 @@ export type Database = {
           void_reason?: string | null
           voided_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "generated_documents_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_documents_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leads: {
         Row: {
@@ -2365,6 +2392,8 @@ export type Database = {
           created_at: string
           deal_id: string | null
           duration_minutes: number
+          feedback_notes: string | null
+          feedback_score: number | null
           id: string
           listing_id: string | null
           location: string | null
@@ -2384,6 +2413,8 @@ export type Database = {
           created_at?: string
           deal_id?: string | null
           duration_minutes?: number
+          feedback_notes?: string | null
+          feedback_score?: number | null
           id?: string
           listing_id?: string | null
           location?: string | null
@@ -2403,6 +2434,8 @@ export type Database = {
           created_at?: string
           deal_id?: string | null
           duration_minutes?: number
+          feedback_notes?: string | null
+          feedback_score?: number | null
           id?: string
           listing_id?: string | null
           location?: string | null
