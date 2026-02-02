@@ -3,7 +3,7 @@
 
 ## ✅ IMPLEMENTATION COMPLETE
 
-All 5 phases have been implemented:
+All 5 phases have been implemented and database schema updated:
 
 ### Phase 1: Lead to Deal Conversion ✅
 - Created `ConvertToDealModal.tsx` with pipeline selection (OffPlan/Secondary)
