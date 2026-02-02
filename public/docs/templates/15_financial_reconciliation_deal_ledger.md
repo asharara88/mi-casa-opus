@@ -1,46 +1,85 @@
-Financial Reconciliation & Deal Ledger
+# 15 - Financial Reconciliation & Deal Ledger (Per Deal)
 
-Purpose
-This ledger records all financial movements for a specific deal, enabling reconciliation and audit verification.
+**Purpose:** To maintain a per-deal ledger of all financial movements and reconcile receipts, invoices, payouts, and outcomes for audit and dispute resolution.
 
-1. Deal Information
-Deal Reference: __________________________________________
-Property Address: _______________________________________
-Transaction Type: [  ] Sale  [  ] Lease
-Completion Date: ________________________________________
+---
 
-2. Ledger Entries
-Date | Description | Debit (AED) | Credit (AED) | Balance (AED)
---- | --- | --- | --- | ---
-__________ | __________________________ | ______ | ______ | ______
-__________ | __________________________ | ______ | ______ | ______
-__________ | __________________________ | ______ | ______ | ______
+## 1. Deal Details
 
-3. Reconciliation Summary
-Total Receipts (AED): _________________________________
-Total Payments (AED): _________________________________
-Net Balance (AED): ____________________________________
-Reconciled By: ________________________________________
-Reconciliation Date: ___________________________________
+- Date Opened: ____ / ____ / ______
+- Deal / CRM ID: __________________________
+- Property: ___________________________________________
+- Transaction Type: [ ] Sale [ ] Lease
+- Closing Date (if closed): ____ / ____ / ______
 
-4. Notes
-__________________________________________________________________
-__________________________________________________________________
+---
 
-5. Governing Law
-This ledger is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+## 2. Parties
 
-Signatures
+- Seller/Landlord: __________________________
+- Buyer/Tenant: __________________________
+- Other Parties (developer/management/bank): __________________________
 
-Finance Officer
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+---
 
-Compliance Review
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+## 3. Deal Financial Summary
 
-Company Stamp
-[Stamp Here]
+- Agreed Sale Price / Annual Rent: AED ___________________________
+- Commission Agreement Reference: ___________________________
+- Commission Invoice No.: ___________________________
+- VAT Applicable: [ ] Yes [ ] No
+- Total Commission Invoiced (Incl. VAT if applicable): AED ___________________________
+
+---
+
+## 4. Deal Ledger Entries
+
+| Date | Entry Type | Description | Debit (AED) | Credit (AED) | Method | Reference | Notes/Evidence Location |
+|------|------------|-------------|-------------|--------------|--------|-----------|------------------------|
+| ____/____ | | | | | | | |
+| ____/____ | | | | | | | |
+| ____/____ | | | | | | | |
+| ____/____ | | | | | | | |
+
+---
+
+## 5. Reconciliation
+
+| Item | Amount (AED) |
+|------|--------------|
+| Total Receipts (Cleared) | ____________________________ |
+| Total Invoices Raised | ____________________________ |
+| Total Payouts/Refunds | ____________________________ |
+| Balance (should be zero or explained) | ____________________________ |
+
+**Explanation if non-zero:**
+______________________________________________________________________________
+
+---
+
+## 6. Governing Law and Jurisdiction
+
+This ledger is maintained in Abu Dhabi and governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi.
+
+---
+
+## Signatures
+
+**Finance Owner**
+- Name: __________________________
+- Title: __________________________
+- Signature: _______________________
+- Date: ____ / ____ / ______
+
+**Compliance/Operations Review**
+- Name: __________________________
+- Title: __________________________
+- Signature: _______________________
+- Date: ____ / ____ / ______
+
+**Company Stamp (Mi Casa Real Estate):** [Stamp Here]
+
+---
+
+Mi Casa Real Estate | CN-3762725 | TRN: 100496681600003 | www.micasa.ae
+Office 1703, Al Masaood Bldg, Najda St, Abu Dhabi, UAE | contact@micasa.ae | +971 2 245 7987

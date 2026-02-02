@@ -1,68 +1,107 @@
-Offer Letter / Expression of Interest
+# 07 - Offer Letter / Expression of Interest
 
-Purpose
-This letter records the Buyer’s or Tenant’s intent to proceed on specified commercial terms for the referenced property, subject to contract and authority approvals.
+**Purpose:** To record an offeror's written offer and the core commercial terms for the seller/landlord's consideration prior to drafting an MOU/SPA or lease.
 
-1. Parties
-Buyer / Tenant
-Full Name: ______________________________________________
-Emirates ID / Passport No.: ______________________________
-Mobile: ________________________________________________
-Email: _________________________________________________
+---
 
-Seller / Landlord
-Full Name: ______________________________________________
-Contact: _______________________________________________
+## 1. Reference and Date
 
-Broker
-Company: MI CASA REALESTATE - مؤسسة فردية
-Representative: _________________________________________
+- Date: ____ / ____ / ______
+- Offer Reference (CRM/ERP): __________________________
 
-2. Property Details
-Property Address: _______________________________________
-Unit / Plot No.: ________________________________________
-Title Deed / Tawtheeq No.: _______________________________
-Property Type: __________________________________________
+---
 
-3. Offer Terms
-Offer Price / Rent (AED): ________________________________
-Payment Terms: __________________________________________
-Deposit Amount (AED): ___________________________________
-Proposed Transfer / Lease Start Date: ____________________
-Fixtures and Inclusions: ________________________________
+## 2. Parties
 
-4. Conditions
-This offer is subject to:
-(a) Verification of title, authority, and property particulars.
-(b) Satisfactory inspection and due diligence.
-(c) Any required NOCs and authority approvals.
-(d) Execution of formal agreement(s) and registration.
+**Offeror:** [ ] Buyer [ ] Tenant
+- Full Name / Entity Name: __________________________
+- Emirates ID / Passport / Trade License No.: __________________________
+- Mobile: __________________________ Email: __________________________
+- Address: ___________________________________________
 
-5. Validity
-This offer is valid until __________________________ (date/time). If not accepted in writing by that time, it will lapse without liability.
+**Offeree:** [ ] Seller [ ] Landlord
+- Name: __________________________ (or "Property Owner/Landlord")
+- Represented By (if applicable): __________________________
 
-6. Non-Binding Nature
-This letter expresses intent only and does not create a binding contract for sale or lease until formal agreements are executed by the parties.
+**Broker (Facilitator):** Mi Casa Real Estate (CN-3762725)
 
-7. Governing Law
-This letter is governed by the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+---
 
-Signatures
+## 3. Property
 
-Buyer / Tenant
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+- Property Address / Location: ___________________________________________
+- Unit / Villa No.: ___________________________
+- Building / Community: ___________________________________________
 
-Seller / Landlord (Acceptance)
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+---
 
-Broker Acknowledgment (MI CASA REALESTATE)
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+## 4. Offer Terms
 
-Company Stamp
-[Stamp Here]
+- Transaction Type: [ ] Purchase [ ] Lease
+- Offered Price / Rent: AED ___________________________
+
+**Payment Terms:**
+- For sale: [ ] Cash [ ] Mortgage [ ] Mixed (details): ___________________________
+- For lease: Cheques: ____ Frequency: [ ] Monthly [ ] Quarterly [ ] Other: __________
+
+- Deposit / Holding Amount (if any): AED ___________________________
+- Payment To: [ ] Seller/Landlord [ ] Developer/Management [ ] Broker (only if separately authorized in writing)
+- Offer Valid Until: ____ / ____ / ______ at ______ (Abu Dhabi time)
+- Expected MOU/Lease Signing By: ____ / ____ / ______
+- Expected Transfer / Move-In By: ____ / ____ / ______
+- Special Terms (if any): ___________________________________________
+
+---
+
+## 5. Conditions (if applicable)
+
+This offer is subject to the following conditions (tick and specify where relevant):
+- [ ] Mortgage pre-approval and final bank approval
+- [ ] Satisfactory valuation
+- [ ] Satisfactory inspection / snag list (if applicable)
+- [ ] Seller/Landlord providing NOC/clearances and required documents
+- [ ] Settlement of any outstanding service charges/utility balances as agreed
+- [ ] Vacant possession on transfer / move-in (if applicable)
+- [ ] Other: ___________________________________________
+
+---
+
+## 6. Non-Binding Status
+
+Unless and until a formal MOU/SPA or lease agreement is signed by the parties, this offer is an expression of interest and does not by itself create a binding obligation to sell/lease, except for any confidentiality or exclusivity terms expressly agreed in writing.
+
+---
+
+## 7. Confidentiality
+
+The offeree shall treat the offer terms as confidential and share them only with advisors and parties necessary to evaluate the offer.
+
+---
+
+## 8. Broker Role
+
+Mi Casa Real Estate acts as a broker/facilitator. The parties should obtain independent legal advice where necessary.
+
+---
+
+## 9. Governing Law and Jurisdiction
+
+This Offer Letter is governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi. The courts of Abu Dhabi shall have jurisdiction.
+
+---
+
+## Signatures
+
+| Offeror (Buyer/Tenant) | Offeree Acknowledgment | Mi Casa Real Estate (Broker Acknowledgment) |
+|------------------------|------------------------|---------------------------------------------|
+| Name: __________________________ | Name: __________________________ | Name: __________________________ |
+| Signature: __________________________ | Signature: __________________________ | Title: __________________________ |
+| Date: ____ / ____ / ______ | Date: ____ / ____ / ______ | Signature: __________________________ |
+| | | Date: ____ / ____ / ______ |
+
+**Company Stamp (Mi Casa Real Estate):** [Stamp Here]
+
+---
+
+Mi Casa Real Estate | CN-3762725 | TRN: 100496681600003 | www.micasa.ae
+Office 1703, Al Masaood Bldg, Najda St, Abu Dhabi, UAE | contact@micasa.ae | +971 2 245 7987

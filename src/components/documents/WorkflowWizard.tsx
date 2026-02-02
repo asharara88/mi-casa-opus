@@ -39,19 +39,23 @@ interface WorkflowConfig {
   steps: WorkflowStep[];
 }
 
-// Workflow configurations based on manifest routing
+// Workflow configurations mapping to 18 Chairman-Ready templates
 export const WORKFLOW_CONFIGS: Record<WorkflowType, Omit<WorkflowConfig, "type">> = {
   sales: {
     label: "Sales Deal",
     icon: Home,
     description: "Complete workflow for property sales transactions",
     steps: [
-      { prompt_id: "DOC_BROKERAGE_SALES", title: "Brokerage Agreement", description: "Sales brokerage addendum", isOptional: false },
-      { prompt_id: "AML_SALES_CHECK", title: "AML Assessment", description: "Anti-money laundering check", isOptional: false },
-      { prompt_id: "DOC_BUYER_OFFER", title: "Buyer Offer", description: "Non-binding offer letter", isOptional: true },
-      { prompt_id: "DOC_COMMISSION_INVOICE", title: "Commission Invoice", description: "Invoice for commission", isOptional: true },
-      { prompt_id: "DOC_COMMISSION_SPLIT", title: "Split Confirmation", description: "Commission split document", isOptional: true },
-      { prompt_id: "ADMIN_DOC_INDEX", title: "Document Index", description: "Deal folder checklist", isOptional: true }
+      { prompt_id: "STATIC_01_SELLER_AUTH", title: "01 - Seller Authorization", description: "Form A equivalent - authorize marketing", isOptional: false },
+      { prompt_id: "STATIC_02_BUYER_REP", title: "02 - Buyer Representation", description: "Appoint broker as buyer agent", isOptional: false },
+      { prompt_id: "STATIC_03_MARKETING_CONSENT", title: "03 - Marketing Consent", description: "Media & portal publishing approvals", isOptional: true },
+      { prompt_id: "STATIC_07_OFFER_LETTER", title: "07 - Offer Letter / EOI", description: "Non-binding commercial terms", isOptional: false },
+      { prompt_id: "STATIC_08_MOU_SPA", title: "08 - MOU / SPA Pre-Stage", description: "Binding sale agreement", isOptional: false },
+      { prompt_id: "STATIC_09_RESERVATION", title: "09 - Reservation Form", description: "Temporary hold with refund rules", isOptional: true },
+      { prompt_id: "STATIC_11_NOC_TRACKER", title: "11 - NOC Tracker", description: "Clearance tracking", isOptional: false },
+      { prompt_id: "STATIC_10_CLOSING_CHECKLIST", title: "10 - Closing Checklist", description: "Deal completion verification", isOptional: false },
+      { prompt_id: "STATIC_12_COMMISSION_INVOICE", title: "12 - Commission Invoice", description: "VAT tax invoice", isOptional: false },
+      { prompt_id: "STATIC_13_COMMISSION_SPLIT", title: "13 - Split Sheet", description: "Internal payout approval", isOptional: true }
     ]
   },
   leasing: {
@@ -59,21 +63,22 @@ export const WORKFLOW_CONFIGS: Record<WorkflowType, Omit<WorkflowConfig, "type">
     icon: Key,
     description: "Complete workflow for property leasing transactions",
     steps: [
-      { prompt_id: "DOC_BROKERAGE_LEASING", title: "Brokerage Agreement", description: "Leasing brokerage addendum", isOptional: false },
-      { prompt_id: "KYC_LEASING_CHECK", title: "KYC Check", description: "Identity verification", isOptional: false },
-      { prompt_id: "DOC_TENANT_OFFER", title: "Tenant Intent", description: "Non-binding intent letter", isOptional: true },
-      { prompt_id: "DOC_COMMISSION_INVOICE", title: "Commission Invoice", description: "Invoice for commission", isOptional: true },
-      { prompt_id: "DOC_COMMISSION_SPLIT", title: "Split Confirmation", description: "Commission split document", isOptional: true },
-      { prompt_id: "ADMIN_DOC_INDEX", title: "Document Index", description: "Deal folder checklist", isOptional: true }
+      { prompt_id: "STATIC_01_SELLER_AUTH", title: "01 - Landlord Authorization", description: "Form A equivalent - authorize marketing", isOptional: false },
+      { prompt_id: "STATIC_02_BUYER_REP", title: "02 - Tenant Representation", description: "Appoint broker as tenant agent", isOptional: false },
+      { prompt_id: "STATIC_03_MARKETING_CONSENT", title: "03 - Marketing Consent", description: "Media & portal publishing approvals", isOptional: true },
+      { prompt_id: "STATIC_07_OFFER_LETTER", title: "07 - Tenant Offer / EOI", description: "Non-binding lease terms", isOptional: false },
+      { prompt_id: "STATIC_16_PRIVACY_CONSENT", title: "16 - Privacy Consent", description: "PDPL data acknowledgment", isOptional: false },
+      { prompt_id: "STATIC_10_CLOSING_CHECKLIST", title: "10 - Closing Checklist", description: "Deal completion verification", isOptional: false },
+      { prompt_id: "STATIC_12_COMMISSION_INVOICE", title: "12 - Commission Invoice", description: "VAT tax invoice", isOptional: false },
+      { prompt_id: "STATIC_13_COMMISSION_SPLIT", title: "13 - Split Sheet", description: "Internal payout approval", isOptional: true }
     ]
   },
   co_broker: {
     label: "Co-Broker Setup",
     icon: Users,
-    description: "Agent-to-agent cooperation agreement",
+    description: "Agent-to-agent cooperation agreement (Template 06)",
     steps: [
-      { prompt_id: "DOC_AGENT_TO_AGENT_MASTER", title: "Master Agreement", description: "Cooperation framework", isOptional: false },
-      { prompt_id: "DOC_AGENT_TO_AGENT_ANNEX", title: "Property Annex", description: "Per-property split terms", isOptional: false }
+      { prompt_id: "STATIC_06_AGENT_AGREEMENT", title: "06 - Agent-to-Agent Agreement", description: "Commission split & non-circumvention", isOptional: false }
     ]
   }
 };

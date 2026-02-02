@@ -1,39 +1,65 @@
-Complaint, Dispute & Incident Register
+# 17 - Complaint, Dispute & Incident Register (Internal)
 
-Purpose
-This register records complaints, disputes, and operational incidents for regulatory compliance, internal escalation, and resolution tracking.
+**Purpose:** To record and manage complaints, disputes, and incidents for regulatory defense, internal escalation, and service improvement.
 
-1. Register Details
-Register Period: _________________________________________
-Prepared By: ____________________________________________
+---
 
-2. Case Log
-Case No. | Date Received | Complainant / Party | Type | Summary | Status | Resolution Date
---- | --- | --- | --- | --- | --- | ---
-________ | ____________ | ___________________ | _____ | ______________________ | ______ | ____________
-________ | ____________ | ___________________ | _____ | ______________________ | ______ | ____________
-________ | ____________ | ___________________ | _____ | ______________________ | ______ | ____________
+## 1. Register Controls
 
-3. Escalation and Actions
-For each case, the following information must be recorded in the case file:
-(a) Evidence collected and communications log.
-(b) Internal review and decision notes.
-(c) Any authority notifications and response dates.
+- Register Start Date: ____ / ____ / ______
+- Maintained By (Name/Title): __________________________
 
-4. Governing Law
-This register is maintained in accordance with the laws of the United Arab Emirates and applicable regulations in the Emirate of Abu Dhabi.
+---
 
-Signatures
+## 2. Register Entries
 
-Compliance Officer
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+| Ref No. | Logged Date | Complainant / Party | Deal/Listing ID | Type | Summary | Severity | Owner | Target Date | Status | Close Date |
+|---------|-------------|---------------------|-----------------|------|---------|----------|-------|-------------|--------|------------|
+| | | | | | | | | | | |
+| | | | | | | | | | | |
+| | | | | | | | | | | |
 
-Operations Manager
-Name: __________________________________________
-Signature: ______________________________________
-Date: __________________________________________
+**Type Categories:** Complaint, Dispute, Incident, Escalation, Other
 
-Company Stamp
-[Stamp Here]
+**Severity Levels:** Low, Medium, High, Critical
+
+---
+
+## 3. Handling and Escalation Rules
+
+Each entry must have a named owner and documented actions taken. High severity matters must be escalated to management and compliance immediately and tracked until stabilized. Evidence (messages, emails, contracts, receipts) must be preserved in the deal file and referenced in the register.
+
+---
+
+## 4. Confidentiality and Data Handling
+
+Personal data and case details must be accessed only by authorized staff and used solely for resolving the matter and fulfilling legal obligations.
+
+---
+
+## 5. Governing Law and Jurisdiction
+
+This register is maintained in Abu Dhabi and governed by the laws of the United Arab Emirates and the Emirate of Abu Dhabi.
+
+---
+
+## Signatures
+
+**Prepared/Updated By (Compliance/Operations)**
+- Name: __________________________
+- Title: __________________________
+- Signature: _______________________
+- Date: ____ / ____ / ______
+
+**Approved By (Management)**
+- Name: __________________________
+- Title: __________________________
+- Signature: _______________________
+- Date: ____ / ____ / ______
+
+**Company Stamp (Mi Casa Real Estate):** [Stamp Here]
+
+---
+
+Mi Casa Real Estate | CN-3762725 | TRN: 100496681600003 | www.micasa.ae
+Office 1703, Al Masaood Bldg, Najda St, Abu Dhabi, UAE | contact@micasa.ae | +971 2 245 7987
