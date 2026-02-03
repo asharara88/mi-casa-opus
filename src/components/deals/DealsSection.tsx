@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { DealPipeline } from './DealPipeline';
 import { DealDetail } from './DealDetail';
 import { AddDealModal } from './AddDealModal';
+import { DealCloseConfirmation } from './DealCloseConfirmation';
 import { transformDbDealToFrontend } from '@/lib/transforms';
 import { Deal, DealState, ValidationContext } from '@/types/bos';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,6 +16,7 @@ import { useCreateEventLog } from '@/hooks/useEventLog';
 import { LostReasonModal, LostReason } from '@/components/modals/LostReasonModal';
 import { NextActionModal } from '@/components/modals/NextActionModal';
 import { Database } from '@/integrations/supabase/types';
+import type { PipelineDeal } from '@/hooks/usePipelineDeals';
 
 type NextActionType = Database['public']['Enums']['next_action_type'];
 
@@ -35,6 +37,10 @@ export function DealsSection() {
   // Next action modal state
   const [nextActionModalOpen, setNextActionModalOpen] = useState(false);
   const [pendingNextActionDeal, setPendingNextActionDeal] = useState<{ deal: Deal; dbDealId: string } | null>(null);
+  
+  // Close with commission modal state
+  const [closeWonModalOpen, setCloseWonModalOpen] = useState(false);
+  const [pendingCloseWonDeal, setPendingCloseWonDeal] = useState<PipelineDeal | null>(null);
   
   // Get parties and brokers for the selected deal
   const { data: selectedDealParties } = useDealParties(selectedDealId);
@@ -83,6 +89,13 @@ export function DealsSection() {
     if (targetState === 'Closed_Lost') {
       setPendingLostDeal({ deal, dbDealId: dbDeal.id });
       setLostModalOpen(true);
+      return;
+    }
+
+    // If transitioning to Closed_Won, show the commission generation dialog
+    if (targetState === 'Closed_Won') {
+      setPendingCloseWonDeal(dbDeal as unknown as PipelineDeal);
+      setCloseWonModalOpen(true);
       return;
     }
 
@@ -298,6 +311,17 @@ export function DealsSection() {
           setShowAddModal(false);
         }}
         isLoading={createDeal.isPending}
+      />
+
+      {/* Close Deal with Commission Modal */}
+      <DealCloseConfirmation
+        open={closeWonModalOpen}
+        onOpenChange={setCloseWonModalOpen}
+        deal={pendingCloseWonDeal}
+        onSuccess={() => {
+          setPendingCloseWonDeal(null);
+          setSelectedDealId(null);
+        }}
       />
     </div>
   );

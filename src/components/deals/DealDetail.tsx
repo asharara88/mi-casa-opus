@@ -17,12 +17,14 @@ import {
   MapPin,
   FileArchive,
   UserCheck,
-  CreditCard
+  CreditCard,
+  DollarSign
 } from 'lucide-react';
 import { Deal, DealState, ValidationContext, DEAL_STATE_REQUIREMENTS } from '@/types/bos';
 import { DealStateRail } from './DealStateRail';
 import { DealPartiesPanel } from './DealPartiesPanel';
 import { DealEconomicsSnapshot } from './DealEconomicsSnapshot';
+import { BrokerSplitManager } from './BrokerSplitManager';
 import { RegistryActionsChecklist } from './RegistryActionsChecklist';
 import { EvidenceDrawer } from './EvidenceDrawer';
 import { EOIPaymentModal } from './EOIPaymentModal';
@@ -494,8 +496,11 @@ export const DealDetail: React.FC<DealDetailProps> = ({
               />
             </TabsContent>
 
-            <TabsContent value="parties">
+            <TabsContent value="parties" className="space-y-4">
               <DealPartiesPanel parties={deal.parties} />
+              {dealDbId && (
+                <BrokerSplitManager dealId={dealDbId} />
+              )}
             </TabsContent>
 
             <TabsContent value="registry">
