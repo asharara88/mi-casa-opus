@@ -24,6 +24,7 @@ import { TemplatesSection } from '@/components/templates/TemplatesSection';
 import { ProspectsSection } from '@/components/prospects/ProspectsSection';
 import { MarketingSection } from '@/components/marketing/MarketingSection';
 import { TeamsSection } from '@/components/teams/TeamsSection';
+import { SmartContractsSection } from '@/components/contracts/SmartContractsSection';
 import { AIAgentChat } from '@/components/ai/AIAgentChat';
 import { FloatingAIChat } from '@/components/ai/FloatingAIChat';
 import { useBrokerageContext } from '@/hooks/useBrokerage';
@@ -59,6 +60,7 @@ const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   approvals: { title: 'Approvals Queue', subtitle: 'Pending approvals and overrides' },
   exports: { title: 'Export Center', subtitle: 'Generate deal and broker dossiers' },
   templates: { title: 'Rules & Templates', subtitle: 'Document templates and business rules' },
+  contracts: { title: 'Smart Contracts', subtitle: 'Tokenization, contracts, and payment escrow' },
   'ai-insights': { title: 'AI Insights', subtitle: 'Read-only intelligence (non-authoritative)' },
   'ai-agent': { title: 'AI Agent', subtitle: 'Your BOS operations assistant' },
   users: { title: 'User Management', subtitle: 'Manage users and broker profiles' },
@@ -162,6 +164,9 @@ export function BOSApp() {
       
       case 'templates':
         return <TemplatesSection />;
+      
+      case 'contracts':
+        return <SmartContractsSection />;
       
       case 'users':
         return <UsersSection />;

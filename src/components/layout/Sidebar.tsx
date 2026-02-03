@@ -17,6 +17,7 @@ import {
   Bot,
   Megaphone,
   TrendingUp,
+  FileSignature,
 } from 'lucide-react';
 import {
   Collapsible,
@@ -61,6 +62,7 @@ const NAV_ITEMS: NavItem[] = [
   // Operations (Listings, Documents, Commissions)
   { id: 'listings', label: 'Listings', icon: Building2, roles: ['Operator'], group: 'operations' },
   { id: 'documents', label: 'Documents', icon: FileText, roles: ['Operator'], group: 'operations' },
+  { id: 'contracts', label: 'Smart Contracts', icon: FileSignature, roles: ['Operator'], group: 'operations' },
   { id: 'commissions', label: 'Commissions', icon: DollarSign, roles: ['Operator'], group: 'operations' },
   
   // Teams (Internal collaboration)
