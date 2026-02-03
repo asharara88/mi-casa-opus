@@ -123,6 +123,92 @@ export function useDocumentGenerator() {
   return { generateDocument, isLoading, error, lastResponse };
 }
 
+// Helper to generate SHA-256 hash
+async function generateDocHash(content: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(content);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Enhanced document generator with automatic evidence linking
+export function useDocumentGeneratorWithEvidence() {
+  const { generateDocument, isLoading, error, lastResponse } = useDocumentGenerator();
+
+  const generateAndLink = useCallback(async (
+    promptId: string,
+    inputPayload: Record<string, unknown>,
+    entityType?: string,
+    entityId?: string
+  ): Promise<{
+    title: string;
+    body: string;
+    documentId?: string;
+    evidenceId?: string;
+    contentHash?: string;
+  } | null> => {
+    // Generate the document first
+    const result = await generateDocument(promptId, inputPayload, entityType, entityId);
+    
+    if (!result || !result.documentId || !entityType || !entityId) {
+      return result;
+    }
+
+    // Auto-link to evidence with integrity hash
+    try {
+      // Generate SHA-256 hash of content
+      const contentHash = await generateDocHash(result.body);
+      
+      // Update document with hash
+      await supabase
+        .from('generated_documents')
+        .update({
+          content_hash: contentHash,
+          evidence_type: 'GeneratedDocument',
+        })
+        .eq('document_id', result.documentId);
+
+      // Create evidence record
+      const evidenceId = `EVD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+      
+      await supabase
+        .from('evidence_objects')
+        .insert([{
+          evidence_id: evidenceId,
+          entity_type: entityType,
+          entity_id: entityId,
+          evidence_type: 'Other' as const,
+          file_hash: contentHash,
+          source: 'document_generator_auto',
+          immutability_class: 'System' as const,
+          captured_by: 'system',
+          metadata: {
+            document_id: result.documentId,
+            document_title: result.title,
+            prompt_id: promptId,
+            content_hash: contentHash,
+            hash_algorithm: 'SHA-256',
+            auto_linked: true,
+            linked_at: new Date().toISOString(),
+          },
+        }]);
+
+      return {
+        ...result,
+        evidenceId,
+        contentHash,
+      };
+    } catch (err) {
+      console.error('Failed to auto-link evidence:', err);
+      // Return result even if evidence linking fails
+      return result;
+    }
+  }, [generateDocument]);
+
+  return { generateAndLink, generateDocument, isLoading, error, lastResponse };
+}
+
 export function useAMLCheck() {
   const { execute, isLoading, error } = useManifestExecutor();
 

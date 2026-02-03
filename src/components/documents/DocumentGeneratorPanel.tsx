@@ -16,7 +16,7 @@ import {
   FileCheck
 } from "lucide-react";
 import { toast } from "sonner";
-import { useDocumentGenerator, useManifestPrompts } from "@/hooks/useManifestExecutor";
+import { useDocumentGeneratorWithEvidence, useManifestPrompts } from "@/hooks/useManifestExecutor";
 import { useWorkflowState, type WorkflowType, getWorkflowState } from "@/hooks/useWorkflowState";
 import { TemplateBrowser } from "./TemplateBrowser";
 import { FormWizard } from "./FormWizard";
@@ -60,7 +60,7 @@ export function DocumentGeneratorPanel({
   const [workflowContext, setWorkflowContext] = useState<WorkflowContext | null>(null);
 
   const { prompts, fetchAllPrompts, isLoading: isLoadingPrompts } = useManifestPrompts();
-  const { generateDocument, isLoading: isGenerating, error } = useDocumentGenerator();
+  const { generateAndLink, generateDocument, isLoading: isGenerating, error } = useDocumentGeneratorWithEvidence();
   const { getPrefilledData } = useMiCasaDefaults();
   
   // Workflow state management
@@ -126,7 +126,7 @@ export function DocumentGeneratorPanel({
     // For static templates, skip form and generate immediately
     if (isStatic) {
       setViewState("form"); // Show loading state briefly
-      const result = await generateDocument(prompt.prompt_id, {}, entityType, entityId);
+      const result = await generateAndLink(prompt.prompt_id, {}, entityType, entityId);
       if (result) {
         setGeneratedDoc({ title: result.title, body: result.body, documentId: result.documentId });
         setViewState("preview");
@@ -197,7 +197,7 @@ export function DocumentGeneratorPanel({
   const handleGenerate = async () => {
     if (!selectedTemplate) return;
 
-    const result = await generateDocument(
+    const result = await generateAndLink(
       selectedTemplate,
       formData,
       entityType,
@@ -207,7 +207,7 @@ export function DocumentGeneratorPanel({
     if (result) {
       setGeneratedDoc({ title: result.title, body: result.body, documentId: result.documentId });
       setViewState("preview");
-      toast.success("Document generated successfully");
+      toast.success("Document generated with evidence hash");
       
       // Mark workflow step complete and advance to next
       if (workflowContext && activeWorkflowType) {
