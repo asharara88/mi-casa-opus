@@ -35,6 +35,8 @@ interface ConvertToDealModalProps {
     developerId?: string;
     developerProjectId?: string;
     developerProjectName?: string;
+    transactionValue?: number;
+    commissionPercent?: number;
   }) => Promise<void>;
   isLoading?: boolean;
 }
@@ -52,11 +54,21 @@ export function ConvertToDealModal({
   const [side, setSide] = useState<'Buy' | 'Sell'>('Buy');
   const [developerId, setDeveloperId] = useState<string>('');
   const [projectId, setProjectId] = useState<string>('');
+  const [transactionValue, setTransactionValue] = useState<string>(
+    leadRequirements?.budget_max?.toString() || leadRequirements?.budget_min?.toString() || ''
+  );
+  const [commissionPercent, setCommissionPercent] = useState<string>('');
 
   const { data: developers } = useDevelopers();
   const { data: projects } = useDeveloperProjects(developerId || undefined);
 
   const selectedProject = projects?.find(p => p.id === projectId);
+
+  // Default commission based on deal type (UAE caps: 2% sales, 5% rent)
+  const defaultCommission = dealType === 'Sale' ? 2 : 5;
+  const effectiveCommission = commissionPercent ? parseFloat(commissionPercent) : defaultCommission;
+  const parsedValue = transactionValue ? parseFloat(transactionValue.replace(/,/g, '')) : 0;
+  const expectedCommission = parsedValue * (effectiveCommission / 100);
 
   const handleConfirm = async () => {
     await onConfirm({
@@ -66,6 +78,8 @@ export function ConvertToDealModal({
       developerId: pipeline === 'OffPlan' ? developerId : undefined,
       developerProjectId: pipeline === 'OffPlan' ? projectId : undefined,
       developerProjectName: pipeline === 'OffPlan' ? selectedProject?.name : undefined,
+      transactionValue: parsedValue || undefined,
+      commissionPercent: effectiveCommission,
     });
   };
 
@@ -187,6 +201,45 @@ export function ConvertToDealModal({
               )}
             </div>
           )}
+
+          {/* Deal Economics */}
+          <div className="space-y-4 p-4 rounded-lg bg-muted/50 border">
+            <p className="text-sm font-medium">Deal Economics (Optional)</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm">Est. Transaction Value (AED)</Label>
+                <Input
+                  type="text"
+                  placeholder={leadRequirements?.budget_max?.toLocaleString() || "e.g. 2,500,000"}
+                  value={transactionValue}
+                  onChange={(e) => setTransactionValue(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm">Commission %</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max={dealType === 'Sale' ? 2 : 5}
+                  placeholder={defaultCommission.toString()}
+                  value={commissionPercent}
+                  onChange={(e) => setCommissionPercent(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  UAE cap: {dealType === 'Sale' ? '2%' : '5%'}
+                </p>
+              </div>
+            </div>
+            {parsedValue > 0 && (
+              <div className="flex justify-between text-sm pt-2 border-t">
+                <span className="text-muted-foreground">Expected Commission:</span>
+                <span className="font-semibold text-primary">
+                  AED {expectedCommission.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
+              </div>
+            )}
+          </div>
 
           {/* Lead Requirements Summary */}
           {leadRequirements && (

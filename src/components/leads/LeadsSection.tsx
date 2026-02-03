@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLeads, useUpdateLead, useCreateLead, Lead } from '@/hooks/useLeads';
-import { useCreatePipelineDeal } from '@/hooks/usePipelineDeals';
+import { useLeadToDealConversion } from '@/hooks/useLeadToDealConversion';
 import { usePortalInquiryStats } from '@/hooks/usePortalInquiries';
 import { LeadPipeline } from './LeadPipeline';
 import { LeadDetail } from './LeadDetail';
@@ -51,7 +51,7 @@ export function LeadsSection() {
   const { data: inquiryStats } = usePortalInquiryStats();
   const updateLead = useUpdateLead();
   const createLead = useCreateLead();
-  const createPipelineDeal = useCreatePipelineDeal();
+  const convertLeadToDeal = useLeadToDealConversion();
   
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'pipeline' | 'list'>('pipeline');
@@ -194,7 +194,7 @@ export function LeadsSection() {
     setShowConvertModal(true);
   };
 
-  // Process the actual conversion
+  // Process the actual conversion using the dedicated hook
   const handleConversionConfirm = async (config: {
     pipeline: DealPipeline;
     dealType: 'Sale' | 'Rent';
@@ -202,46 +202,42 @@ export function LeadsSection() {
     developerId?: string;
     developerProjectId?: string;
     developerProjectName?: string;
+    transactionValue?: number;
+    commissionPercent?: number;
   }) => {
     if (!convertingLead) return;
     
     setIsConverting(true);
     try {
-      // Create the deal from the lead with selected options
-      await createPipelineDeal.mutateAsync({
-        pipeline: config.pipeline,
-        deal_type: config.dealType,
-        side: config.side,
-        linked_lead_id: convertingLead.id,
-        developer_id: config.developerId,
-        developer_project_id: config.developerProjectId,
-        developer_project_name: config.developerProjectName,
-        notes: `Converted from lead ${convertingLead.lead_id}. ${convertingLead.notes || ''}`.trim(),
-        deal_economics: {
-          lead_source: convertingLead.source,
-          lead_requirements: convertingLead.requirements,
-          client_name: convertingLead.contact_identity.full_name,
-          client_email: convertingLead.contact_identity.email,
-          client_phone: convertingLead.contact_identity.phone,
+      // Use the dedicated conversion hook with full data mapping
+      await convertLeadToDeal.mutateAsync({
+        lead: {
+          id: convertingLead.id,
+          lead_id: convertingLead.lead_id,
+          contact_name: convertingLead.contact_identity.full_name,
+          contact_email: convertingLead.contact_identity.email,
+          contact_phone: convertingLead.contact_identity.phone,
+          source: convertingLead.source,
+          notes: convertingLead.notes,
+          qualification_data: convertingLead.requirements,
         },
-      });
-
-      // Update lead state to Converted
-      await updateLead.mutateAsync({
-        id: convertingLead.id,
-        updates: { lead_state: 'Converted' as LeadState },
+        config: {
+          pipeline: config.pipeline,
+          dealType: config.dealType,
+          side: config.side,
+          developerId: config.developerId,
+          developerProjectId: config.developerProjectId,
+          developerProjectName: config.developerProjectName,
+          transactionValue: config.transactionValue,
+          commissionPercent: config.commissionPercent,
+        },
       });
 
       setSelectedLeadId(null);
       setShowConvertModal(false);
       setConvertingLead(null);
-      toast.success('Lead converted to deal', {
-        description: `${convertingLead.contact_identity.full_name} is now in the ${config.pipeline} pipeline`,
-      });
     } catch (error) {
-      toast.error('Failed to convert lead', {
-        description: error instanceof Error ? error.message : 'Unknown error',
-      });
+      // Error handling is done in the hook
     } finally {
       setIsConverting(false);
     }
