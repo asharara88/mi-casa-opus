@@ -513,6 +513,66 @@ export type Database = {
           },
         ]
       }
+      contract_events: {
+        Row: {
+          actor_id: string | null
+          actor_name: string | null
+          actor_type: string | null
+          contract_id: string
+          escrow_id: string | null
+          event_data: Json | null
+          event_hash: string
+          event_id: string
+          event_type: string
+          id: string
+          prev_event_hash: string | null
+          timestamp: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name?: string | null
+          actor_type?: string | null
+          contract_id: string
+          escrow_id?: string | null
+          event_data?: Json | null
+          event_hash: string
+          event_id: string
+          event_type: string
+          id?: string
+          prev_event_hash?: string | null
+          timestamp?: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string | null
+          actor_type?: string | null
+          contract_id?: string
+          escrow_id?: string | null
+          event_data?: Json | null
+          event_hash?: string
+          event_id?: string
+          event_type?: string
+          id?: string
+          prev_event_hash?: string | null
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_events_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "smart_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_events_escrow_id_fkey"
+            columns: ["escrow_id"]
+            isOneToOne: false
+            referencedRelation: "payment_escrow"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_brokers: {
         Row: {
           assigned_at: string
@@ -1554,6 +1614,112 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_escrow: {
+        Row: {
+          bank_reference: string | null
+          conditions_met: Json | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          deal_id: string | null
+          document_instance_id: string | null
+          due_date: string | null
+          escrow_id: string
+          funded_amount: number
+          funded_at: string | null
+          id: string
+          payee_email: string | null
+          payee_name: string
+          payer_email: string | null
+          payer_name: string
+          payment_reference: string | null
+          payment_type: string
+          property_token_id: string | null
+          release_conditions: Json | null
+          released_amount: number
+          released_at: string | null
+          status: Database["public"]["Enums"]["escrow_status"]
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          bank_reference?: string | null
+          conditions_met?: Json | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deal_id?: string | null
+          document_instance_id?: string | null
+          due_date?: string | null
+          escrow_id: string
+          funded_amount?: number
+          funded_at?: string | null
+          id?: string
+          payee_email?: string | null
+          payee_name: string
+          payer_email?: string | null
+          payer_name: string
+          payment_reference?: string | null
+          payment_type: string
+          property_token_id?: string | null
+          release_conditions?: Json | null
+          released_amount?: number
+          released_at?: string | null
+          status?: Database["public"]["Enums"]["escrow_status"]
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          bank_reference?: string | null
+          conditions_met?: Json | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deal_id?: string | null
+          document_instance_id?: string | null
+          due_date?: string | null
+          escrow_id?: string
+          funded_amount?: number
+          funded_at?: string | null
+          id?: string
+          payee_email?: string | null
+          payee_name?: string
+          payer_email?: string | null
+          payer_name?: string
+          payment_reference?: string | null
+          payment_type?: string
+          property_token_id?: string | null
+          release_conditions?: Json | null
+          released_amount?: number
+          released_at?: string | null
+          status?: Database["public"]["Enums"]["escrow_status"]
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_escrow_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_escrow_document_instance_id_fkey"
+            columns: ["document_instance_id"]
+            isOneToOne: false
+            referencedRelation: "document_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_escrow_property_token_id_fkey"
+            columns: ["property_token_id"]
+            isOneToOne: false
+            referencedRelation: "property_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payout_batches: {
         Row: {
           approved_at: string | null
@@ -1979,6 +2145,111 @@ export type Database = {
         }
         Relationships: []
       }
+      property_tokens: {
+        Row: {
+          accredited_only: boolean
+          chain_network: string | null
+          contract_address: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          deal_id: string | null
+          decimals: number
+          deployment_tx_hash: string | null
+          id: string
+          kyc_required: boolean
+          legal_structure: string | null
+          listing_id: string | null
+          location: string | null
+          minimum_investment: number | null
+          minted_at: string | null
+          property_id: string
+          property_type: string | null
+          property_valuation: number
+          regulatory_jurisdiction: string | null
+          status: Database["public"]["Enums"]["token_status"]
+          token_id: string
+          token_name: string
+          token_price: number | null
+          token_symbol: string
+          total_supply: number
+          updated_at: string
+        }
+        Insert: {
+          accredited_only?: boolean
+          chain_network?: string | null
+          contract_address?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deal_id?: string | null
+          decimals?: number
+          deployment_tx_hash?: string | null
+          id?: string
+          kyc_required?: boolean
+          legal_structure?: string | null
+          listing_id?: string | null
+          location?: string | null
+          minimum_investment?: number | null
+          minted_at?: string | null
+          property_id: string
+          property_type?: string | null
+          property_valuation: number
+          regulatory_jurisdiction?: string | null
+          status?: Database["public"]["Enums"]["token_status"]
+          token_id: string
+          token_name: string
+          token_price?: number | null
+          token_symbol: string
+          total_supply?: number
+          updated_at?: string
+        }
+        Update: {
+          accredited_only?: boolean
+          chain_network?: string | null
+          contract_address?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deal_id?: string | null
+          decimals?: number
+          deployment_tx_hash?: string | null
+          id?: string
+          kyc_required?: boolean
+          legal_structure?: string | null
+          listing_id?: string | null
+          location?: string | null
+          minimum_investment?: number | null
+          minted_at?: string | null
+          property_id?: string
+          property_type?: string | null
+          property_valuation?: number
+          regulatory_jurisdiction?: string | null
+          status?: Database["public"]["Enums"]["token_status"]
+          token_id?: string
+          token_name?: string
+          token_price?: number | null
+          token_symbol?: string
+          total_supply?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_tokens_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_tokens_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prospects: {
         Row: {
           assigned_broker_id: string | null
@@ -2266,6 +2537,122 @@ export type Database = {
           },
         ]
       }
+      smart_contracts: {
+        Row: {
+          all_signed: boolean
+          blockchain_tx_hash: string | null
+          clauses: Json | null
+          content_hash: string | null
+          contract_id: string
+          contract_name: string
+          contract_terms: Json | null
+          contract_type: string
+          created_at: string
+          created_by: string | null
+          deal_id: string | null
+          document_instance_id: string | null
+          docusign_envelope_id: string | null
+          effective_date: string | null
+          executed_at: string | null
+          execution_method: string | null
+          expiry_date: string | null
+          id: string
+          ipfs_cid: string | null
+          listing_id: string | null
+          parties: Json
+          property_token_id: string | null
+          status: Database["public"]["Enums"]["contract_execution_status"]
+          template_id: string | null
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          all_signed?: boolean
+          blockchain_tx_hash?: string | null
+          clauses?: Json | null
+          content_hash?: string | null
+          contract_id: string
+          contract_name: string
+          contract_terms?: Json | null
+          contract_type: string
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          document_instance_id?: string | null
+          docusign_envelope_id?: string | null
+          effective_date?: string | null
+          executed_at?: string | null
+          execution_method?: string | null
+          expiry_date?: string | null
+          id?: string
+          ipfs_cid?: string | null
+          listing_id?: string | null
+          parties?: Json
+          property_token_id?: string | null
+          status?: Database["public"]["Enums"]["contract_execution_status"]
+          template_id?: string | null
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          all_signed?: boolean
+          blockchain_tx_hash?: string | null
+          clauses?: Json | null
+          content_hash?: string | null
+          contract_id?: string
+          contract_name?: string
+          contract_terms?: Json | null
+          contract_type?: string
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          document_instance_id?: string | null
+          docusign_envelope_id?: string | null
+          effective_date?: string | null
+          executed_at?: string | null
+          execution_method?: string | null
+          expiry_date?: string | null
+          id?: string
+          ipfs_cid?: string | null
+          listing_id?: string | null
+          parties?: Json
+          property_token_id?: string | null
+          status?: Database["public"]["Enums"]["contract_execution_status"]
+          template_id?: string | null
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_contracts_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smart_contracts_document_instance_id_fkey"
+            columns: ["document_instance_id"]
+            isOneToOne: false
+            referencedRelation: "document_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smart_contracts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smart_contracts_property_token_id_fkey"
+            columns: ["property_token_id"]
+            isOneToOne: false
+            referencedRelation: "property_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_meeting_participants: {
         Row: {
           id: string
@@ -2360,6 +2747,71 @@ export type Database = {
           zoom_meeting_id?: string | null
         }
         Relationships: []
+      }
+      token_ownership: {
+        Row: {
+          average_cost_basis: number | null
+          created_at: string
+          frozen_reason: string | null
+          id: string
+          invested_amount: number
+          is_active: boolean
+          kyc_document_id: string | null
+          kyc_verified: boolean
+          owner_email: string | null
+          owner_name: string
+          owner_type: string
+          owner_wallet_address: string | null
+          ownership_percentage: number | null
+          token_balance: number
+          token_id: string
+          updated_at: string
+        }
+        Insert: {
+          average_cost_basis?: number | null
+          created_at?: string
+          frozen_reason?: string | null
+          id?: string
+          invested_amount?: number
+          is_active?: boolean
+          kyc_document_id?: string | null
+          kyc_verified?: boolean
+          owner_email?: string | null
+          owner_name: string
+          owner_type?: string
+          owner_wallet_address?: string | null
+          ownership_percentage?: number | null
+          token_balance?: number
+          token_id: string
+          updated_at?: string
+        }
+        Update: {
+          average_cost_basis?: number | null
+          created_at?: string
+          frozen_reason?: string | null
+          id?: string
+          invested_amount?: number
+          is_active?: boolean
+          kyc_document_id?: string | null
+          kyc_verified?: boolean
+          owner_email?: string | null
+          owner_name?: string
+          owner_type?: string
+          owner_wallet_address?: string | null
+          ownership_percentage?: number | null
+          token_balance?: number
+          token_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_ownership_token_id_fkey"
+            columns: ["token_id"]
+            isOneToOne: false
+            referencedRelation: "property_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -2621,6 +3073,12 @@ export type Database = {
       compliance_context_type: "listing" | "transaction" | "marketing"
       compliance_rule_severity: "BLOCK" | "ESCALATE"
       compliance_status: "APPROVED" | "BLOCKED" | "ESCALATED"
+      contract_execution_status:
+        | "Draft"
+        | "Pending"
+        | "Executed"
+        | "Voided"
+        | "Expired"
       deal_pipeline: "OffPlan" | "Secondary"
       deal_side: "Buy" | "Sell" | "Lease" | "Let"
       deal_state:
@@ -2645,6 +3103,13 @@ export type Database = {
         | "Receipt"
         | "Other"
       document_status: "Draft" | "Pending" | "Executed" | "Voided"
+      escrow_status:
+        | "Created"
+        | "Funded"
+        | "PartiallyFunded"
+        | "Released"
+        | "Refunded"
+        | "Disputed"
       event_status:
         | "Planning"
         | "Confirmed"
@@ -2792,6 +3257,7 @@ export type Database = {
         | "ClosedLost"
       signature_status: "Pending" | "Signed" | "Declined" | "Expired"
       template_status: "Draft" | "Published" | "Deprecated"
+      token_status: "Draft" | "Minted" | "Active" | "Frozen" | "Burned"
       viewing_status:
         | "scheduled"
         | "confirmed"
@@ -2990,6 +3456,13 @@ export const Constants = {
       compliance_context_type: ["listing", "transaction", "marketing"],
       compliance_rule_severity: ["BLOCK", "ESCALATE"],
       compliance_status: ["APPROVED", "BLOCKED", "ESCALATED"],
+      contract_execution_status: [
+        "Draft",
+        "Pending",
+        "Executed",
+        "Voided",
+        "Expired",
+      ],
       deal_pipeline: ["OffPlan", "Secondary"],
       deal_side: ["Buy", "Sell", "Lease", "Let"],
       deal_state: [
@@ -3016,6 +3489,14 @@ export const Constants = {
         "Other",
       ],
       document_status: ["Draft", "Pending", "Executed", "Voided"],
+      escrow_status: [
+        "Created",
+        "Funded",
+        "PartiallyFunded",
+        "Released",
+        "Refunded",
+        "Disputed",
+      ],
       event_status: [
         "Planning",
         "Confirmed",
@@ -3179,6 +3660,7 @@ export const Constants = {
       ],
       signature_status: ["Pending", "Signed", "Declined", "Expired"],
       template_status: ["Draft", "Published", "Deprecated"],
+      token_status: ["Draft", "Minted", "Active", "Frozen", "Burned"],
       viewing_status: [
         "scheduled",
         "confirmed",
