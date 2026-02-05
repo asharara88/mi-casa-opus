@@ -265,13 +265,16 @@ Week 2: Frontend
 
 ## Post-Implementation Checklist
 
- - [x] All 10 RLS warnings resolved (9 fixed, 1 intentional webhook policy)
+  - [x] All RLS warnings resolved (SELECT + INSERT/UPDATE/DELETE policies hardened)
  - [x] Brokers can only see their assigned leads/deals
  - [x] Operators can see all data + team overview
  - [x] Real-time updates working across browser tabs
  - [x] Notifications appear on lead assignment
  - [x] Manager dashboard shows broker KPIs
  - [x] Lead assignment UI functional
+  - [x] Sensitive tables (escrow, contracts, tokens) scoped to participants
+  - [x] AI prompts restricted to Operators only
+  - [x] Audit log restricted to Operators/LegalOwners
 
 ---
 
