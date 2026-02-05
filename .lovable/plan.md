@@ -1,332 +1,284 @@
 
-# MiCasa BOS: Complete Funnel Integration Implementation Plan
-
-## ✅ IMPLEMENTATION COMPLETE
-
-All 5 phases have been implemented, database schema updated, and remaining UI components built:
-
-### Phase 1: Lead to Deal Conversion ✅
-- Created `ConvertToDealModal.tsx` with pipeline selection (OffPlan/Secondary)
-- Wired into `LeadsSection.tsx` with proper data mapping
-- Lead requirements flow to deal economics
-
-### Phase 2: Funnel Automation Triggers ✅
-- `ViewingScheduler.tsx` now calls `onViewingScheduled()` automatically
-- Created `ViewingCompletionDialog.tsx` for feedback capture
-- `useFunnelAutomation.ts` hooks are now wired to UI actions
-- Created `useViewingCompletion.ts` - combines viewing updates with auto deal advancement
-- Created `useDocumentStageAutomation.ts` - maps document templates to stage transitions
-- Created `ViewingsPanel.tsx` - integrated viewing management with completion actions
-- Updated `docusign-webhook` - auto-advances deals when MOU/Offer/Reservation signed
-- Updated `FilledFormsPanel.tsx` - triggers automation hints on document generation
-
-### Phase 3: Commission Auto-Generation ✅
-- Created `useCommissionGeneration.ts` hook
-- Auto-calculates splits based on `deal_brokers` table
-- Creates evidence records for audit trail
-
-### Phase 4: Document Linking to Evidence ✅
-- Updated `useStaticFormFiller.ts` with dual-write logic
-- Documents create `document_instances` + `evidence_objects`
-- SHA-256 content hashes for integrity verification
-- `EvidenceDrawer.tsx` now queries generated documents
-
-### Phase 5: Automated Reminders ✅
-- Created `viewing-reminder` edge function
-- Added new templates to `twilio-messaging`
-- Queries upcoming viewings and sends WhatsApp reminders
-
-### Additional UI Components Built ✅
-- `EOIPaymentModal.tsx` - Record EOI payments with amount, date, method
-- `NOCTrackerPanel.tsx` - Track NOC status with timeline progress
-- `DepositReceiptUploader.tsx` - Upload payment evidence with SHA-256 hashing
-- All components integrated into `DealDetail.tsx` with new Payments tab
+# Production-Ready Implementation Plan
+## Completing the Final 30% for MiCasa BOS
 
 ---
 
-## Phase 1: Lead to Deal Conversion Flow
+## Overview
 
-### Current State
-- `LeadDetail.tsx` has a "Convert to Deal" button that appears for Qualified leads
-- `QuickConvertButton.tsx` provides the UI component
-- `useFunnelProcessor.ts` contains `createDealFromLead` logic but is not connected to the UI
+This plan addresses the four critical gaps preventing production deployment:
+1. **Security hardening** - Fix 10 RLS policy warnings
+2. **Manager oversight dashboard** - Team performance visibility
+3. **Real-time collaboration** - Live updates across brokers
+4. **Notification system** - Automated alerts for key events
 
-### Implementation Steps
+---
 
-**1.1 Wire Conversion Logic in LeadsSection.tsx**
-- Add `onConvertToDeal` handler to `LeadsSection` that:
-  - Calls `useCreatePipelineDeal` hook to create the deal
-  - Updates the lead state to "Converted"
-  - Navigates to the new deal detail view
-  - Logs the conversion event
+## Phase 1: RLS Security Hardening
 
-**1.2 Pipeline Selection Dialog**
-- Create `PipelineSelectionModal.tsx` allowing agent to choose:
-  - OffPlan vs Secondary pipeline
-  - Deal type (Sale/Rent)
-  - Initial property/developer association
+### Problem
+The linter identified 10 tables with overly permissive RLS policies using `USING (true)` or `WITH CHECK (true)` for INSERT/UPDATE/DELETE operations.
 
-**1.3 Data Mapping**
-- Map lead requirements (budget, bedrooms, locations) to deal economics
-- Copy contact info from lead to deal parties table
-- Preserve audit trail with linked_lead_id
+### Tables Requiring Fixes
+
+| Table | Current Issue | Fix |
+|-------|---------------|-----|
+| `property_tokens` | INSERT allows any authenticated user | Restrict to Operators + created_by tracking |
+| `token_ownership` | ALL operations open | Scope to token creators or Operators |
+| `payment_escrow` | ALL operations open | Scope to deal participants or Operators |
+| `smart_contracts` | ALL operations open | Scope to deal participants or Operators |
+| `contract_events` | INSERT too permissive | Require contract access |
+| `generated_documents` | Missing broker scoping | Add created_by tracking |
+| `viewing_bookings` | Missing ownership | Scope to assigned broker |
+| `communication_logs` | Missing creator check | Add created_by requirement |
+
+### Implementation
 
 ```text
-+----------------+     +------------------+     +----------------+
-|     Lead       | --> | Pipeline Modal   | --> |     Deal       |
-| (Qualified)    |     | - OffPlan/Sec    |     | (Created)      |
-|                |     | - Sale/Rent      |     | linked_lead_id |
-+----------------+     +------------------+     +----------------+
+Migration: 20260205_security_hardening.sql
+
+1. Add created_by columns where missing
+2. Update INSERT policies to require created_by = auth.uid()
+3. Update UPDATE/DELETE policies to check ownership
+4. Create helper function: is_deal_participant(deal_id, user_id)
+```
+
+### Helper Function Design
+
+```text
+create function is_deal_participant(_deal_id uuid, _user_id uuid)
+returns boolean as $$
+  select exists (
+    select 1 from deal_brokers db
+    join broker_profiles bp on db.broker_id = bp.id
+    where db.deal_id = _deal_id and bp.user_id = _user_id
+  )
+$$ language sql stable security definer;
 ```
 
 ---
 
-## Phase 2: Funnel Automation Triggers
+## Phase 2: Manager Oversight Dashboard
 
-### Current State
-- `useFunnelAutomation.ts` defines automation hooks but they are not called
-- `ViewingScheduler.tsx` creates bookings but does not advance deals
-- `useStaticFormFiller.ts` generates documents but does not trigger stage changes
+### Components to Build
 
-### Implementation Steps
+**1. Team Performance Overview (`TeamPerformanceDashboard.tsx`)**
+- Shows all broker pipelines side-by-side
+- Conversion rates per broker
+- Commission totals by broker
+- Activity heatmap (calls, viewings, deals)
 
-**2.1 Viewing Automation**
-- Modify `ViewingScheduler.tsx` to accept `onBookingCreated` callback
-- After successful booking, call `useFunnelAutomation.onViewingScheduled(dealId)`
-- Create `ViewingCompletionDialog.tsx` to mark viewings complete with feedback
-- On completion, call `useFunnelAutomation.onViewingCompleted(dealId)`
+**2. Broker KPI Cards (`BrokerKPICard.tsx`)**
+- Active leads count
+- Deals in progress
+- Monthly closed value
+- Response time average
 
-**2.2 Document Automation**
-- Modify `useStaticFormFiller.ts` to detect document type and trigger:
-  - MOU signed: advance to `MOUSigned` state
-  - Offer Letter: advance to `OfferMade` state
-  - Reservation Form: advance to `Reserved` state
+**3. Assignment Manager (`LeadAssignmentPanel.tsx`)**
+- Round-robin or manual lead assignment
+- Workload balancing view
+- Unassigned leads queue
 
-**2.3 Payment Automation**
-- Create `EOIPaymentModal.tsx` for recording EOI payments
-- On payment confirmation, call `useFunnelAutomation.onEOIPaid(dealId)`
-- Create `DepositReceiptUploader.tsx` for payment evidence
+### Database Query Design
 
-**2.4 NOC Automation**
-- Create `NOCTrackerPanel.tsx` to monitor NOC status
-- When NOC reference is entered, call `useFunnelAutomation.onNOCObtained(dealId, reference)`
-
-### Automation Flow Diagram
 ```text
-Viewing Scheduled --> Deal: ViewingScheduled
-Viewing Completed --> Deal: ViewingCompleted
-MOU Signed        --> Deal: MOUSigned
-NOC Obtained      --> Deal: NOCObtained
-Transfer Done     --> Deal: ClosedWon + Commission Created
+-- New function: get_team_metrics()
+Returns for each broker:
+  - lead_count
+  - deal_count  
+  - conversion_rate
+  - total_commission_earned
+  - avg_deal_cycle_days
+```
+
+### UI Location
+- Add "Team" tab to Dashboard for Operator role
+- Accessible via sidebar toggle
+
+---
+
+## Phase 3: Real-Time Collaboration
+
+### Tables to Enable Realtime
+
+```text
+ALTER PUBLICATION supabase_realtime ADD TABLE public.leads;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.deals;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.approvals;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.commission_records;
+```
+
+### Hook Updates
+
+**useLeadsRealtime.ts**
+```text
+- Subscribe to leads table changes
+- Filter by assigned_broker_id for Broker role
+- Auto-refresh query cache on postgres_changes
+```
+
+**useDealUpdates.ts**
+```text
+- Subscribe to deal state changes
+- Notify when deal moves to new stage
+- Show toast notification on updates
+```
+
+### Implementation Pattern
+
+```text
+useEffect(() => {
+  const channel = supabase
+    .channel('leads-changes')
+    .on('postgres_changes', 
+      { event: '*', schema: 'public', table: 'leads' },
+      (payload) => {
+        queryClient.invalidateQueries(['leads']);
+        if (payload.eventType === 'INSERT') {
+          toast.info('New lead assigned to you');
+        }
+      }
+    )
+    .subscribe();
+    
+  return () => { supabase.removeChannel(channel); };
+}, []);
 ```
 
 ---
 
-## Phase 3: Commission Auto-Generation
+## Phase 4: Notification System
 
-### Current State
-- `commission_records` table exists with proper schema
-- `useCommissions.ts` has CRUD operations but no auto-creation
-- `deal_brokers` table stores broker assignments and split percentages
+### Notification Types
 
-### Implementation Steps
+| Event | Recipients | Channel |
+|-------|------------|---------|
+| Lead assigned | Assigned broker | In-app + Email |
+| Deal stage change | Deal brokers | In-app |
+| Approval needed | Operators/LegalOwners | In-app + Email |
+| Commission approved | Broker | In-app + Email |
+| Document signed | Deal participants | In-app |
 
-**3.1 Create Commission Generation Hook**
-Create `useCommissionGeneration.ts` with:
+### Database Schema
+
 ```text
-generateCommissions(dealId):
-  1. Fetch deal economics (transaction_value_aed)
-  2. Fetch deal_brokers for this deal
-  3. Calculate gross = transaction_value * commission_percent
-  4. For each broker:
-     - net = gross * split_percent
-     - Create commission_record with status: 'pending'
-  5. Return commission IDs for audit
-```
-
-**3.2 Trigger on Deal Close**
-- Modify `useTransitionSecondaryDeal` and `useTransitionOffPlanDeal`
-- When `targetState === 'ClosedWon'`:
-  - Call `generateCommissions(dealId)` after state update
-  - Create evidence record for commission calculation
-
-**3.3 Commission Validation Rules**
-- Total split percentages must equal 100%
-- Commission cannot exceed regulatory caps (Dubai: typically 2% sale, 5% rent)
-- VAT calculation (5% in UAE) must be applied
-
-**3.4 UI Enhancements**
-- Add commission preview panel in deal detail before closing
-- Show breakdown by broker with calculated amounts
-- Require manager approval for commissions over threshold
-
----
-
-## Phase 4: Document Linking to Evidence
-
-### Current State
-- `generated_documents` table stores filled forms
-- `document_instances` table exists for entity-linked documents
-- `EvidenceDrawer.tsx` shows evidence but does not query generated documents
-
-### Implementation Steps
-
-**4.1 Dual-Write on Document Generation**
-Modify `useStaticFormFiller.ts` to:
-```text
-onSave():
-  1. Insert into generated_documents (existing)
-  2. If entityType && entityId:
-     - Insert into document_instances linking to deal/lead
-     - Create evidence record with document hash
-  3. Create follow-up task if template requires
-```
-
-**4.2 Evidence Query Enhancement**
-Modify `EvidenceDrawer.tsx` to:
-- Query `document_instances` where `entity_id = dealId`
-- Query `generated_documents` where `deal_id = dealId`
-- Merge results into unified evidence timeline
-
-**4.3 Document Type Mapping**
-Create mapping from template to evidence type:
-```text
-01_seller_authorization     --> SignedDocument
-07_offer_letter             --> SignedDocument
-09_reservation_form         --> SignedDocument
-12_commission_invoice       --> PaymentReceipt
-```
-
-**4.4 Evidence Integrity**
-- Generate SHA-256 hash of document content
-- Store hash in `data_snapshot_hash` column
-- Display verification status in Evidence drawer
-
----
-
-## Phase 5: Automated Communication Reminders
-
-### Current State
-- `viewing_bookings` table has `reminder_sent`, `confirmation_sent` flags
-- `useCommunications.ts` has sendWhatsApp, sendSMS methods
-- Twilio edge function is ready for outbound messages
-
-### Implementation Steps
-
-**5.1 Create Reminder Edge Function**
-Create `supabase/functions/viewing-reminder/index.ts`:
-```text
-1. Query upcoming viewings where:
-   - scheduled_at BETWEEN now() AND now() + 24 hours
-   - reminder_sent = false
-   - status IN ('scheduled', 'confirmed')
-
-2. For each viewing:
-   - Fetch prospect/deal contact details
-   - Send WhatsApp message with template
-   - Update viewing: reminder_sent = true
-   - Log to communication_logs
-
-3. Return summary of sent reminders
-```
-
-**5.2 Create Scheduled Job**
-- Use Supabase pg_cron extension to run hourly
-- Or create a daily batch trigger at 9 AM UAE time
-
-**5.3 Message Templates**
-Create templates in `twilio-messaging` edge function:
-```text
-viewing_reminder_24h:
-  "Hi {{client_name}}, reminder: Your property viewing at 
-   {{property}} is tomorrow at {{time}}. 
-   Location: {{address}}. Reply YES to confirm."
-
-viewing_confirmation:
-  "Your viewing is confirmed for {{date}} at {{time}}.
-   Your agent {{agent_name}} will meet you at {{location}}."
-
-viewing_feedback:
-  "Thank you for viewing {{property}}! 
-   How would you rate your experience? Reply 1-5."
-```
-
-**5.4 Response Handling**
-Enhance `twilio-webhook` edge function to:
-- Parse incoming confirmations (YES/NO)
-- Update viewing status based on response
-- Trigger next action if confirmed
-
----
-
-## Database Schema Changes Required
-
-### New Columns
-```sql
--- Add to viewing_bookings
-ALTER TABLE viewing_bookings ADD COLUMN feedback_score INTEGER;
-ALTER TABLE viewing_bookings ADD COLUMN feedback_notes TEXT;
-
--- Add to generated_documents
-ALTER TABLE generated_documents ADD COLUMN deal_id UUID REFERENCES deals(id);
-ALTER TABLE generated_documents ADD COLUMN lead_id UUID REFERENCES leads(id);
-ALTER TABLE generated_documents ADD COLUMN evidence_type TEXT;
-ALTER TABLE generated_documents ADD COLUMN content_hash TEXT;
-```
-
-### New Scheduled Job
-```sql
--- Create cron job for viewing reminders
-SELECT cron.schedule(
-  'viewing-reminders',
-  '0 * * * *',  -- Every hour
-  $$SELECT net.http_post(
-    url := current_setting('app.supabase_url') || '/functions/v1/viewing-reminder',
-    headers := jsonb_build_object('Authorization', 'Bearer ' || current_setting('app.service_role_key'))
-  )$$
+CREATE TABLE public.notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  notification_type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  message TEXT,
+  entity_type TEXT,
+  entity_id TEXT,
+  read_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Enable realtime for instant delivery
+ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
+```
+
+### Components
+
+**1. NotificationBell.tsx**
+- Shows unread count
+- Dropdown with recent notifications
+- Mark all as read
+
+**2. NotificationToast.tsx**
+- Real-time toast on new notification
+- Click to navigate to entity
+
+**3. NotificationPreferences.tsx**
+- Toggle email notifications per type
+- Quiet hours setting
+
+### Trigger Function
+
+```text
+CREATE FUNCTION notify_lead_assignment()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.assigned_broker_id IS DISTINCT FROM OLD.assigned_broker_id 
+     AND NEW.assigned_broker_id IS NOT NULL THEN
+    INSERT INTO notifications (user_id, notification_type, title, message, entity_type, entity_id)
+    SELECT bp.user_id, 'lead_assigned', 'New Lead Assigned',
+           'Lead ' || NEW.lead_id || ' has been assigned to you',
+           'lead', NEW.id::text
+    FROM broker_profiles bp WHERE bp.id = NEW.assigned_broker_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 ```
 
 ---
 
-## Implementation Priority & Timeline
+## Implementation Order
 
-| Phase | Area | Priority | Complexity | Estimate |
-|-------|------|----------|------------|----------|
-| 1 | Lead to Deal Conversion | High | Medium | 2-3 hours |
-| 2 | Funnel Automation Triggers | High | Medium | 3-4 hours |
-| 3 | Commission Auto-Generation | High | Medium | 2-3 hours |
-| 4 | Document Linking to Evidence | Medium | Low | 1-2 hours |
-| 5 | Automated Reminders | Medium | High | 3-4 hours |
+```text
+Week 1: Security + Database
+├── Day 1-2: RLS policy fixes (Phase 1)
+├── Day 3-4: Team metrics function + notifications table (Phase 2+4)
+└── Day 5: Enable realtime on key tables (Phase 3)
 
-**Recommended Order**: 1 → 2 → 3 → 4 → 5
-
----
-
-## Files to Create/Modify
-
-### New Files
-- `src/components/leads/ConvertToDealModal.tsx`
-- `src/components/deals/EOIPaymentModal.tsx`
-- `src/components/deals/ViewingCompletionDialog.tsx`
-- `src/components/deals/NOCTrackerPanel.tsx`
-- `src/hooks/useCommissionGeneration.ts`
-- `supabase/functions/viewing-reminder/index.ts`
-
-### Modified Files
-- `src/components/leads/LeadsSection.tsx` (add conversion handler)
-- `src/components/scheduling/ViewingScheduler.tsx` (add automation callback)
-- `src/hooks/useStaticFormFiller.ts` (add document linking)
-- `src/hooks/usePipelineDeals.ts` (add commission generation on close)
-- `src/components/deals/EvidenceDrawer.tsx` (query generated documents)
-- `supabase/functions/twilio-messaging/index.ts` (add reminder templates)
+Week 2: Frontend
+├── Day 1-2: Manager dashboard components
+├── Day 3-4: Real-time hooks + notification system
+└── Day 5: Testing + polish
+```
 
 ---
 
-## Success Criteria
+## Technical Details
 
-1. **Lead Conversion**: Clicking "Convert to Deal" creates a properly linked deal with all data transferred
-2. **Automation**: Scheduling a viewing automatically advances deal state without manual intervention
-3. **Commissions**: Closing a deal auto-generates commission records for all assigned brokers
-4. **Evidence**: Generated documents appear in the deal's Evidence drawer with verification hashes
-5. **Reminders**: Clients receive WhatsApp reminders 24 hours before viewings with no manual action
+### Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/hooks/useTeamMetrics.ts` | Fetch broker performance data |
+| `src/hooks/useNotifications.ts` | Notification CRUD + realtime |
+| `src/hooks/useLeadsRealtime.ts` | Real-time lead updates |
+| `src/components/dashboard/TeamPerformanceDashboard.tsx` | Manager view |
+| `src/components/notifications/NotificationBell.tsx` | Header notification UI |
+| `src/components/notifications/NotificationToast.tsx` | Real-time alerts |
+| `src/components/leads/LeadAssignmentPanel.tsx` | Assignment UI |
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/components/layout/Header.tsx` | Add NotificationBell |
+| `src/components/dashboard/DashboardView.tsx` | Add Team tab for Operators |
+| `src/hooks/useLeads.ts` | Add realtime subscription |
+| `src/hooks/useDeals.ts` | Add realtime subscription |
+
+### Migration Files
+
+1. `20260205_001_security_hardening.sql` - RLS fixes
+2. `20260205_002_team_metrics_function.sql` - Performance query
+3. `20260205_003_notifications_table.sql` - Notification schema
+4. `20260205_004_enable_realtime.sql` - Realtime publications
+5. `20260205_005_notification_triggers.sql` - Auto-notify on events
+
+---
+
+## Post-Implementation Checklist
+
+- [ ] All 10 RLS warnings resolved
+- [ ] Brokers can only see their assigned leads/deals
+- [ ] Operators can see all data + team overview
+- [ ] Real-time updates working across browser tabs
+- [ ] Notifications appear on lead assignment
+- [ ] Manager dashboard shows broker KPIs
+- [ ] Lead assignment UI functional
+
+---
+
+## Risk Mitigation
+
+1. **Existing Data**: RLS changes won't break existing data - all records remain accessible to Operators
+2. **Performance**: Added indexes on notification queries
+3. **Real-time Load**: Channel filters reduce unnecessary broadcasts
+
+Ready to proceed with implementation?
