@@ -1,9 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import { useDemoMode } from '@/contexts/DemoContext';
-import { DEMO_DEALS } from '@/data/demoData';
+ import { DEMO_DEALS } from '@/data/demoData';
+ import { useAuth } from './useAuth';
 
 export type Deal = Tables<'deals'>;
 export type DealInsert = TablesInsert<'deals'>;
@@ -14,8 +16,10 @@ export type DealBroker = Tables<'deal_brokers'>;
 
 export function useDeals() {
   const { isDemoMode } = useDemoMode();
+   const { user } = useAuth();
+   const queryClient = useQueryClient();
 
-  return useQuery({
+   const query = useQuery({
     queryKey: ['deals', isDemoMode],
     queryFn: async () => {
       if (isDemoMode) {
@@ -31,6 +35,28 @@ export function useDeals() {
       return data as Deal[];
     },
   });
+ 
+   // Real-time subscription
+   useEffect(() => {
+     if (isDemoMode || !user?.id) return;
+ 
+     const channel = supabase
+       .channel('deals-realtime')
+       .on(
+         'postgres_changes',
+         { event: '*', schema: 'public', table: 'deals' },
+         () => {
+           queryClient.invalidateQueries({ queryKey: ['deals'] });
+         }
+       )
+       .subscribe();
+ 
+     return () => {
+       supabase.removeChannel(channel);
+     };
+   }, [isDemoMode, user?.id, queryClient]);
+ 
+   return query;
 }
 
 export function useDeal(id: string | null) {

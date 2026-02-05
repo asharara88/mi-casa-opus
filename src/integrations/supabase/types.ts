@@ -1614,6 +1614,42 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          message: string | null
+          notification_type: string
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          message?: string | null
+          notification_type: string
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          message?: string | null
+          notification_type?: string
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payment_escrow: {
         Row: {
           bank_reference: string | null
@@ -1809,6 +1845,7 @@ export type Database = {
       portal_inquiries: {
         Row: {
           created_at: string
+          created_by: string | null
           external_listing_ref: string | null
           id: string
           inquirer_email: string | null
@@ -1827,6 +1864,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           external_listing_ref?: string | null
           id?: string
           inquirer_email?: string | null
@@ -1845,6 +1883,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           external_listing_ref?: string | null
           id?: string
           inquirer_email?: string | null
@@ -1881,6 +1920,7 @@ export type Database = {
       portal_publications: {
         Row: {
           created_at: string
+          created_by: string | null
           error_message: string | null
           external_ref: string | null
           id: string
@@ -1894,6 +1934,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           error_message?: string | null
           external_ref?: string | null
           id?: string
@@ -1907,6 +1948,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           error_message?: string | null
           external_ref?: string | null
           id?: string
@@ -2752,6 +2794,7 @@ export type Database = {
         Row: {
           average_cost_basis: number | null
           created_at: string
+          created_by: string | null
           frozen_reason: string | null
           id: string
           invested_amount: number
@@ -2770,6 +2813,7 @@ export type Database = {
         Insert: {
           average_cost_basis?: number | null
           created_at?: string
+          created_by?: string | null
           frozen_reason?: string | null
           id?: string
           invested_amount?: number
@@ -2788,6 +2832,7 @@ export type Database = {
         Update: {
           average_cost_basis?: number | null
           created_at?: string
+          created_by?: string | null
           frozen_reason?: string | null
           id?: string
           invested_amount?: number
@@ -2842,6 +2887,7 @@ export type Database = {
           cancelled_reason: string | null
           confirmation_sent: boolean | null
           created_at: string
+          created_by: string | null
           deal_id: string | null
           duration_minutes: number
           feedback_notes: string | null
@@ -2863,6 +2909,7 @@ export type Database = {
           cancelled_reason?: string | null
           confirmation_sent?: boolean | null
           created_at?: string
+          created_by?: string | null
           deal_id?: string | null
           duration_minutes?: number
           feedback_notes?: string | null
@@ -2884,6 +2931,7 @@ export type Database = {
           cancelled_reason?: string | null
           confirmation_sent?: boolean | null
           created_at?: string
+          created_by?: string | null
           deal_id?: string | null
           duration_minutes?: number
           feedback_notes?: string | null
@@ -3002,6 +3050,20 @@ export type Database = {
           total_count: number
         }[]
       }
+      get_team_metrics: {
+        Args: never
+        Returns: {
+          avg_deal_cycle_days: number
+          broker_id: string
+          broker_name: string
+          conversion_rate: number
+          deal_count: number
+          lead_count: number
+          total_commission: number
+          user_id: string
+          won_deals: number
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -3011,6 +3073,18 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_contract_participant: {
+        Args: { _contract_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_deal_participant: {
+        Args: { _deal_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_escrow_participant: {
+        Args: { _escrow_id: string; _user_id: string }
         Returns: boolean
       }
     }

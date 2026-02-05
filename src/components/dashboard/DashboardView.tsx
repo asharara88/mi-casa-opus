@@ -1,4 +1,5 @@
-import { UserRole } from '@/types/bos';
+ import { useState } from 'react';
+ import { UserRole } from '@/types/bos';
 import { MetricCard } from './MetricCard';
 import { StateBadge } from './StateBadge';
 import { ForecastWidget } from './ForecastWidget';
@@ -12,6 +13,8 @@ import { useEventLog } from '@/hooks/useEventLog';
 import { DealState } from '@/types/bos';
 import { transformDbLeadToFrontend, transformEventLogsToFrontend } from '@/lib/transforms';
 import { Skeleton } from '@/components/ui/skeleton';
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+ import { TeamPerformanceDashboard } from './TeamPerformanceDashboard';
 import CountUp from 'react-countup';
 import {
   Users,
@@ -35,6 +38,7 @@ export function DashboardView({ role, onNavigate }: DashboardViewProps) {
   const { data: dbEvents, isLoading: isLoadingEvents } = useEventLog();
 
   const isLoading = isLoadingLeads || isLoadingDeals || isLoadingCommissions;
+   const [activeTab, setActiveTab] = useState('overview');
 
   // Transform leads to frontend format for display
   const leads = (dbLeads || []).map(transformDbLeadToFrontend);
@@ -83,8 +87,85 @@ export function DashboardView({ role, onNavigate }: DashboardViewProps) {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Welcome Header */}
+     <div className="space-y-6 animate-fade-in">
+       {/* Tabs for Operator role */}
+       {role === 'Operator' ? (
+         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+           <TabsList>
+             <TabsTrigger value="overview">Overview</TabsTrigger>
+             <TabsTrigger value="team">Team Performance</TabsTrigger>
+           </TabsList>
+           
+           <TabsContent value="team" className="mt-6">
+             <TeamPerformanceDashboard />
+           </TabsContent>
+           
+           <TabsContent value="overview" className="mt-6">
+             <DashboardOverviewContent
+               role={role}
+               leads={leads}
+               dbDeals={dbDeals || []}
+               events={events}
+               isLoadingEvents={isLoadingEvents}
+               activeLeads={activeLeads}
+               activeDeals={activeDeals}
+               totalPipeline={totalPipeline}
+               expectedCommissions={expectedCommissions}
+               formatCurrency={formatCurrency}
+               onNavigate={onNavigate}
+             />
+           </TabsContent>
+         </Tabs>
+       ) : (
+         <DashboardOverviewContent
+           role={role}
+           leads={leads}
+           dbDeals={dbDeals || []}
+           events={events}
+           isLoadingEvents={isLoadingEvents}
+           activeLeads={activeLeads}
+           activeDeals={activeDeals}
+           totalPipeline={totalPipeline}
+           expectedCommissions={expectedCommissions}
+           formatCurrency={formatCurrency}
+           onNavigate={onNavigate}
+         />
+       )}
+     </div>
+   );
+ }
+ 
+ // Extracted overview content component
+ interface DashboardOverviewContentProps {
+   role: UserRole;
+   leads: ReturnType<typeof transformDbLeadToFrontend>[];
+   dbDeals: Deal[];
+   events: ReturnType<typeof transformEventLogsToFrontend>;
+   isLoadingEvents: boolean;
+   activeLeads: number;
+   activeDeals: number;
+   totalPipeline: number;
+   expectedCommissions: number;
+   formatCurrency: (value: number) => string;
+   onNavigate?: (section: string) => void;
+ }
+ 
+ function DashboardOverviewContent({
+   role,
+   leads,
+   dbDeals,
+   events,
+   isLoadingEvents,
+   activeLeads,
+   activeDeals,
+   totalPipeline,
+   expectedCommissions,
+   formatCurrency,
+   onNavigate,
+ }: DashboardOverviewContentProps) {
+   return (
+     <>
+       {/* Welcome Header */}
       <div>
         <h2 className="text-2xl font-bold text-foreground">
           {role === 'Operator' && 'Operations Dashboard'}
@@ -271,6 +352,9 @@ export function DashboardView({ role, onNavigate }: DashboardViewProps) {
           )}
         </div>
       </div>
-    </div>
-  );
-}
+     </>
+   );
+ }
+ 
+ // Import type for Deal
+ import type { Deal } from '@/hooks/useDeals';

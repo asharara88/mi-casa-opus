@@ -1,9 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 import { useDemoMode } from '@/contexts/DemoContext';
-import { DEMO_LEADS } from '@/data/demoData';
+ import { DEMO_LEADS } from '@/data/demoData';
+ import { useAuth } from './useAuth';
 
 export type Lead = Tables<'leads'>;
 export type LeadInsert = TablesInsert<'leads'>;
@@ -11,8 +13,10 @@ export type LeadUpdate = TablesUpdate<'leads'>;
 
 export function useLeads() {
   const { isDemoMode } = useDemoMode();
+   const { user } = useAuth();
+   const queryClient = useQueryClient();
 
-  return useQuery({
+   const query = useQuery({
     queryKey: ['leads', isDemoMode],
     queryFn: async () => {
       if (isDemoMode) {
@@ -28,6 +32,28 @@ export function useLeads() {
       return data as Lead[];
     },
   });
+ 
+   // Real-time subscription
+   useEffect(() => {
+     if (isDemoMode || !user?.id) return;
+ 
+     const channel = supabase
+       .channel('leads-realtime')
+       .on(
+         'postgres_changes',
+         { event: '*', schema: 'public', table: 'leads' },
+         () => {
+           queryClient.invalidateQueries({ queryKey: ['leads'] });
+         }
+       )
+       .subscribe();
+ 
+     return () => {
+       supabase.removeChannel(channel);
+     };
+   }, [isDemoMode, user?.id, queryClient]);
+ 
+   return query;
 }
 
 export function useLead(id: string | null) {
