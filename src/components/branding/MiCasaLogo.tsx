@@ -1,4 +1,4 @@
-import React from 'react';
+ import micasaLogo from '@/assets/micasa-logo.png';
 
 // Inline SVG string for PDF documents (no external dependencies)
 export const MICASA_LOGO_SVG = `
@@ -21,11 +21,30 @@ export const MICASA_LOGO_SVG = `
 `;
 
 // React component version for web use
-export function MiCasaLogo({ className = '', width = 150, height = 50 }: { 
+ export function MiCasaLogo({ className = '', width = 150, height = 'auto', useImage = true }: { 
   className?: string; 
-  width?: number; 
-  height?: number;
+   width?: number | string; 
+   height?: number | string;
+   useImage?: boolean;
 }) {
+   // Image version with theme-adaptive styling
+   if (useImage) {
+     return (
+       <img 
+         src={micasaLogo} 
+         alt="MiCasa Real Estate"
+         width={width}
+         height={height}
+         className={`dark:invert-0 invert ${className}`}
+         style={{ 
+           maxWidth: typeof width === 'number' ? `${width}px` : width,
+           height: height === 'auto' ? 'auto' : typeof height === 'number' ? `${height}px` : height
+         }}
+       />
+     );
+   }
+   
+   // SVG fallback version
   return (
     <svg 
       xmlns="http://www.w3.org/2000/svg" 
