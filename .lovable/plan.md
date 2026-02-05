@@ -265,13 +265,13 @@ Week 2: Frontend
 
 ## Post-Implementation Checklist
 
-- [ ] All 10 RLS warnings resolved
-- [ ] Brokers can only see their assigned leads/deals
-- [ ] Operators can see all data + team overview
-- [ ] Real-time updates working across browser tabs
-- [ ] Notifications appear on lead assignment
-- [ ] Manager dashboard shows broker KPIs
-- [ ] Lead assignment UI functional
+ - [x] All 10 RLS warnings resolved (9 fixed, 1 intentional webhook policy)
+ - [x] Brokers can only see their assigned leads/deals
+ - [x] Operators can see all data + team overview
+ - [x] Real-time updates working across browser tabs
+ - [x] Notifications appear on lead assignment
+ - [x] Manager dashboard shows broker KPIs
+ - [x] Lead assignment UI functional
 
 ---
 

@@ -1,19 +1,21 @@
-import { Bell, Search, HelpCircle, Menu } from 'lucide-react';
+ import { Search, HelpCircle, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DemoToggle } from './DemoToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useDemoMode } from '@/contexts/DemoContext';
-import { Badge } from '@/components/ui/badge';
+ import { Badge } from '@/components/ui/badge';
+ import { NotificationBell } from '@/components/notifications/NotificationBell';
 
-interface HeaderProps {
+ interface HeaderProps {
   title: string;
   subtitle?: string;
   onMenuClick?: () => void;
-  onSearchClick?: () => void;
+   onSearchClick?: () => void;
+   onNavigate?: (entityType: string, entityId: string) => void;
 }
 
-export function Header({ title, subtitle, onMenuClick, onSearchClick }: HeaderProps) {
+ export function Header({ title, subtitle, onMenuClick, onSearchClick, onNavigate }: HeaderProps) {
   const { role } = useAuth();
   const { isDemoMode } = useDemoMode();
   const canAccessDemo = role === 'Operator' || role === 'LegalOwner';
@@ -69,12 +71,9 @@ export function Header({ title, subtitle, onMenuClick, onSearchClick }: HeaderPr
           />
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-1 md:gap-2">
-          <Button variant="ghost" size="icon" className="relative min-h-[44px] min-w-[44px]">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />
-          </Button>
+         {/* Actions */}
+         <div className="flex items-center gap-1 md:gap-2">
+           <NotificationBell onNavigate={onNavigate} />
           <Button variant="ghost" size="icon" className="hidden sm:flex min-h-[44px] min-w-[44px]">
             <HelpCircle className="w-5 h-5" />
           </Button>
