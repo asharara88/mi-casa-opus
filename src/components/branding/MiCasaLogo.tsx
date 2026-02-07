@@ -1,71 +1,86 @@
- import micasaLogo from '@/assets/micasa-logo.png';
+import micasaLogo from '@/assets/micasa-logo.png';
 
 // Inline SVG string for PDF documents (no external dependencies)
 export const MICASA_LOGO_SVG = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 50" width="150" height="50">
-  <!-- MI CASA Text -->
-  <text x="0" y="24" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#1a1a1a">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 50" width="280" height="50">
+  <text x="0" y="32" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="300" fill="#1a1a1a" letter-spacing="4">
     MI CASA
   </text>
-  
-  <!-- REALESTATE Text -->
-  <text x="0" y="38" font-family="Arial, sans-serif" font-size="10" font-weight="500" fill="#0284C7" letter-spacing="2">
-    REALESTATE
+  <line x1="135" y1="10" x2="135" y2="40" stroke="#0ea5a5" stroke-width="1.5"/>
+  <text x="145" y="26" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" fill="#666666">
+    Property
   </text>
-  
-  <!-- Arabic Text -->
-  <text x="0" y="48" font-family="Arial, sans-serif" font-size="9" fill="#666666">
-    مي كاسا
+  <text x="145" y="40" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" fill="#666666">
+    Solutions
   </text>
 </svg>
 `;
 
 // React component version for web use
-export function MiCasaLogo({ className = '', width = 150, height = 'auto', useImage = true }: { 
+export function MiCasaLogo({ className = '', width = 180, height = 'auto', useImage = true }: { 
   className?: string; 
   width?: number | string; 
   height?: number | string;
   useImage?: boolean;
 }) {
-  // Image version with theme-adaptive styling
+  // Image version - logo is white/light on transparent, optimized for dark backgrounds
   if (useImage) {
     return (
       <img 
         src={micasaLogo} 
-        alt="MiCasa Real Estate"
+        alt="MiCasa Property Solutions"
         width={width}
         height={height}
-        className={`invert dark:invert-0 ${className}`}
+        className={`transition-all duration-200 ${className}`}
         style={{ 
           maxWidth: typeof width === 'number' ? `${width}px` : width,
-          height: height === 'auto' ? 'auto' : typeof height === 'number' ? `${height}px` : height
+          height: height === 'auto' ? 'auto' : typeof height === 'number' ? `${height}px` : height,
+          filter: 'brightness(1.1)',
         }}
       />
     );
   }
   
-  // SVG fallback version
+  // SVG fallback version - theme adaptive
   return (
     <svg 
       xmlns="http://www.w3.org/2000/svg" 
-      viewBox="0 0 150 50" 
+      viewBox="0 0 280 50" 
       width={width} 
       height={height}
       className={className}
     >
-      {/* MI CASA Text */}
-      <text x="0" y="24" fontFamily="Arial, sans-serif" fontSize="22" fontWeight="bold" fill="#1a1a1a">
+      <text 
+        x="0" 
+        y="32" 
+        fontFamily="Inter, Arial, sans-serif" 
+        fontSize="28" 
+        fontWeight="300" 
+        className="fill-foreground"
+        letterSpacing="4"
+      >
         MI CASA
       </text>
-      
-      {/* REALESTATE Text */}
-      <text x="0" y="38" fontFamily="Arial, sans-serif" fontSize="10" fontWeight="500" fill="#0284C7" letterSpacing="2">
-        REALESTATE
+      <line x1="135" y1="10" x2="135" y2="40" className="stroke-primary" strokeWidth="1.5"/>
+      <text 
+        x="145" 
+        y="26" 
+        fontFamily="Inter, Arial, sans-serif" 
+        fontSize="12" 
+        fontWeight="400" 
+        className="fill-muted-foreground"
+      >
+        Property
       </text>
-      
-      {/* Arabic Text */}
-      <text x="0" y="48" fontFamily="Arial, sans-serif" fontSize="9" fill="#666666">
-        مي كاسا
+      <text 
+        x="145" 
+        y="40" 
+        fontFamily="Inter, Arial, sans-serif" 
+        fontSize="12" 
+        fontWeight="400" 
+        className="fill-muted-foreground"
+      >
+        Solutions
       </text>
     </svg>
   );
