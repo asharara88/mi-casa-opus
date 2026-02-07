@@ -1,311 +1,164 @@
 
-# Conversational Data Capture & Document Action System
+# Apply Logo to Navigation & Add Theme Toggle
 
 ## Overview
 
-Build an intelligent conversational interface where agents can naturally describe their needs (e.g., "I spoke to the client and need to send him an MOU") and the AI responds with:
-1. Acknowledgment of the intent
-2. Direct actionable links to the appropriate template
-3. Pre-filled form data extracted from the conversation
+This plan implements two UI enhancements:
+1. **Replace the Building2 icon with the official MiCasa logo** in the sidebar header
+2. **Add a light/dark theme toggle** that allows users to switch between themes
 
 ---
 
-## Architecture
+## Current State
 
-```text
-Agent Message                    AI Response
-      │                              │
-      ▼                              ▼
-┌─────────────────┐          ┌─────────────────┐
-│ Document Intent │          │ Structured      │
-│ Detector        │─────────►│ Response with   │
-│ (enhanced OPS)  │          │ Action Cards    │
-└─────────────────┘          └─────────────────┘
-      │                              │
-      ▼                              ▼
-┌─────────────────┐          ┌─────────────────┐
-│ Entity Extractor│          │ Template Link   │
-│ (names, dates,  │          │ with Pre-fill   │
-│ amounts, IDs)   │          │ Parameters      │
-└─────────────────┘          └─────────────────┘
-```
+- **Sidebar**: Uses a generic `Building2` icon with hardcoded "Mi Casa / Real Estate" text
+- **Theme**: Application is dark-only (hardcoded `html { @apply dark; }` in CSS)
+- **ThemeProvider**: The project has `next-themes` installed but no `ThemeProvider` is configured
 
 ---
 
 ## Implementation Components
 
-### 1. Document Intent Vocabulary
+### 1. Theme Provider Setup
 
-Map natural language to template IDs:
-
-| User Says | Template ID | Template Name |
-|-----------|-------------|---------------|
-| "send MOU", "memorandum" | FORM_08_MOU | MOU / Pre-SPA |
-| "seller authorization", "list property" | FORM_01_SELLER_AUTH | Seller Authorization |
-| "buyer agreement", "represent buyer" | FORM_02_BUYER_REP | Buyer Representation |
-| "send offer", "make offer", "EOI" | FORM_07_OFFER | Offer Letter |
-| "reservation form", "reserve unit" | FORM_09_RESERVATION | Reservation Form |
-| "commission invoice", "send invoice" | FORM_12_INVOICE | Commission Invoice |
-| "split sheet", "commission split" | FORM_13_SPLIT | Commission Split |
-| "closing checklist", "complete deal" | FORM_10_CLOSING | Closing Checklist |
-| "NOC request", "clearance" | FORM_11_NOC | NOC Tracker |
-| "privacy consent", "data consent" | FORM_16_PRIVACY | Privacy Acknowledgment |
-
-### 2. Enhanced System Prompt (bos-llm-ops)
-
-Add template knowledge to the AI system prompt:
-
-```
-DOCUMENT ASSISTANCE:
-When users mention needing documents, forms, or agreements:
-1. Identify the appropriate template from the 18 official forms
-2. Extract any mentioned data (client name, property, amounts)
-3. Return a structured action block in your response
-
-Action Block Format:
-[DOCUMENT_ACTION]
-template_id: FORM_08_MOU
-template_name: Memorandum of Understanding
-prefill: { "buyer_full_name": "John Smith", "property_address": "..." }
-[/DOCUMENT_ACTION]
-
-Available Templates:
-- FORM_01_SELLER_AUTH: For listing authorization from sellers/landlords
-- FORM_02_BUYER_REP: For buyer/tenant representation agreements
-- FORM_07_OFFER: For formal offers/EOIs
-- FORM_08_MOU: For pre-SPA agreements (sale terms before transfer)
-- FORM_09_RESERVATION: For unit reservations/bookings
-- FORM_12_INVOICE: For commission invoices
-...
-```
-
-### 3. Frontend Action Card Renderer
-
-Parse AI responses and render clickable action cards:
+Add the `ThemeProvider` from `next-themes` to wrap the application in `App.tsx`:
 
 ```tsx
-interface DocumentAction {
-  template_id: string;
-  template_name: string;
-  prefill?: Record<string, unknown>;
-  description?: string;
-}
+import { ThemeProvider } from "next-themes";
 
-function ActionCard({ action, onNavigate }: { 
-  action: DocumentAction; 
-  onNavigate: (templateId: string, prefill?: Record<string, unknown>) => void;
-}) {
+const App = () => (
+  <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <QueryClientProvider client={queryClient}>
+      {/* ... existing providers */}
+    </QueryClientProvider>
+  </ThemeProvider>
+);
+```
+
+### 2. Theme Toggle Component
+
+Create a new component `src/components/layout/ThemeToggle.tsx`:
+
+| Feature | Implementation |
+|---------|----------------|
+| Icon | Sun for light mode, Moon for dark mode |
+| Style | Consistent with existing sidebar buttons |
+| Tooltip | Shows current mode and action |
+| Animation | Smooth icon rotation transition |
+
+```tsx
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  
   return (
-    <Card className="bg-primary/5 border-primary/20">
-      <CardContent className="p-3 flex items-center justify-between">
-        <div>
-          <p className="font-medium text-sm">{action.template_name}</p>
-          <p className="text-xs text-muted-foreground">
-            Click to open form wizard
-          </p>
-        </div>
-        <Button size="sm" onClick={() => onNavigate(action.template_id, action.prefill)}>
-          <FileText className="h-4 w-4 mr-1" />
-          Open Template
-        </Button>
-      </CardContent>
-    </Card>
+    <Button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+      {theme === 'dark' ? <Sun /> : <Moon />}
+    </Button>
   );
 }
 ```
 
-### 4. Conversation Data Extractor
+### 3. Sidebar Logo Integration
 
-Extract entities from conversation for pre-filling:
+Update `src/components/layout/Sidebar.tsx` to use the `MiCasaLogo` component:
 
-```typescript
-interface ConversationContext {
-  clientName?: string;
-  clientEmail?: string;
-  clientPhone?: string;
-  propertyAddress?: string;
-  dealAmount?: number;
-  dealType?: 'sale' | 'lease';
-  mentionedDealId?: string;
-  mentionedLeadId?: string;
-}
-
-function extractConversationContext(messages: Message[]): ConversationContext {
-  // Parse recent messages for:
-  // - Names (e.g., "client John Smith")
-  // - Emails, phones
-  // - Amounts (e.g., "2.5 million AED")
-  // - Property mentions
-  // - CRM IDs (DL-xxx, LD-xxx)
-}
-```
-
-### 5. Template Quick Actions Component
-
-New component for the chat panel showing relevant templates:
-
+**Before:**
 ```tsx
-function DocumentQuickActions({ 
-  conversationContext: ConversationContext;
-  onSelectTemplate: (id: string, prefill?: Record<string, unknown>) => void;
-}) {
-  // Show contextually relevant templates based on conversation
-  // e.g., if deal is mentioned → show MOU, Offer, Reservation
-  // if new client → show Buyer Rep, Seller Auth
-}
+<div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+  <Building2 className="w-5 h-5 text-primary-foreground" />
+</div>
+<span className="font-semibold">Mi Casa</span>
+<span className="text-xs">Real Estate</span>
 ```
+
+**After:**
+```tsx
+import { MiCasaLogo } from '@/components/branding/MiCasaLogo';
+
+<MiCasaLogo 
+  width={collapsed ? 36 : 140} 
+  height="auto"
+  className="transition-all duration-300"
+/>
+```
+
+### 4. Theme Toggle Placement
+
+Add the theme toggle in two locations for accessibility:
+
+| Location | Visibility | Purpose |
+|----------|------------|---------|
+| Sidebar footer | Desktop (expanded) | Primary toggle with label |
+| Header | Always visible | Quick access on mobile |
 
 ---
 
-## Files to Create/Modify
-
-### New Files
-
-| File | Purpose |
-|------|---------|
-| `src/lib/document-intent.ts` | Document intent detection and template mapping |
-| `src/components/ai/DocumentActionCard.tsx` | Render action cards in chat |
-| `src/components/ai/ChatMessageRenderer.tsx` | Parse and render structured responses |
-| `src/hooks/useConversationContext.ts` | Track and extract conversation data |
-
-### Modified Files
+## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `supabase/functions/bos-llm-ops/index.ts` | Add template knowledge to system prompt |
-| `src/components/ai/FloatingAIChat.tsx` | Add action card rendering and navigation |
-| `src/lib/chat-suggestions.ts` | Add document-related suggestions |
-| `src/components/documents/FilledFormsPanel.tsx` | Accept prefill props |
-| `src/components/documents/StaticFormFiller.tsx` | Support initial values from prefill |
+| `src/App.tsx` | Wrap with `ThemeProvider` from next-themes |
+| `src/components/layout/ThemeToggle.tsx` | **New file** - Theme toggle component |
+| `src/components/layout/Sidebar.tsx` | Replace Building2 icon with MiCasaLogo, add theme toggle in footer |
+| `src/components/layout/Header.tsx` | Add theme toggle button for mobile accessibility |
+| `src/index.css` | Remove hardcoded `html { @apply dark; }` to allow theme switching |
 
 ---
 
-## User Flow Example
+## Visual Changes
+
+### Sidebar Header (Before vs After)
 
 ```text
-1. Agent: "I just spoke with Ahmed about the villa in Al Raha. 
-           He wants to proceed - need to send him an MOU"
-
-2. AI Response:
-   "I understand you need to send Ahmed an MOU for the Al Raha villa.
-   
-   I've identified the appropriate template and pre-filled what I could
-   from our conversation:
-   
-   [ACTION CARD]
-   📄 Memorandum of Understanding (MOU/SPA Pre-Stage)
-   Pre-filled: Buyer name, Property location
-   [Open Template →]
-   [/ACTION CARD]
-   
-   Would you like me to help with anything else for this deal?"
-
-3. Agent clicks "Open Template" → 
-   FormWizard opens with buyer_full_name="Ahmed" and 
-   property_address="Al Raha" pre-filled
+BEFORE:                          AFTER:
+┌────────────────────┐          ┌────────────────────┐
+│ [□] Mi Casa        │          │ MI CASA | Property │
+│     Real Estate    │          │          Solutions │
+└────────────────────┘          └────────────────────┘
 ```
+
+### Sidebar Footer with Theme Toggle
+
+```text
+┌────────────────────────────┐
+│ ○ Theme: Dark    [☀/☽]    │
+│ [←] Collapse               │
+└────────────────────────────┘
+```
+
+### Collapsed Sidebar
+
+When collapsed, the logo will shrink to an icon-sized version and the theme toggle shows only the icon.
 
 ---
 
-## Technical Implementation Details
+## Technical Details
 
-### Document Intent Detection Algorithm
+### ThemeProvider Configuration
 
-```typescript
-const DOCUMENT_PATTERNS = {
-  'FORM_08_MOU': [
-    /\b(mou|memorandum|pre.?spa|sale agreement|purchase terms)\b/i,
-    /\b(proceed|agree.*terms|sign.*agreement)\b/i
-  ],
-  'FORM_01_SELLER_AUTH': [
-    /\b(list.*property|seller auth|landlord auth|mandate)\b/i,
-    /\b(want.*to.*sell|listing agreement)\b/i
-  ],
-  'FORM_07_OFFER': [
-    /\b(offer|eoi|expression.*interest|submit.*offer)\b/i,
-    /\b(make.*offer|propose.*price)\b/i
-  ],
-  // ... more patterns
-};
-
-function detectDocumentIntent(message: string): DocumentIntent | null {
-  for (const [templateId, patterns] of Object.entries(DOCUMENT_PATTERNS)) {
-    if (patterns.some(p => p.test(message))) {
-      return { templateId, confidence: calculateConfidence(message, patterns) };
-    }
-  }
-  return null;
-}
+```tsx
+<ThemeProvider 
+  attribute="class"           // Toggle via CSS class
+  defaultTheme="dark"         // Keep dark as default
+  enableSystem={false}        // Don't auto-detect OS preference
+  disableTransitionOnChange   // Prevent flash during transition
+>
 ```
 
-### Action Block Parser
+### Logo Responsiveness
 
-```typescript
-const ACTION_BLOCK_REGEX = /\[DOCUMENT_ACTION\]([\s\S]*?)\[\/DOCUMENT_ACTION\]/g;
+The `MiCasaLogo` component already supports:
+- `width` prop for sizing
+- `useImage={true}` for the PNG version (optimized for dark backgrounds)
+- CSS filter for theme adaptation when needed
 
-function parseActionBlocks(response: string): {
-  text: string;
-  actions: DocumentAction[];
-} {
-  const actions: DocumentAction[] = [];
-  const text = response.replace(ACTION_BLOCK_REGEX, (_, content) => {
-    const action = parseYamlBlock(content);
-    actions.push(action);
-    return ''; // Remove from display text
-  });
-  return { text: text.trim(), actions };
-}
-```
+### CSS Theme Variable Handling
 
-### Form Pre-fill Integration
-
-```typescript
-// In FilledFormsPanel or via URL params
-function openTemplateWithPrefill(
-  templateId: string, 
-  prefill: Record<string, unknown>
-) {
-  // Store prefill in session storage
-  sessionStorage.setItem(
-    `template_prefill_${templateId}`, 
-    JSON.stringify(prefill)
-  );
-  
-  // Navigate to form wizard
-  // The StaticFormFiller reads from session storage on mount
-}
-```
-
----
-
-## Suggested Conversation Starters
-
-Add to `chat-suggestions.ts`:
-
-```typescript
-const DOCUMENT_SUGGESTIONS = [
-  "I need to send an MOU to my client",
-  "Prepare a seller authorization",
-  "Generate an offer letter",
-  "Create a commission invoice",
-  "Fill out a reservation form",
-];
-```
+The existing `src/index.css` already defines both `.dark` and `.light` theme variables, so no additional CSS changes are needed beyond removing the forced dark mode.
 
 ---
 
 ## Security Considerations
 
-1. **Pre-fill Validation**: Sanitize all pre-filled data before inserting into forms
-2. **Template Access**: Verify user has permission to access requested templates
-3. **Data Extraction**: Only extract data from the current user's conversation
-4. **No Auto-Submit**: Always require human review before document generation
-
----
-
-## Success Metrics
-
-- Reduction in clicks from "need document" to "form open"
-- Accuracy of template recommendation
-- Percentage of pre-fill fields correctly populated
-- Agent adoption rate of conversational document creation
+- No security implications - this is purely a UI enhancement
+- Theme preference stored in localStorage via next-themes (client-side only)
