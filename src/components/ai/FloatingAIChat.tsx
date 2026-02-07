@@ -1,14 +1,18 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Send, Loader2, User, Trash2, Sparkles, MessageCircle } from 'lucide-react';
+import { Bot, Send, Loader2, Trash2, Sparkles, MessageCircle } from 'lucide-react';
 import { useBosLlmOps, useBosLlmRouter } from '@/hooks/useBosLlm';
 import { cn } from '@/lib/utils';
 import { generateSuggestions, INITIAL_SUGGESTIONS } from '@/lib/chat-suggestions';
 import { SuggestionChips } from './SuggestionChips';
+import { ChatMessageRenderer } from './ChatMessageRenderer';
+import { useConversationContext } from '@/hooks/useConversationContext';
+import { toast } from 'sonner';
 
 interface Message {
   id: string;
@@ -19,6 +23,7 @@ interface Message {
 }
 
 export function FloatingAIChat() {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -27,6 +32,9 @@ export function FloatingAIChat() {
   const { askOps, isStreaming, response } = useBosLlmOps();
   const { routeRequest } = useBosLlmRouter();
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
+  
+  // Conversation context for entity extraction
+  const { storeTemplatePrefill } = useConversationContext(messages);
 
   // Generate context-aware suggestions based on conversation
   const suggestions = useMemo(() => {
@@ -59,6 +67,23 @@ export function FloatingAIChat() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Handle opening a template from action card
+  const handleOpenTemplate = useCallback((templateId: string, prefill?: Record<string, unknown>) => {
+    // Store prefill data for the form wizard to pick up
+    storeTemplatePrefill(templateId, prefill);
+    
+    // Close the chat panel
+    setIsOpen(false);
+    
+    // Navigate to documents section with template pre-selected
+    // The URL hash will trigger the template to open
+    navigate(`/?section=documents&template=${templateId}`);
+    
+    toast.success('Opening template...', {
+      description: 'Form wizard will open with pre-filled data'
+    });
+  }, [navigate, storeTemplatePrefill]);
 
   const handleSend = async (text?: string) => {
     const messageText = text || input.trim();
@@ -146,7 +171,7 @@ export function FloatingAIChat() {
                 </div>
                 <div>
                   <SheetTitle className="text-base">AI Assistant</SheetTitle>
-                  <p className="text-xs text-muted-foreground">Advisory only</p>
+                  <p className="text-xs text-muted-foreground">Advisory & Documents</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -171,7 +196,7 @@ export function FloatingAIChat() {
                 </div>
                 <h3 className="font-semibold text-foreground mb-1 text-sm">How can I help?</h3>
                 <p className="text-xs text-muted-foreground mb-4 max-w-[200px]">
-                  Ask about your pipeline, leads, or deals
+                  Ask about your pipeline, leads, deals, or prepare documents
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {suggestions.map((suggestion) => (
@@ -190,43 +215,11 @@ export function FloatingAIChat() {
             ) : (
               <div className="space-y-3">
                 {messages.map((msg) => (
-                  <div
+                  <ChatMessageRenderer
                     key={msg.id}
-                    className={cn(
-                      "flex gap-2",
-                      msg.role === 'user' ? 'justify-end' : 'justify-start'
-                    )}
-                  >
-                    {msg.role === 'assistant' && (
-                      <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Bot className="w-3.5 h-3.5 text-primary" />
-                      </div>
-                    )}
-                    <div
-                      className={cn(
-                        "max-w-[85%] rounded-xl px-3 py-2",
-                        msg.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
-                      )}
-                    >
-                      {msg.mode && msg.role === 'assistant' && (
-                        <Badge variant="secondary" className="mb-1 text-[9px] h-4">
-                          {msg.mode}
-                        </Badge>
-                      )}
-                      <div className="text-sm whitespace-pre-wrap">
-                        {msg.content || (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        )}
-                      </div>
-                    </div>
-                    {msg.role === 'user' && (
-                      <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                        <User className="w-3.5 h-3.5" />
-                      </div>
-                    )}
-                  </div>
+                    message={msg}
+                    onOpenTemplate={handleOpenTemplate}
+                  />
                 ))}
               </div>
             )}
@@ -245,7 +238,7 @@ export function FloatingAIChat() {
           <div className="p-3 border-t border-border bg-card flex-shrink-0">
             <div className="flex gap-2">
               <Textarea
-                placeholder="Ask anything..."
+                placeholder="Ask anything or request a document..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}

@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,12 +39,25 @@ interface GeneratedResult {
 }
 
 export function FilledFormsPanel({ linkedDealId, linkedLeadId, onDocumentGenerated }: FilledFormsPanelProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [viewState, setViewState] = useState<ViewState>("browse");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [generatedResult, setGeneratedResult] = useState<GeneratedResult | null>(null);
   
   const { saveDocument, createFollowUpTask, isLoading } = useStaticFormFiller();
   const { onDocumentGenerated: triggerStageAutomation, hasStageAutomation, DOCUMENT_STAGE_MAP } = useDocumentStageAutomation();
+  
+  // Handle URL parameter to auto-open template (from AI chat)
+  useEffect(() => {
+    const templateParam = searchParams.get('template');
+    if (templateParam && TEMPLATE_SCHEMAS[templateParam]) {
+      setSelectedTemplateId(templateParam);
+      setViewState("fill");
+      // Clear the URL parameter
+      searchParams.delete('template');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
   
   const handleSelectTemplate = useCallback((templateId: string) => {
     setSelectedTemplateId(templateId);

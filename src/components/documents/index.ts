@@ -5,4 +5,5 @@ export { StepValidation, validateStep, calculateCompletion } from "./form-wizard
 export { FormDraftManager, useFormDraft } from "./form-wizard/FormDraftManager";
 export { PDFTemplatesSection } from "./PDFTemplatesSection";
 export { WorkflowWizard, WORKFLOW_CONFIGS } from "./WorkflowWizard";
+export { FilledFormsPanel } from "./FilledFormsPanel";
 export type { WorkflowType } from "./WorkflowWizard";
