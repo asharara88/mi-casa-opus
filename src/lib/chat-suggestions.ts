@@ -53,13 +53,19 @@ const TOPIC_SUGGESTIONS = {
     "Show today's priorities",
     "Any urgent follow-ups?",
     "Pipeline health check",
-    "Recent activity summary",
+    "I need to send an MOU",
   ],
   followUp: [
     "Tell me more",
     "What should I do next?",
     "Any concerns?",
     "Show related data",
+  ],
+  document: [
+    "I need to send an MOU to my client",
+    "Prepare a seller authorization",
+    "Generate an offer letter",
+    "Create a commission invoice",
   ],
 };
 
@@ -70,8 +76,9 @@ const TOPIC_KEYWORDS: Record<string, string[]> = {
   deal: ['deal', 'deals', 'transaction', 'transactions', 'closing', 'contract'],
   pipeline: ['pipeline', 'funnel', 'metrics', 'analytics', 'conversion', 'stages'],
   listing: ['listing', 'listings', 'property', 'properties', 'unit', 'units', 'inventory'],
-  compliance: ['compliance', 'audit', 'regulation', 'rera', 'aml', 'kyc', 'document'],
+  compliance: ['compliance', 'audit', 'regulation', 'rera', 'aml', 'kyc'],
   marketing: ['marketing', 'campaign', 'ad', 'ads', 'event', 'events', 'source'],
+  document: ['document', 'mou', 'offer', 'authorization', 'invoice', 'form', 'send', 'prepare', 'generate'],
 };
 
 /**

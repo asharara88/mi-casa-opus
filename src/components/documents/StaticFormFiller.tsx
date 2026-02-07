@@ -33,6 +33,7 @@ interface StaticFormFillerProps {
   linkedDealId?: string;
   linkedLeadId?: string;
   isProcessing?: boolean;
+  initialPrefill?: Record<string, unknown>;
 }
 
 // Format number as AED currency
@@ -55,7 +56,8 @@ export function StaticFormFiller({
   onCancel,
   linkedDealId,
   linkedLeadId,
-  isProcessing = false
+  isProcessing = false,
+  initialPrefill
 }: StaticFormFillerProps) {
   const schema = TEMPLATE_SCHEMAS[templateId];
   const { micasaDefaults } = useMiCasaDefaults();
@@ -81,19 +83,41 @@ export function StaticFormFiller({
     );
   }, [schema, sections, currentSection]);
   
-  // Pre-fill broker data on mount
+  // Pre-fill data on mount from multiple sources
   useEffect(() => {
-    if (micasaDefaults) {
-      setFormData(prev => ({
-        ...prev,
-        broker_representative: prev.broker_representative || "",
-        // Pre-fill linked IDs
-        ...(linkedDealId && { deal_crm_id: linkedDealId }),
-        ...(linkedLeadId && { linked_lead_id: linkedLeadId })
-      }));
+    // Try to read prefill from session storage (from AI chat)
+    let storedPrefill: Record<string, unknown> = {};
+    try {
+      const stored = sessionStorage.getItem(`template_prefill_${templateId}`);
+      if (stored) {
+        storedPrefill = JSON.parse(stored);
+        sessionStorage.removeItem(`template_prefill_${templateId}`);
+      }
+    } catch (e) {
+      console.error('[StaticFormFiller] Failed to read stored prefill:', e);
     }
-  }, [micasaDefaults, linkedDealId, linkedLeadId]);
-  
+    
+    // Merge prefill sources: session storage > props > defaults
+    setFormData(prev => ({
+      ...prev,
+      broker_representative: prev.broker_representative || "",
+      // Pre-fill linked IDs
+      ...(linkedDealId && { deal_crm_id: linkedDealId }),
+      ...(linkedLeadId && { linked_lead_id: linkedLeadId }),
+      // Apply stored prefill (from AI conversation)
+      ...storedPrefill,
+      // Apply initial prefill props (takes highest priority if provided)
+      ...initialPrefill
+    }));
+    
+    // Show toast if we pre-filled from conversation
+    if (Object.keys(storedPrefill).length > 0) {
+      toast.success('Form pre-filled', {
+        description: `${Object.keys(storedPrefill).length} fields populated from conversation`
+      });
+    }
+  }, [templateId, micasaDefaults, linkedDealId, linkedLeadId, initialPrefill]);
+
   // Calculate completion
   const completion = useMemo(() => {
     if (!schema) return 0;
