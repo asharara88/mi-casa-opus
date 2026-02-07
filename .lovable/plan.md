@@ -266,15 +266,41 @@ Week 2: Frontend
 ## Post-Implementation Checklist
 
   - [x] All RLS warnings resolved (SELECT + INSERT/UPDATE/DELETE policies hardened)
- - [x] Brokers can only see their assigned leads/deals
- - [x] Operators can see all data + team overview
- - [x] Real-time updates working across browser tabs
- - [x] Notifications appear on lead assignment
- - [x] Manager dashboard shows broker KPIs
- - [x] Lead assignment UI functional
+  - [x] Brokers can only see their assigned leads/deals
+  - [x] Operators can see all data + team overview
+  - [x] Real-time updates working across browser tabs
+  - [x] Notifications appear on lead assignment
+  - [x] Manager dashboard shows broker KPIs
+  - [x] Lead assignment UI functional
   - [x] Sensitive tables (escrow, contracts, tokens) scoped to participants
   - [x] AI prompts restricted to Operators only
   - [x] Audit log restricted to Operators/LegalOwners
+  - [x] Pipeline KPIs view secured with security_invoker
+  - [x] Price watches scoped to user ownership
+  - [x] Token ownership restricted to creators/operators
+  - [x] 48/48 tables have RLS enabled
+
+---
+
+## Final Security Status (2026-02-07)
+
+| Category | Status | Notes |
+|----------|--------|-------|
+| **RLS Enabled** | ✅ 100% | 48/48 public tables |
+| **SELECT Policies** | ✅ Hardened | Role-based scoping on all sensitive data |
+| **INSERT/UPDATE/DELETE** | ✅ Secured | Only 1 intentional `WITH CHECK (true)` for webhook |
+| **Views** | ✅ Secured | `pipeline_kpis` uses `security_invoker=on` |
+| **Realtime** | ✅ Active | leads, deals, notifications published |
+| **Notifications** | ✅ Working | Triggers for lead/deal changes |
+
+### Intentional Design Decisions
+- `portal_inquiries` anonymous INSERT: Required for Property Finder/Bayut/Dubizzle webhooks
+- `compliance_rules/modules` open SELECT: Brokers need to see requirements
+- `listings` open SELECT: Core business functionality
+- `property_tokens` open SELECT: Intentional for investor portal
+
+### Requires Manual Action
+- **Leaked Password Protection**: Enable via Supabase Dashboard → Authentication → Settings
 
 ---
 
