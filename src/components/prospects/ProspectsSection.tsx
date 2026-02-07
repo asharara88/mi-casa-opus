@@ -205,7 +205,7 @@ export function ProspectsSection() {
         </div>
 
         {/* Filters and Actions */}
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4" data-testid="prospects-filters">
           <div className="relative flex-1 min-w-[200px] max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -213,46 +213,47 @@ export function ProspectsSection() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 bg-background/50"
+              data-testid="prospects-search-input"
             />
           </div>
 
           <Select value={outreachStatus} onValueChange={setOutreachStatus}>
-            <SelectTrigger className="w-[160px] bg-background/50">
+            <SelectTrigger className="w-[160px] bg-background/50" data-testid="prospects-status-filter">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {outreachStatuses.map((s) => (
-                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                <SelectItem key={s.value} value={s.value} data-testid={`status-option-${s.value}`}>{s.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
 
           <Select value={confidenceLevel} onValueChange={setConfidenceLevel}>
-            <SelectTrigger className="w-[160px] bg-background/50">
+            <SelectTrigger className="w-[160px] bg-background/50" data-testid="prospects-confidence-filter">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {confidenceLevels.map((c) => (
-                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                <SelectItem key={c.value} value={c.value} data-testid={`confidence-option-${c.value}`}>{c.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <Button onClick={() => setShowAddModal(true)} className="gap-2">
+          <Button onClick={() => setShowAddModal(true)} className="gap-2" data-testid="add-prospect-btn">
             <Plus className="h-4 w-4" />
             Add Prospect
           </Button>
 
-          <Button onClick={() => setShowImportModal(true)} variant="outline" className="gap-2">
+          <Button onClick={() => setShowImportModal(true)} variant="outline" className="gap-2" data-testid="import-csv-btn">
             <Upload className="h-4 w-4" />
             Import CSV
           </Button>
         </div>
 
         {/* Prospects Table */}
-        <Card className="bg-card/50 border-border/50">
+        <Card className="bg-card/50 border-border/50" data-testid="prospects-table-card">
           <CardContent className="p-0">
-            <Table>
+            <Table data-testid="prospects-table">
               <TableHeader>
                 <TableRow className="border-border/50 hover:bg-transparent">
                   <TableHead className="text-muted-foreground">Name</TableHead>
@@ -264,31 +265,42 @@ export function ProspectsSection() {
                   <TableHead className="text-muted-foreground">Attempts</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody data-testid="prospects-table-body">
                 {isLoading ? (
-                  <TableRow>
+                  <TableRow data-testid="prospects-loading-row">
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       Loading prospects...
                     </TableCell>
                   </TableRow>
                 ) : prospects.length === 0 ? (
-                  <TableRow>
+                  <TableRow data-testid="prospects-empty-row">
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       No prospects found. Import a CSV to get started.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  prospects.map((prospect) => (
+                  prospects.map((prospect, index) => (
                     <TableRow 
-                      key={prospect.id} 
-                      className="border-border/50 cursor-pointer hover:bg-muted/30"
+                      key={prospect.id}
+                      data-testid={`prospect-row-${index}`}
+                      data-prospect-id={prospect.id}
+                      data-prospect-name={prospect.full_name}
+                      role="button"
+                      tabIndex={0}
+                      className="border-border/50 cursor-pointer hover:bg-muted/30 focus:bg-muted/40 focus:outline-none"
                       onClick={() => setSelectedProspect(prospect)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedProspect(prospect);
+                        }
+                      }}
                     >
-                      <TableCell>
+                      <TableCell data-testid={`prospect-row-${index}-name`}>
                         <div className="font-medium text-foreground">{prospect.full_name}</div>
                         <div className="text-xs text-muted-foreground">{prospect.crm_customer_id}</div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-testid={`prospect-row-${index}-contact`}>
                         <div className="flex flex-col gap-1">
                           {prospect.phone && (
                             <div className="flex items-center gap-1 text-sm">
@@ -307,12 +319,12 @@ export function ProspectsSection() {
                       <TableCell className="text-muted-foreground">{prospect.source || '-'}</TableCell>
                       <TableCell className="text-muted-foreground">{prospect.city || '-'}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={getConfidenceColor(prospect.crm_confidence_level)}>
+                        <Badge variant="outline" className={getConfidenceColor(prospect.crm_confidence_level)} data-testid={`prospect-row-${index}-confidence`}>
                           {prospect.crm_confidence_level || 'Unknown'}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`flex items-center gap-1 w-fit ${getStatusColor(prospect.outreach_status)}`}>
+                        <Badge variant="outline" className={`flex items-center gap-1 w-fit ${getStatusColor(prospect.outreach_status)}`} data-testid={`prospect-row-${index}-status`}>
                           {getStatusIcon(prospect.outreach_status)}
                           {prospect.outreach_status.replace('_', ' ')}
                         </Badge>

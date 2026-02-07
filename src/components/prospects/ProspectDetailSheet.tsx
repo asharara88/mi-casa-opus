@@ -261,15 +261,18 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
 
   return (
     <Sheet open={!!extProspect} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-[400px] sm:w-[600px] overflow-y-auto">
+      <SheetContent className="w-[400px] sm:w-[600px] overflow-y-auto" data-testid="prospect-detail-sheet">
         <SheetHeader>
-          <SheetTitle className="text-xl">{extProspect.full_name}</SheetTitle>
+          <SheetTitle className="text-xl" data-testid="prospect-detail-name">{extProspect.full_name}</SheetTitle>
           {extProspect.prospect_status && (
-            <Badge variant={
-              extProspect.prospect_status === 'VERIFIED' ? 'default' :
-              extProspect.prospect_status === 'DISQUALIFIED' ? 'destructive' :
-              'secondary'
-            }>
+            <Badge 
+              data-testid="prospect-detail-status"
+              variant={
+                extProspect.prospect_status === 'VERIFIED' ? 'default' :
+                extProspect.prospect_status === 'DISQUALIFIED' ? 'destructive' :
+                'secondary'
+              }
+            >
               {extProspect.prospect_status}
               {extProspect.disqualification_reason && ` - ${extProspect.disqualification_reason}`}
             </Badge>
@@ -346,8 +349,8 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
           </div>
 
           {/* Quick Actions */}
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleCall} disabled={!extProspect.phone} className="flex-1">
+          <div className="flex gap-2" data-testid="prospect-quick-actions">
+            <Button variant="outline" size="sm" onClick={handleCall} disabled={!extProspect.phone} className="flex-1" data-testid="prospect-call-btn">
               <Phone className="h-4 w-4 mr-2" />
               Call
             </Button>
@@ -359,7 +362,7 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
               variant="outline"
               size="sm"
             />
-            <Button variant="outline" size="sm" onClick={handleEmail} disabled={!extProspect.email} className="flex-1">
+            <Button variant="outline" size="sm" onClick={handleEmail} disabled={!extProspect.email} className="flex-1" data-testid="prospect-email-btn">
               <Mail className="h-4 w-4 mr-2" />
               Email
             </Button>
@@ -417,7 +420,10 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
 
           {/* Convert to Lead */}
           {!isAlreadyConverted && !isDisqualified && (
-            <div className={`p-4 rounded-lg border ${allGatesPassed ? 'bg-primary/10 border-primary/30' : 'bg-muted/30'}`}>
+            <div 
+              className={`p-4 rounded-lg border ${allGatesPassed ? 'bg-primary/10 border-primary/30' : 'bg-muted/30'}`}
+              data-testid="prospect-convert-section"
+            >
               <div className="flex items-center gap-2 mb-2">
                 <Zap className={`w-4 h-4 ${allGatesPassed ? 'text-primary' : 'text-muted-foreground'}`} />
                 <span className="text-sm font-medium">
@@ -435,6 +441,7 @@ export function ProspectDetailSheet({ prospect, onClose, onUpdate, onConvertToLe
                 onConvert={handleConvertToLead}
                 disabled={!allGatesPassed || isProcessing}
                 className="w-full"
+                data-testid="prospect-convert-btn"
               />
             </div>
           )}

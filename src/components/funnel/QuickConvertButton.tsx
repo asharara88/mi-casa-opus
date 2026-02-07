@@ -15,13 +15,15 @@ interface QuickConvertButtonProps {
   onConvert: () => Promise<void>;
   disabled?: boolean;
   className?: string;
+  'data-testid'?: string;
 }
 
 export function QuickConvertButton({ 
   type, 
   onConvert, 
   disabled,
-  className 
+  className,
+  'data-testid': testId
 }: QuickConvertButtonProps) {
   const [isConverting, setIsConverting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -63,6 +65,7 @@ export function QuickConvertButton({
     <Button
       onClick={handleClick}
       disabled={disabled || isConverting}
+      data-testid={testId}
       className={cn(
         "relative overflow-hidden transition-all duration-300",
         isSuccess ? config.successBg : config.bgColor,
