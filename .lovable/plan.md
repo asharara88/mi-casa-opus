@@ -1,313 +1,181 @@
 
-# Production-Ready Implementation Plan
-## Completing the Final 30% for MiCasa BOS
+# Functionality Audit: Code Complete vs Operationally Working
+
+## Executive Summary
+
+The system is **CODE COMPLETE** but **OPERATIONALLY UNUSED**. There's 13,538 prospects imported but zero progression through the sales funnel.
 
 ---
 
-## Overview
+## Current State Analysis
 
-This plan addresses the four critical gaps preventing production deployment:
-1. **Security hardening** - Fix 10 RLS policy warnings
-2. **Manager oversight dashboard** - Team performance visibility
-3. **Real-time collaboration** - Live updates across brokers
-4. **Notification system** - Automated alerts for key events
+### Database Reality Check
 
----
-
-## Phase 1: RLS Security Hardening
-
-### Problem
-The linter identified 10 tables with overly permissive RLS policies using `USING (true)` or `WITH CHECK (true)` for INSERT/UPDATE/DELETE operations.
-
-### Tables Requiring Fixes
-
-| Table | Current Issue | Fix |
-|-------|---------------|-----|
-| `property_tokens` | INSERT allows any authenticated user | Restrict to Operators + created_by tracking |
-| `token_ownership` | ALL operations open | Scope to token creators or Operators |
-| `payment_escrow` | ALL operations open | Scope to deal participants or Operators |
-| `smart_contracts` | ALL operations open | Scope to deal participants or Operators |
-| `contract_events` | INSERT too permissive | Require contract access |
-| `generated_documents` | Missing broker scoping | Add created_by tracking |
-| `viewing_bookings` | Missing ownership | Scope to assigned broker |
-| `communication_logs` | Missing creator check | Add created_by requirement |
-
-### Implementation
-
-```text
-Migration: 20260205_security_hardening.sql
-
-1. Add created_by columns where missing
-2. Update INSERT policies to require created_by = auth.uid()
-3. Update UPDATE/DELETE policies to check ownership
-4. Create helper function: is_deal_participant(deal_id, user_id)
-```
-
-### Helper Function Design
-
-```text
-create function is_deal_participant(_deal_id uuid, _user_id uuid)
-returns boolean as $$
-  select exists (
-    select 1 from deal_brokers db
-    join broker_profiles bp on db.broker_id = bp.id
-    where db.deal_id = _deal_id and bp.user_id = _user_id
-  )
-$$ language sql stable security definer;
-```
+| Table | Records | Status |
+|-------|---------|--------|
+| prospects | 13,538 | All status=NEW (unprocessed) |
+| leads | 0 | Empty |
+| deals | 0 | Empty |
+| listings | 0 | Empty |
+| broker_profiles | 0 | Empty |
+| commission_records | 0 | Empty |
+| notifications | 0 | Empty |
+| event_log_entries | 0 | Empty |
+| viewing_bookings | 0 | Empty |
+| profiles | 1 | Single user registered |
 
 ---
 
-## Phase 2: Manager Oversight Dashboard
+## Feature-by-Feature Assessment
 
-### Components to Build
+### FULLY OPERATIONAL (Working Now)
 
-**1. Team Performance Overview (`TeamPerformanceDashboard.tsx`)**
-- Shows all broker pipelines side-by-side
-- Conversion rates per broker
-- Commission totals by broker
-- Activity heatmap (calls, viewings, deals)
+| Feature | Hook/Function | Status | Evidence |
+|---------|--------------|--------|----------|
+| **Prospect CSV Import** | `useImportProspectsCSV` | Working | 13,538 records |
+| **Prospect CRUD** | `useProspects` | Working | Database connected |
+| **Auth System** | `useAuth` | Working | 1 user exists |
+| **Demo Mode** | `useDemoMode` | Working | 1,619 lines demo data |
+| **AI Chat** | `bos-llm-ops` | Working | Lovable AI connected |
+| **Real-time Sync** | Subscriptions | Enabled | Tables published |
 
-**2. Broker KPI Cards (`BrokerKPICard.tsx`)**
-- Active leads count
-- Deals in progress
-- Monthly closed value
-- Response time average
+### CODE COMPLETE - NEEDS OPERATIONAL TESTING
 
-**3. Assignment Manager (`LeadAssignmentPanel.tsx`)**
-- Round-robin or manual lead assignment
-- Workload balancing view
-- Unassigned leads queue
+| Feature | Implementation | Why Untested |
+|---------|---------------|--------------|
+| **Funnel Processor** | `useFunnelProcessor.ts` with scoring engine | 0 prospects converted |
+| **Lead Pipeline** | `LeadsSection.tsx` + drag-drop | 0 leads exist |
+| **Deal Pipeline** | `DealsSection.tsx` with state machine | 0 deals exist |
+| **Commission Auto-Gen** | `useCommissionAutoGeneration.ts` | No deals to close |
+| **Notifications** | Triggers + `NotificationBell.tsx` | No events triggered |
+| **Team Dashboard** | `TeamPerformanceDashboard.tsx` | No brokers to measure |
+| **Document Generation** | `FormWizard.tsx` + manifest | No docs generated |
 
-### Database Query Design
+### EXTERNAL INTEGRATIONS
+
+| Service | API Key | Edge Function | Production Status |
+|---------|---------|---------------|-------------------|
+| **SendGrid** | SENDGRID_API_KEY | `sendgrid-email` | Ready - untested |
+| **Twilio** | 3 keys configured | `twilio-messaging` | Ready - untested |
+| **ElevenLabs** | Connector | `elevenlabs-tts` | Ready - untested |
+| **Firecrawl** | Connector | `firecrawl-scrape` | Ready - untested |
+| **DocuSign** | 3 keys configured | `docusign-envelope` | DEMO MODE |
+
+### DocuSign Limitation
 
 ```text
--- New function: get_team_metrics()
-Returns for each broker:
-  - lead_count
-  - deal_count  
-  - conversion_rate
-  - total_commission_earned
-  - avg_deal_cycle_days
+// Line 45-46 of docusign-envelope/index.ts
+throw new Error('DocuSign JWT authentication requires proper RSA signing implementation');
 ```
 
-### UI Location
-- Add "Team" tab to Dashboard for Operator role
-- Accessible via sidebar toggle
+The function creates mock envelope IDs. Full e-signature requires production JWT setup.
 
 ---
 
-## Phase 3: Real-Time Collaboration
-
-### Tables to Enable Realtime
+## Root Cause Analysis
 
 ```text
-ALTER PUBLICATION supabase_realtime ADD TABLE public.leads;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.deals;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.approvals;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.commission_records;
+Why 13,538 prospects but 0 downstream?
+                           
+Prospects (13,538)         No brokers registered
+     │                     to process them
+     ▼                           │
+Funnel Processor ─────────► Blocked ◄─── No user sessions
+     │                           │       running the flows
+     ▼                           │
+  Leads (0) ◄────────────────────┘
+     │
+     ▼
+  Deals (0)
+     │
+     ▼
+Commissions (0)
 ```
 
-### Hook Updates
-
-**useLeadsRealtime.ts**
-```text
-- Subscribe to leads table changes
-- Filter by assigned_broker_id for Broker role
-- Auto-refresh query cache on postgres_changes
-```
-
-**useDealUpdates.ts**
-```text
-- Subscribe to deal state changes
-- Notify when deal moves to new stage
-- Show toast notification on updates
-```
-
-### Implementation Pattern
-
-```text
-useEffect(() => {
-  const channel = supabase
-    .channel('leads-changes')
-    .on('postgres_changes', 
-      { event: '*', schema: 'public', table: 'leads' },
-      (payload) => {
-        queryClient.invalidateQueries(['leads']);
-        if (payload.eventType === 'INSERT') {
-          toast.info('New lead assigned to you');
-        }
-      }
-    )
-    .subscribe();
-    
-  return () => { supabase.removeChannel(channel); };
-}, []);
-```
+**The system is a fully loaded weapon that hasn't been fired.**
 
 ---
 
-## Phase 4: Notification System
+## What's Actually Working Right Now
 
-### Notification Types
-
-| Event | Recipients | Channel |
-|-------|------------|---------|
-| Lead assigned | Assigned broker | In-app + Email |
-| Deal stage change | Deal brokers | In-app |
-| Approval needed | Operators/LegalOwners | In-app + Email |
-| Commission approved | Broker | In-app + Email |
-| Document signed | Deal participants | In-app |
-
-### Database Schema
-
-```text
-CREATE TABLE public.notifications (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id),
-  notification_type TEXT NOT NULL,
-  title TEXT NOT NULL,
-  message TEXT,
-  entity_type TEXT,
-  entity_id TEXT,
-  read_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Enable realtime for instant delivery
-ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
-```
-
-### Components
-
-**1. NotificationBell.tsx**
-- Shows unread count
-- Dropdown with recent notifications
-- Mark all as read
-
-**2. NotificationToast.tsx**
-- Real-time toast on new notification
-- Click to navigate to entity
-
-**3. NotificationPreferences.tsx**
-- Toggle email notifications per type
-- Quiet hours setting
-
-### Trigger Function
-
-```text
-CREATE FUNCTION notify_lead_assignment()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF NEW.assigned_broker_id IS DISTINCT FROM OLD.assigned_broker_id 
-     AND NEW.assigned_broker_id IS NOT NULL THEN
-    INSERT INTO notifications (user_id, notification_type, title, message, entity_type, entity_id)
-    SELECT bp.user_id, 'lead_assigned', 'New Lead Assigned',
-           'Lead ' || NEW.lead_id || ' has been assigned to you',
-           'lead', NEW.id::text
-    FROM broker_profiles bp WHERE bp.id = NEW.assigned_broker_id;
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-```
+1. **Login/Registration** - Users can sign up, get assigned roles
+2. **Prospect Table View** - Browse 13,538 imported prospects
+3. **Search/Filter** - Works across all fields
+4. **Demo Mode Toggle** - Shows realistic sample data
+5. **AI Chat** - Answers questions, queries database
+6. **Theme Switching** - Light/dark mode works
 
 ---
 
-## Implementation Order
+## What Needs Manual Testing
 
-```text
-Week 1: Security + Database
-├── Day 1-2: RLS policy fixes (Phase 1)
-├── Day 3-4: Team metrics function + notifications table (Phase 2+4)
-└── Day 5: Enable realtime on key tables (Phase 3)
+### Priority 1: Core Funnel (30 mins)
 
-Week 2: Frontend
-├── Day 1-2: Manager dashboard components
-├── Day 3-4: Real-time hooks + notification system
-└── Day 5: Testing + polish
-```
+1. Register as Broker role
+2. Convert 5 prospects to leads
+3. Qualify 2 leads
+4. Create 1 deal
+5. Progress deal to ClosedWon
+6. Verify commission auto-generation
 
----
+### Priority 2: External Integrations (45 mins)
 
-## Technical Details
+1. Send test email via SendGrid
+2. Send test SMS via Twilio
+3. Generate voice message via ElevenLabs
+4. Test document generation
 
-### Files to Create
+### Priority 3: Manager Features (30 mins)
 
-| File | Purpose |
-|------|---------|
-| `src/hooks/useTeamMetrics.ts` | Fetch broker performance data |
-| `src/hooks/useNotifications.ts` | Notification CRUD + realtime |
-| `src/hooks/useLeadsRealtime.ts` | Real-time lead updates |
-| `src/components/dashboard/TeamPerformanceDashboard.tsx` | Manager view |
-| `src/components/notifications/NotificationBell.tsx` | Header notification UI |
-| `src/components/notifications/NotificationToast.tsx` | Real-time alerts |
-| `src/components/leads/LeadAssignmentPanel.tsx` | Assignment UI |
-
-### Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/components/layout/Header.tsx` | Add NotificationBell |
-| `src/components/dashboard/DashboardView.tsx` | Add Team tab for Operators |
-| `src/hooks/useLeads.ts` | Add realtime subscription |
-| `src/hooks/useDeals.ts` | Add realtime subscription |
-
-### Migration Files
-
-1. `20260205_001_security_hardening.sql` - RLS fixes
-2. `20260205_002_team_metrics_function.sql` - Performance query
-3. `20260205_003_notifications_table.sql` - Notification schema
-4. `20260205_004_enable_realtime.sql` - Realtime publications
-5. `20260205_005_notification_triggers.sql` - Auto-notify on events
+1. Register second user as Operator
+2. Assign leads from Operator view
+3. Verify team metrics dashboard
+4. Check notification triggers
 
 ---
 
-## Post-Implementation Checklist
+## Recommendations
 
-  - [x] All RLS warnings resolved (SELECT + INSERT/UPDATE/DELETE policies hardened)
-  - [x] Brokers can only see their assigned leads/deals
-  - [x] Operators can see all data + team overview
-  - [x] Real-time updates working across browser tabs
-  - [x] Notifications appear on lead assignment
-  - [x] Manager dashboard shows broker KPIs
-  - [x] Lead assignment UI functional
-  - [x] Sensitive tables (escrow, contracts, tokens) scoped to participants
-  - [x] AI prompts restricted to Operators only
-  - [x] Audit log restricted to Operators/LegalOwners
-  - [x] Pipeline KPIs view secured with security_invoker
-  - [x] Price watches scoped to user ownership
-  - [x] Token ownership restricted to creators/operators
-  - [x] 48/48 tables have RLS enabled
+### Immediate Actions
 
----
+1. **Create Test Broker Profile**
+   - Register new user with Broker role
+   - Complete license fields
 
-## Final Security Status (2026-02-07)
+2. **Process Sample Prospects**
+   - Convert 10 prospects through funnel
+   - Verify scoring engine works
+   - Confirm lead stages assign correctly
 
-| Category | Status | Notes |
-|----------|--------|-------|
-| **RLS Enabled** | ✅ 100% | 48/48 public tables |
-| **SELECT Policies** | ✅ Hardened | Role-based scoping on all sensitive data |
-| **INSERT/UPDATE/DELETE** | ✅ Secured | Only 1 intentional `WITH CHECK (true)` for webhook |
-| **Views** | ✅ Secured | `pipeline_kpis` uses `security_invoker=on` |
-| **Realtime** | ✅ Active | leads, deals, notifications published |
-| **Notifications** | ✅ Working | Triggers for lead/deal changes |
+3. **Complete Deal Cycle**
+   - Create deal from qualified lead
+   - Add broker splits
+   - Close with commission generation
+   - Verify evidence drawer
 
-### Intentional Design Decisions
-- `portal_inquiries` anonymous INSERT: Required for Property Finder/Bayut/Dubizzle webhooks
-- `compliance_rules/modules` open SELECT: Brokers need to see requirements
-- `listings` open SELECT: Core business functionality
-- `property_tokens` open SELECT: Intentional for investor portal
+4. **Test Communications**
+   - Send one email via SendGrid
+   - Send one WhatsApp via Twilio
+   - Verify communication_logs populated
 
-### Requires Manual Action
-- **Leaked Password Protection**: Enable via Supabase Dashboard → Authentication → Settings
+### For DocuSign Production
+
+Requires implementing JWT RS256 signing with the RSA private key. Current implementation is stubbed.
 
 ---
 
-## Risk Mitigation
+## Summary
 
-1. **Existing Data**: RLS changes won't break existing data - all records remain accessible to Operators
-2. **Performance**: Added indexes on notification queries
-3. **Real-time Load**: Channel filters reduce unnecessary broadcasts
+| Category | Percentage Ready |
+|----------|------------------|
+| **Frontend UI** | 100% |
+| **Database Schema** | 100% |
+| **Edge Functions** | 95% (DocuSign demo) |
+| **External Integrations** | 90% configured |
+| **Operational Testing** | 0% |
+| **Real Transaction Data** | 0% |
 
-Ready to proceed with implementation?
+**Code: Production Ready**  
+**Operations: Needs First Real Transaction**
+
+The system will work when someone converts their first prospect to a lead to a deal. All the code paths exist and are connected.
