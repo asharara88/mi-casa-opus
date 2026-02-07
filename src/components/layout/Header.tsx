@@ -1,11 +1,12 @@
- import { Search, HelpCircle, Menu } from 'lucide-react';
+import { Search, HelpCircle, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DemoToggle } from './DemoToggle';
+import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useDemoMode } from '@/contexts/DemoContext';
- import { Badge } from '@/components/ui/badge';
- import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { Badge } from '@/components/ui/badge';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
  interface HeaderProps {
   title: string;
@@ -71,9 +72,10 @@ import { useDemoMode } from '@/contexts/DemoContext';
           />
         </div>
 
-         {/* Actions */}
-         <div className="flex items-center gap-1 md:gap-2">
-           <NotificationBell onNavigate={onNavigate} />
+        {/* Actions */}
+        <div className="flex items-center gap-1 md:gap-2">
+          <ThemeToggle />
+          <NotificationBell onNavigate={onNavigate} />
           <Button variant="ghost" size="icon" className="hidden sm:flex min-h-[44px] min-w-[44px]">
             <HelpCircle className="w-5 h-5" />
           </Button>

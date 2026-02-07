@@ -24,6 +24,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { MiCasaLogo } from '@/components/branding/MiCasaLogo';
+import { ThemeToggle } from './ThemeToggle';
 
 interface SidebarProps {
   currentRole: AppRole | null;
@@ -196,15 +198,21 @@ export function Sidebar({
       >
         {/* Logo & Brand */}
         <div className="flex items-center justify-between px-4 h-16 border-b border-sidebar-border">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-              <Building2 className="w-5 h-5 text-primary-foreground" />
-            </div>
-            {!collapsed && (
-              <div className="flex flex-col animate-fade-in">
-                <span className="font-semibold text-sidebar-foreground text-sm">Mi Casa</span>
-                <span className="text-xs text-sidebar-foreground/70">Real Estate</span>
-              </div>
+          <div className="flex items-center gap-3 overflow-hidden">
+            {collapsed ? (
+              <MiCasaLogo 
+                width={36} 
+                height={36}
+                useImage={false}
+                className="flex-shrink-0 invert dark:invert-0"
+              />
+            ) : (
+              <MiCasaLogo 
+                width={140} 
+                height="auto"
+                useImage={true}
+                className="transition-all duration-300 invert dark:invert-0"
+              />
             )}
           </div>
           <button 
@@ -339,8 +347,19 @@ export function Sidebar({
           </div>
         </div>
 
-        {/* Collapse Toggle - Desktop only */}
-        <div className="hidden lg:block border-t border-sidebar-border p-2">
+        {/* Theme Toggle & Collapse - Desktop only */}
+        <div className="hidden lg:block border-t border-sidebar-border p-2 space-y-1">
+          {!collapsed && (
+            <div className="flex items-center justify-between px-3 py-2 rounded-lg text-sidebar-foreground/70">
+              <span className="text-sm">Theme</span>
+              <ThemeToggle />
+            </div>
+          )}
+          {collapsed && (
+            <div className="flex justify-center py-2">
+              <ThemeToggle />
+            </div>
+          )}
           <button
             onClick={() => setCollapsed(!collapsed)}
             className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
