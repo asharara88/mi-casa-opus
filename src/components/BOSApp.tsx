@@ -266,9 +266,12 @@ export function BOSApp() {
         onSectionChange={setActiveSection}
         onMenuClick={() => setSidebarOpen(true)}
         onQuickAction={(action) => {
-          // Handle quick actions - navigate to appropriate section with add modal trigger
+          // Handle quick actions - navigate to appropriate section
           if (action === 'add-lead') setActiveSection('leads');
           else if (action === 'add-prospect') setActiveSection('prospects');
+          else if (action === 'add-listing') setActiveSection('listings');
+          else if (action === 'new-document') setActiveSection('documents');
+          else if (action === 'schedule') setActiveSection('meetings');
           // Future: could trigger modals directly via context/state
         }}
       />

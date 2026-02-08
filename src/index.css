@@ -408,6 +408,37 @@
     from { opacity: 0; transform: translateX(-8px); }
     to { opacity: 1; transform: translateX(0); }
   }
+
+  /* Mobile-optimized touch interactions */
+  @media (max-width: 768px) {
+    .touch-manipulation {
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Smoother momentum scrolling on mobile */
+    .scroll-smooth-mobile {
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Prevent text selection on nav items */
+    nav button {
+      -webkit-user-select: none;
+      user-select: none;
+    }
+  }
+
+  /* Glass morphism effect for mobile surfaces */
+  .glass-surface {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+
+  /* Premium shadow for elevated mobile elements */
+  .shadow-elevated {
+    box-shadow: 
+      0 4px 6px -1px hsl(0 0% 0% / 0.2),
+      0 10px 15px -3px hsl(0 0% 0% / 0.15),
+      0 -1px 2px 0 hsl(0 0% 100% / 0.05) inset;
+  }
 }
 
 @layer base {
