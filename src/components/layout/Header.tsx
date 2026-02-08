@@ -43,7 +43,6 @@ export function Header({ title, subtitle, onMenuClick, onSearchClick, onNavigate
             width={100} 
             height="auto"
             useImage={true}
-            className="dark:invert"
           />
         </div>
         

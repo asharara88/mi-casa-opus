@@ -1,4 +1,6 @@
-import micasaLogo from '@/assets/micasa-logo.png';
+import { useTheme } from 'next-themes';
+import micasaLogoDark from '@/assets/micasa-logo.png';
+import micasaLogoLight from '@/assets/micasa-logo-light.png';
 
 // Navy blue color for light theme
 const NAVY_BLUE = '#1a365d';
@@ -27,11 +29,16 @@ export function MiCasaLogo({ className = '', width = 180, height = 'auto', useIm
   height?: number | string;
   useImage?: boolean;
 }) {
-  // Image version - logo is white/light on transparent, optimized for dark backgrounds only
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  
+  // Image version - use theme-appropriate logo
   if (useImage) {
+    const logoSrc = isDark ? micasaLogoDark : micasaLogoLight;
+    
     return (
       <img 
-        src={micasaLogo} 
+        src={logoSrc} 
         alt="MiCasa Property Solutions"
         width={width}
         height={height}
@@ -39,7 +46,6 @@ export function MiCasaLogo({ className = '', width = 180, height = 'auto', useIm
         style={{ 
           maxWidth: typeof width === 'number' ? `${width}px` : width,
           height: height === 'auto' ? 'auto' : typeof height === 'number' ? `${height}px` : height,
-          filter: 'brightness(1.1)',
         }}
       />
     );
