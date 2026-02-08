@@ -1,29 +1,33 @@
 import micasaLogo from '@/assets/micasa-logo.png';
 
+// Navy blue color for light theme
+const NAVY_BLUE = '#1a365d';
+const GOLD_ACCENT = '#d4a574';
+
 // Inline SVG string for PDF documents (no external dependencies)
 export const MICASA_LOGO_SVG = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 50" width="280" height="50">
-  <text x="0" y="32" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="300" fill="#1a1a1a" letter-spacing="4">
+  <text x="0" y="32" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="600" fill="${NAVY_BLUE}" letter-spacing="2">
     MI CASA
   </text>
-  <line x1="135" y1="10" x2="135" y2="40" stroke="#0ea5a5" stroke-width="1.5"/>
-  <text x="145" y="26" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" fill="#666666">
+  <line x1="135" y1="10" x2="135" y2="40" stroke="${GOLD_ACCENT}" stroke-width="1.5"/>
+  <text x="145" y="26" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" fill="#4a5568">
     Property
   </text>
-  <text x="145" y="40" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" fill="#666666">
+  <text x="145" y="40" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="400" fill="#4a5568">
     Solutions
   </text>
 </svg>
 `;
 
 // React component version for web use
-export function MiCasaLogo({ className = '', width = 180, height = 'auto', useImage = true }: { 
+export function MiCasaLogo({ className = '', width = 180, height = 'auto', useImage = false }: { 
   className?: string; 
   width?: number | string; 
   height?: number | string;
   useImage?: boolean;
 }) {
-  // Image version - logo is white/light on transparent, optimized for dark backgrounds
+  // Image version - logo is white/light on transparent, optimized for dark backgrounds only
   if (useImage) {
     return (
       <img 
@@ -41,7 +45,7 @@ export function MiCasaLogo({ className = '', width = 180, height = 'auto', useIm
     );
   }
   
-  // SVG fallback version - theme adaptive
+  // SVG version - theme adaptive with navy blue for light mode, white for dark mode
   return (
     <svg 
       xmlns="http://www.w3.org/2000/svg" 
@@ -50,25 +54,28 @@ export function MiCasaLogo({ className = '', width = 180, height = 'auto', useIm
       height={height}
       className={className}
     >
+      {/* MI CASA text - navy blue in light mode, white in dark mode */}
       <text 
         x="0" 
         y="32" 
         fontFamily="Inter, Arial, sans-serif" 
         fontSize="28" 
-        fontWeight="300" 
-        className="fill-foreground"
-        letterSpacing="4"
+        fontWeight="600" 
+        className="fill-[#1a365d] dark:fill-white"
+        letterSpacing="2"
       >
         MI CASA
       </text>
-      <line x1="135" y1="10" x2="135" y2="40" className="stroke-primary" strokeWidth="1.5"/>
+      {/* Gold accent divider */}
+      <line x1="135" y1="10" x2="135" y2="40" stroke="#d4a574" strokeWidth="1.5"/>
+      {/* Property Solutions text */}
       <text 
         x="145" 
         y="26" 
         fontFamily="Inter, Arial, sans-serif" 
         fontSize="12" 
         fontWeight="400" 
-        className="fill-muted-foreground"
+        className="fill-[#4a5568] dark:fill-gray-300"
       >
         Property
       </text>
@@ -78,7 +85,7 @@ export function MiCasaLogo({ className = '', width = 180, height = 'auto', useIm
         fontFamily="Inter, Arial, sans-serif" 
         fontSize="12" 
         fontWeight="400" 
-        className="fill-muted-foreground"
+        className="fill-[#4a5568] dark:fill-gray-300"
       >
         Solutions
       </text>
