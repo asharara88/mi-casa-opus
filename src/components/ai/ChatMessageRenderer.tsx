@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Bot, User, Loader2 } from "lucide-react";
 import { parseActionBlocks, DocumentAction } from "@/lib/document-intent";
 import { DocumentActionList } from "./DocumentActionCard";
+import { FollowUpActionCard, parseFollowUpActions, type FollowUpAction } from "@/components/communication/FollowUpActionCard";
 
 interface Message {
   id: string;
@@ -20,11 +21,19 @@ interface ChatMessageRendererProps {
 
 export function ChatMessageRenderer({ message, onOpenTemplate }: ChatMessageRendererProps) {
   // Parse action blocks from assistant messages
-  const { text, actions } = useMemo(() => {
+  const { text, actions, followUpActions } = useMemo(() => {
     if (message.role === 'assistant' && message.content) {
-      return parseActionBlocks(message.content);
+      // First parse follow-up actions
+      const followUpResult = parseFollowUpActions(message.content);
+      // Then parse document actions from remaining text
+      const docResult = parseActionBlocks(followUpResult.text);
+      return { 
+        text: docResult.text, 
+        actions: docResult.actions,
+        followUpActions: followUpResult.actions 
+      };
     }
-    return { text: message.content, actions: [] as DocumentAction[] };
+    return { text: message.content, actions: [] as DocumentAction[], followUpActions: [] as FollowUpAction[] };
   }, [message.content, message.role]);
   
   const isUser = message.role === 'user';
@@ -70,6 +79,15 @@ export function ChatMessageRenderer({ message, onOpenTemplate }: ChatMessageRend
             actions={actions} 
             onOpenTemplate={onOpenTemplate}
           />
+        )}
+
+        {/* Follow-up action cards */}
+        {!isUser && followUpActions.length > 0 && (
+          <div className="space-y-2">
+            {followUpActions.map((action, idx) => (
+              <FollowUpActionCard key={idx} action={action} />
+            ))}
+          </div>
         )}
       </div>
       

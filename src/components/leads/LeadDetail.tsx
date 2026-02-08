@@ -21,7 +21,8 @@ import {
   History,
   Edit2,
   Zap,
-  MessageSquare
+  MessageSquare,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,8 @@ import { AIPropertyMatcher } from '@/components/ai/AIPropertyMatcher';
 import { QuickConvertButton } from '@/components/funnel/QuickConvertButton';
 import { VoiceMessageGenerator } from '@/components/voice/VoiceMessageGenerator';
 import { VoiceTranscriber } from '@/components/voice/VoiceTranscriber';
+import { FollowUpComposer } from '@/components/communication/FollowUpComposer';
+import { useFollowUpComposer, type FollowUpEntity } from '@/hooks/useFollowUpComposer';
 
 interface LeadDetailProps {
   lead: Lead;
@@ -44,6 +47,8 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
   const [notes, setNotes] = useState(lead.notes);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [showVoiceMessage, setShowVoiceMessage] = useState(false);
+  
+  const followUpComposer = useFollowUpComposer();
 
   const currentRequirements = LEAD_STATE_REQUIREMENTS[lead.lead_state];
   const nextStates = currentRequirements.next_states.filter(s => s !== 'Disqualified');
@@ -210,6 +215,32 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
                     />
                   </div>
                 )}
+
+                {/* AI Follow-Up Button */}
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    const entity: FollowUpEntity = {
+                      type: 'lead',
+                      id: lead.lead_id,
+                      dbId: lead.lead_id,
+                      name: lead.contact_identity.full_name,
+                      phone: lead.contact_identity.phone,
+                      email: lead.contact_identity.email,
+                      data: {
+                        lead_state: lead.lead_state,
+                        source: lead.source,
+                        requirements: lead.requirements,
+                        notes: lead.notes,
+                      },
+                    };
+                    followUpComposer.openComposer(entity);
+                  }}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  AI Follow-Up
+                </Button>
 
                 <Button 
                   variant="ghost" 
@@ -487,6 +518,26 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
           )}
         </div>
       </div>
+
+      {/* Follow-Up Composer Modal */}
+      <FollowUpComposer
+        isOpen={followUpComposer.isOpen}
+        entity={followUpComposer.entity}
+        channel={followUpComposer.channel}
+        followUpType={followUpComposer.followUpType}
+        generatedMessage={followUpComposer.generatedMessage}
+        editedMessage={followUpComposer.editedMessage}
+        editedSubject={followUpComposer.editedSubject}
+        isGenerating={followUpComposer.isGenerating}
+        isSending={followUpComposer.isSending}
+        onClose={followUpComposer.handleClose}
+        onChannelChange={followUpComposer.setChannel}
+        onFollowUpTypeChange={followUpComposer.setFollowUpType}
+        onMessageChange={followUpComposer.setEditedMessage}
+        onSubjectChange={followUpComposer.setEditedSubject}
+        onGenerate={followUpComposer.handleGenerate}
+        onSend={followUpComposer.handleSend}
+      />
     </div>
   );
 }

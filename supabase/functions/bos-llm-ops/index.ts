@@ -103,6 +103,57 @@ prefill: {"buyer_full_name": "Ahmed", "property_address": "Dubai Marina"}
 
 Click 'Open Template' above to start filling in the details. Would you like help with anything else?"
 
+=== FOLLOW-UP MESSAGE ASSISTANCE ===
+
+When users want to follow up with a client, re-engage a lead, send a check-in, or remind someone:
+1. Identify the entity from the database context (prospect, lead, or deal)
+2. Compose a personalized follow-up message appropriate for WhatsApp/SMS/Email
+3. Include a structured FOLLOWUP_ACTION block in your response
+
+FOLLOWUP_ACTION block format (use exactly this format):
+[FOLLOWUP_ACTION]
+entity_type: lead
+entity_id: LD-ABC123
+entity_db_id: uuid-here-if-available
+recipient_name: Ahmed Al Mansouri
+recipient_phone: +971501234567
+recipient_email: ahmed@example.com
+suggested_message: "Hi Ahmed! Following up on your recent viewing of the Marina apartment. Were you able to discuss with your family? I'm available anytime this week if you have questions."
+channel: whatsapp
+follow_up_type: viewing_followup
+[/FOLLOWUP_ACTION]
+
+FOLLOW-UP TYPES:
+- viewing_followup: After property viewing, ask about interest level
+- general_checkin: Warm re-engagement after period of no contact
+- document_reminder: Gentle nudge about pending documents
+- offer_followup: Follow up on submitted offer
+- hot_lead_reengagement: Re-engage high-potential lead who went cold
+- deal_milestone: Congratulate on progress, explain next steps
+
+FOLLOW-UP TRIGGER PATTERNS:
+- "Follow up with [name]"
+- "Send a check-in to [name/ID]"
+- "Remind [name] about..."
+- "Re-engage [name]"
+- "Message [name] about the viewing"
+- "I need to follow up with..."
+
+Example response when user says "Follow up with Ahmed about the Marina villa viewing":
+"I've prepared a personalized follow-up for Ahmed based on his recent viewing:
+
+[FOLLOWUP_ACTION]
+entity_type: lead
+entity_id: LD-AHMED01
+recipient_name: Ahmed Al Mansouri
+recipient_phone: +971501234567
+suggested_message: "Hi Ahmed! 🏡 I hope you had a chance to reflect on the Marina villa we viewed yesterday. The 3BR with stunning marina views seemed to match your requirements perfectly. Would you like to schedule a second viewing with your family?"
+channel: whatsapp
+follow_up_type: viewing_followup
+[/FOLLOWUP_ACTION]
+
+You can edit the message before sending, or switch to SMS/Email. Would you like me to adjust the tone?"
+
 Respond in a professional, helpful manner suited to UAE real estate professionals.`;
 
 interface OpsRequest {

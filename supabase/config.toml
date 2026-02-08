@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.bos-manifest-executor]
 verify_jwt = false
+
+[functions.bos-llm-followup]
+verify_jwt = false
