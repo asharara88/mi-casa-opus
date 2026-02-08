@@ -1,9 +1,7 @@
 import { Search, HelpCircle, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { DemoToggle } from './DemoToggle';
 import { ThemeToggle } from './ThemeToggle';
-import { useAuth } from '@/hooks/useAuth';
 import { useDemoMode } from '@/contexts/DemoContext';
 import { Badge } from '@/components/ui/badge';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
@@ -17,9 +15,7 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 }
 
  export function Header({ title, subtitle, onMenuClick, onSearchClick, onNavigate }: HeaderProps) {
-  const { role } = useAuth();
   const { isDemoMode } = useDemoMode();
-  const canAccessDemo = role === 'Operator' || role === 'LegalOwner';
 
   return (
     <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-4 md:px-6 overflow-hidden">
@@ -49,8 +45,6 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
       </div>
 
       <div className="flex items-center gap-2 md:gap-4">
-        {/* Demo Toggle - Only for Operator/Admin */}
-        {canAccessDemo && <DemoToggle />}
 
         {/* Mobile Search Button */}
         <Button 

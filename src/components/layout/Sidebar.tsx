@@ -18,6 +18,7 @@ import {
   Megaphone,
   TrendingUp,
   FileSignature,
+  Play,
 } from 'lucide-react';
 import {
   Collapsible,
@@ -26,6 +27,7 @@ import {
 } from '@/components/ui/collapsible';
 import { MiCasaLogo } from '@/components/branding/MiCasaLogo';
 import { ThemeToggle } from './ThemeToggle';
+import { DemoToggle } from './DemoToggle';
 
 interface SidebarProps {
   currentRole: AppRole | null;
@@ -347,17 +349,24 @@ export function Sidebar({
           </div>
         </div>
 
-        {/* Theme Toggle & Collapse - Desktop only */}
+        {/* Theme Toggle, Demo Toggle & Collapse - Desktop only */}
         <div className="hidden lg:block border-t border-sidebar-border p-2 space-y-1">
           {!collapsed && (
-            <div className="flex items-center justify-between px-3 py-2 rounded-lg text-sidebar-foreground/70">
-              <span className="text-sm">Theme</span>
-              <ThemeToggle />
-            </div>
+            <>
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg text-sidebar-foreground/70">
+                <span className="text-sm">Theme</span>
+                <ThemeToggle />
+              </div>
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg text-sidebar-foreground/70">
+                <span className="text-sm">Demo</span>
+                <DemoToggle />
+              </div>
+            </>
           )}
           {collapsed && (
-            <div className="flex justify-center py-2">
+            <div className="flex flex-col items-center gap-2 py-2">
               <ThemeToggle />
+              <DemoToggle />
             </div>
           )}
           <button
