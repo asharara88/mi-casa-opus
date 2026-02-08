@@ -61,6 +61,12 @@ const TOPIC_SUGGESTIONS = {
     "Any concerns?",
     "Show related data",
   ],
+  communication: [
+    "Follow up with Ahmed about the viewing",
+    "Send a check-in message",
+    "Remind about pending documents",
+    "Re-engage cold leads",
+  ],
   document: [
     "I need to send an MOU to my client",
     "Prepare a seller authorization",
@@ -77,6 +83,7 @@ const TOPIC_KEYWORDS: Record<string, string[]> = {
   pipeline: ['pipeline', 'funnel', 'metrics', 'analytics', 'conversion', 'stages'],
   listing: ['listing', 'listings', 'property', 'properties', 'unit', 'units', 'inventory'],
   compliance: ['compliance', 'audit', 'regulation', 'rera', 'aml', 'kyc'],
+  communication: ['follow up', 'follow-up', 'followup', 'check in', 'check-in', 'remind', 'message', 'whatsapp', 'sms', 'send'],
   marketing: ['marketing', 'campaign', 'ad', 'ads', 'event', 'events', 'source'],
   document: ['document', 'mou', 'offer', 'authorization', 'invoice', 'form', 'send', 'prepare', 'generate'],
 };
