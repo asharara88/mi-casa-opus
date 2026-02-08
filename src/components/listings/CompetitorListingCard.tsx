@@ -17,11 +17,17 @@ const PLATFORM_COLORS: Record<string, string> = {
 };
 
 export function CompetitorListingCard({ listing }: CompetitorListingCardProps) {
-  const formatPrice = (price: number, currency: string) => {
+  const formatPrice = (price: number | null | undefined, currency: string) => {
+    if (price == null) return 'Price TBD';
     if (price >= 1000000) {
       return `${(price / 1000000).toFixed(1)}M ${currency}`;
     }
     return `${(price / 1000).toFixed(0)}K ${currency}`;
+  };
+
+  const formatSqft = (sqft: number | null | undefined) => {
+    if (sqft == null) return 'N/A';
+    return sqft.toLocaleString();
   };
 
   return (
@@ -39,34 +45,34 @@ export function CompetitorListingCard({ listing }: CompetitorListingCardProps) {
       <CardContent className="p-3">
         {/* Price */}
         <div className="text-lg font-bold text-primary mb-1">
-          {formatPrice(listing.price, listing.currency)}
+          {formatPrice(listing.price, listing.currency || 'AED')}
           {listing.listingType === 'Rent' && <span className="text-sm font-normal">/yr</span>}
         </div>
 
         {/* Property Type */}
         <div className="text-sm font-medium text-foreground mb-1 truncate">
-          {listing.propertyType}
+          {listing.propertyType || 'Property'}
         </div>
 
         {/* Location */}
         <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2 truncate">
           <MapPin className="h-3 w-3 flex-shrink-0" />
-          {listing.community}
+          {listing.community || 'Location TBD'}
         </div>
 
         {/* Specs */}
         <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
           <div className="flex items-center gap-1">
             <Bed className="h-3 w-3" />
-            {listing.bedrooms}
+            {listing.bedrooms ?? '-'}
           </div>
           <div className="flex items-center gap-1">
             <Bath className="h-3 w-3" />
-            {listing.bathrooms}
+            {listing.bathrooms ?? '-'}
           </div>
           <div className="flex items-center gap-1">
             <Maximize className="h-3 w-3" />
-            {listing.sqft.toLocaleString()}
+            {formatSqft(listing.sqft)}
           </div>
         </div>
 
@@ -76,6 +82,7 @@ export function CompetitorListingCard({ listing }: CompetitorListingCardProps) {
           variant="outline" 
           className="w-full text-xs"
           onClick={() => window.open(listing.sourceUrl, '_blank')}
+          disabled={!listing.sourceUrl}
         >
           <ExternalLink className="h-3 w-3 mr-1" />
           View on {listing.sourcePlatform}
