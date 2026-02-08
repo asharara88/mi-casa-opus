@@ -1,95 +1,141 @@
 
-# Apply Logo to Navigation & Add Theme Toggle
+# Automated Follow-Up Composer
 
 ## Overview
 
-This plan implements two UI enhancements:
-1. **Replace the Building2 icon with the official MiCasa logo** in the sidebar header
-2. **Add a light/dark theme toggle** that allows users to switch between themes
+Build an AI-powered follow-up message generator that creates personalized WhatsApp, SMS, and Email messages based on:
+1. **Entity context** (lead requirements, deal stage, viewing history)
+2. **Communication history** (what was last said, when, outcome)
+3. **Pipeline state** (urgency indicators, aging, next actions)
+4. **Conversational trigger** (agent describes situation in Mi Asistente)
+
+The agent can either request follow-ups through natural conversation ("I need to follow up with Ahmed about the viewing") or use a quick-action button on entity detail pages.
 
 ---
 
-## Current State
+## Architecture
 
-- **Sidebar**: Uses a generic `Building2` icon with hardcoded "Mi Casa / Real Estate" text
-- **Theme**: Application is dark-only (hardcoded `html { @apply dark; }` in CSS)
-- **ThemeProvider**: The project has `next-themes` installed but no `ThemeProvider` is configured
+```text
+Agent Request                              Generated Follow-Up
+      │                                           │
+      ▼                                           ▼
+┌─────────────────┐                    ┌─────────────────┐
+│ Trigger Source  │                    │ Review Panel    │
+│ • Chat request  │───────────────────►│ • Preview text  │
+│ • Quick button  │                    │ • Edit if needed│
+│ • Bulk action   │                    │ • Send button   │
+└─────────────────┘                    └─────────────────┘
+         │                                      │
+         ▼                                      ▼
+┌─────────────────┐                    ┌─────────────────┐
+│ Context Builder │                    │ Channel Select  │
+│ • Entity data   │                    │ • WhatsApp      │
+│ • Comm history  │                    │ • SMS           │
+│ • Deal stage    │                    │ • Email         │
+│ • Last viewing  │                    └─────────────────┘
+└─────────────────┘
+         │
+         ▼
+┌─────────────────┐
+│ LLM Composer    │
+│ bos-llm-followup│
+│ (new function)  │
+└─────────────────┘
+```
 
 ---
 
 ## Implementation Components
 
-### 1. Theme Provider Setup
+### 1. New Edge Function: `bos-llm-followup`
 
-Add the `ThemeProvider` from `next-themes` to wrap the application in `App.tsx`:
+Creates personalized follow-up messages using the Lovable AI Gateway.
 
-```tsx
-import { ThemeProvider } from "next-themes";
+**Input:**
+- `entityType`: 'prospect' | 'lead' | 'deal'
+- `entityData`: Full entity record
+- `communicationHistory`: Last 5 messages
+- `channel`: 'whatsapp' | 'sms' | 'email'
+- `followUpType`: 'viewing_followup' | 'general_checkin' | 'document_reminder' | 'offer_followup' | 'hot_lead_reengagement'
+- `agentNotes`: Optional notes from agent about the situation
 
-const App = () => (
-  <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-    <QueryClientProvider client={queryClient}>
-      {/* ... existing providers */}
-    </QueryClientProvider>
-  </ThemeProvider>
-);
-```
-
-### 2. Theme Toggle Component
-
-Create a new component `src/components/layout/ThemeToggle.tsx`:
-
-| Feature | Implementation |
-|---------|----------------|
-| Icon | Sun for light mode, Moon for dark mode |
-| Style | Consistent with existing sidebar buttons |
-| Tooltip | Shows current mode and action |
-| Animation | Smooth icon rotation transition |
-
-```tsx
-function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  
-  return (
-    <Button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-      {theme === 'dark' ? <Sun /> : <Moon />}
-    </Button>
-  );
+**Output:**
+```json
+{
+  "subject": "Re: Your Property Search",  // For email only
+  "message": "Hi Ahmed! Following up on your viewing...",
+  "tone": "professional_friendly",
+  "urgency": "medium",
+  "suggested_timing": "morning",
+  "personalization_elements": ["mentioned_property", "viewing_date", "budget_fit"]
 }
 ```
 
-### 3. Sidebar Logo Integration
+### 2. Follow-Up Composer Component
 
-Update `src/components/layout/Sidebar.tsx` to use the `MiCasaLogo` component:
+New UI component `FollowUpComposer.tsx` with:
 
-**Before:**
-```tsx
-<div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-  <Building2 className="w-5 h-5 text-primary-foreground" />
-</div>
-<span className="font-semibold">Mi Casa</span>
-<span className="text-xs">Real Estate</span>
+| Section | Description |
+|---------|-------------|
+| Entity Header | Shows who the follow-up is for |
+| Follow-Up Type Selector | Quick buttons for common scenarios |
+| AI Generate Button | One-click to generate personalized message |
+| Preview/Edit | Shows generated message with edit capability |
+| Channel Selector | WhatsApp / SMS / Email tabs |
+| Send Button | Dispatches through existing Twilio/SendGrid |
+
+### 3. Chat Integration
+
+Extend the Mi Asistente system prompt to recognize follow-up requests:
+
+**Patterns:**
+- "Follow up with [name]"
+- "I need to re-engage [name]"
+- "Send a check-in to [entity ID]"
+- "Remind [name] about the viewing"
+
+**Response format:**
+```
+[FOLLOWUP_ACTION]
+entity_type: lead
+entity_id: LD-ABC123
+recipient_name: Ahmed Al Mansouri
+recipient_phone: +971501234567
+recipient_email: ahmed@example.com
+suggested_message: "Hi Ahmed! Following up on your recent viewing of the Marina apartment. Were you able to discuss the offer terms with your family? I'm available anytime this week if you have questions."
+channel: whatsapp
+follow_up_type: viewing_followup
+[/FOLLOWUP_ACTION]
 ```
 
-**After:**
-```tsx
-import { MiCasaLogo } from '@/components/branding/MiCasaLogo';
+### 4. Entity Detail Quick Actions
 
-<MiCasaLogo 
-  width={collapsed ? 36 : 140} 
-  height="auto"
-  className="transition-all duration-300"
-/>
-```
+Add "AI Follow-Up" button to:
+- `LeadDetail.tsx` - Quick follow-up for leads
+- `DealDetail.tsx` - Context-aware deal follow-ups
+- `ProspectDetailSheet.tsx` - Re-engagement for cold prospects
 
-### 4. Theme Toggle Placement
+### 5. Follow-Up Type Templates
 
-Add the theme toggle in two locations for accessibility:
+| Type | Trigger Context | AI Focus |
+|------|-----------------|----------|
+| `viewing_followup` | After viewing completed | Property interest, next steps |
+| `general_checkin` | No contact for 7+ days | Warm re-engagement |
+| `document_reminder` | Missing docs in deal | Gentle nudge, deadline awareness |
+| `offer_followup` | Offer submitted, awaiting response | Price/terms discussion |
+| `hot_lead_reengagement` | High score, gone cold | Urgency, FOMO elements |
+| `deal_milestone` | Stage advanced | Congratulations, next steps |
 
-| Location | Visibility | Purpose |
-|----------|------------|---------|
-| Sidebar footer | Desktop (expanded) | Primary toggle with label |
-| Header | Always visible | Quick access on mobile |
+---
+
+## Files to Create
+
+| File | Purpose |
+|------|---------|
+| `supabase/functions/bos-llm-followup/index.ts` | Edge function for AI message generation |
+| `src/components/communication/FollowUpComposer.tsx` | Main composer UI component |
+| `src/components/communication/FollowUpActionCard.tsx` | Action card for chat panel |
+| `src/hooks/useFollowUpComposer.ts` | Hook to manage composer state and API calls |
 
 ---
 
@@ -97,68 +143,146 @@ Add the theme toggle in two locations for accessibility:
 
 | File | Changes |
 |------|---------|
-| `src/App.tsx` | Wrap with `ThemeProvider` from next-themes |
-| `src/components/layout/ThemeToggle.tsx` | **New file** - Theme toggle component |
-| `src/components/layout/Sidebar.tsx` | Replace Building2 icon with MiCasaLogo, add theme toggle in footer |
-| `src/components/layout/Header.tsx` | Add theme toggle button for mobile accessibility |
-| `src/index.css` | Remove hardcoded `html { @apply dark; }` to allow theme switching |
+| `supabase/functions/bos-llm-ops/index.ts` | Add follow-up intent detection to system prompt |
+| `src/components/ai/ChatMessageRenderer.tsx` | Parse and render `FOLLOWUP_ACTION` blocks |
+| `src/components/leads/LeadDetail.tsx` | Add AI Follow-Up quick action button |
+| `src/components/deals/DealDetail.tsx` | Add AI Follow-Up button in overview tab |
+| `src/components/prospects/ProspectDetailSheet.tsx` | Add follow-up action |
+| `src/lib/chat-suggestions.ts` | Add follow-up related suggestions |
+| `src/hooks/useCommunications.ts` | Add `useGenerateFollowUp` hook |
 
 ---
 
-## Visual Changes
+## User Flow Examples
 
-### Sidebar Header (Before vs After)
-
-```text
-BEFORE:                          AFTER:
-┌────────────────────┐          ┌────────────────────┐
-│ [□] Mi Casa        │          │ MI CASA | Property │
-│     Real Estate    │          │          Solutions │
-└────────────────────┘          └────────────────────┘
-```
-
-### Sidebar Footer with Theme Toggle
+### Flow 1: Chat-Triggered Follow-Up
 
 ```text
-┌────────────────────────────┐
-│ ○ Theme: Dark    [☀/☽]    │
-│ [←] Collapse               │
-└────────────────────────────┘
+Agent: "Follow up with Ahmed about the Marina villa viewing yesterday"
+
+Mi Asistente: "I've prepared a personalized follow-up for Ahmed:
+
+[FOLLOWUP ACTION CARD]
+📱 WhatsApp to Ahmed Al Mansouri
+━━━━━━━━━━━━━━━━━━━━
+Hi Ahmed! I hope you had a chance to reflect on the 
+Marina villa we viewed yesterday. The 3BR with the 
+stunning marina views really seemed to match what 
+you described - especially the home office space.
+
+I wanted to check if you have any questions about 
+the payment plan or would like to schedule a second 
+viewing with your family?
+
+[Edit] [Preview] [Send WhatsApp]
+━━━━━━━━━━━━━━━━━━━━
+📧 Switch to Email | 💬 Switch to SMS
+
+Would you like me to adjust the tone or add any specific details?"
 ```
 
-### Collapsed Sidebar
+### Flow 2: Quick Action from Lead Detail
 
-When collapsed, the logo will shrink to an icon-sized version and the theme toggle shows only the icon.
+```text
+1. Agent opens lead LD-ABC123 (Ahmed)
+2. Clicks "AI Follow-Up" button
+3. Modal opens with:
+   - Follow-up type selector (defaults to appropriate type based on last activity)
+   - Generated message preview
+   - Channel selection (pre-selected to WhatsApp if phone available)
+4. Agent reviews, optionally edits
+5. Clicks "Send" → Message dispatched via Twilio
+6. Communication logged automatically
+```
 
 ---
 
 ## Technical Details
 
-### ThemeProvider Configuration
+### Edge Function System Prompt (bos-llm-followup)
 
-```tsx
-<ThemeProvider 
-  attribute="class"           // Toggle via CSS class
-  defaultTheme="dark"         // Keep dark as default
-  enableSystem={false}        // Don't auto-detect OS preference
-  disableTransitionOnChange   // Prevent flash during transition
->
+```
+You are a professional real estate follow-up message composer for Mi Casa Properties (Abu Dhabi).
+
+Generate personalized, culturally appropriate follow-up messages that:
+1. Reference specific details from the client's history (property viewed, budget, requirements)
+2. Maintain professional yet warm UAE business tone
+3. Include a clear call-to-action
+4. Are appropriate length for the channel (WhatsApp: 150-300 chars, SMS: <160 chars, Email: 2-3 paragraphs)
+
+NEVER:
+- Be pushy or aggressive
+- Make promises about prices or availability
+- Include false urgency
+- Use ALL CAPS or excessive emojis
+
+For WhatsApp: Use 1-2 relevant emojis, informal but professional
+For SMS: Extremely concise, include callback number
+For Email: Professional greeting, structured paragraphs, signature line
+
+Context provided:
+- Entity data (lead/deal/prospect details)
+- Communication history (last 5 messages)
+- Viewing history if applicable
+- Current pipeline stage
+- Agent notes about the situation
 ```
 
-### Logo Responsiveness
+### Context Building
 
-The `MiCasaLogo` component already supports:
-- `width` prop for sizing
-- `useImage={true}` for the PNG version (optimized for dark backgrounds)
-- CSS filter for theme adaptation when needed
+```typescript
+interface FollowUpContext {
+  entity: {
+    type: 'prospect' | 'lead' | 'deal';
+    id: string;
+    name: string;
+    phone?: string;
+    email?: string;
+    requirements?: Record<string, unknown>;
+    stage?: string;
+    score?: number;
+  };
+  recentCommunication: {
+    lastContactAt?: string;
+    lastChannel?: string;
+    lastOutcome?: string;
+    messageCount: number;
+  };
+  viewingHistory?: {
+    lastViewingDate?: string;
+    propertyViewed?: string;
+    feedback?: string;
+  };
+  dealContext?: {
+    stage?: string;
+    agreedPrice?: number;
+    pendingDocuments?: string[];
+  };
+  agentNotes?: string;
+}
+```
 
-### CSS Theme Variable Handling
+### Integration with Existing Messaging
 
-The existing `src/index.css` already defines both `.dark` and `.light` theme variables, so no additional CSS changes are needed beyond removing the forced dark mode.
+The composer uses the existing `useSendWhatsApp`, `useSendSMS`, and `useSendEmail` hooks from `useCommunications.ts`, ensuring:
+- Messages are logged in `communication_logs` table
+- Proper authentication via Supabase RLS
+- Consistent error handling and toasts
+
+---
+
+## Success Metrics
+
+- Time saved per follow-up (target: 80% reduction vs manual typing)
+- Send rate after AI generation (target: >90% acceptance)
+- Personalization accuracy (measured by edit rate before send)
+- Response rate from recipients (compared to template messages)
 
 ---
 
 ## Security Considerations
 
-- No security implications - this is purely a UI enhancement
-- Theme preference stored in localStorage via next-themes (client-side only)
+1. **Data Access**: Only fetch entities user has permission to via RLS
+2. **Rate Limiting**: Apply same 429/402 handling as other LLM functions
+3. **Content Review**: Always show preview before send (no auto-send)
+4. **Audit Trail**: All messages logged with AI-generated flag
