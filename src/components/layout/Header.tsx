@@ -1,56 +1,75 @@
-import { Search, HelpCircle, Menu } from 'lucide-react';
+import { Search, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from './ThemeToggle';
 import { useDemoMode } from '@/contexts/DemoContext';
 import { Badge } from '@/components/ui/badge';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { MiCasaLogo } from '@/components/branding/MiCasaLogo';
+import { cn } from '@/lib/utils';
 
- interface HeaderProps {
+interface HeaderProps {
   title: string;
   subtitle?: string;
   onMenuClick?: () => void;
-   onSearchClick?: () => void;
-   onNavigate?: (entityType: string, entityId: string) => void;
+  onSearchClick?: () => void;
+  onNavigate?: (entityType: string, entityId: string) => void;
 }
 
- export function Header({ title, subtitle, onMenuClick, onSearchClick, onNavigate }: HeaderProps) {
+export function Header({ title, subtitle, onMenuClick, onSearchClick, onNavigate }: HeaderProps) {
   const { isDemoMode } = useDemoMode();
 
   return (
-    <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-4 md:px-6 overflow-hidden">
-      <div className="flex items-center gap-3 min-w-0 flex-shrink">
+    <header className={cn(
+      "h-14 md:h-16 border-b border-border/50",
+      "bg-gradient-to-r from-card/80 to-card/60 backdrop-blur-xl",
+      "flex items-center justify-between px-3 md:px-6 overflow-hidden"
+    )}>
+      <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-shrink">
         {/* Mobile menu button */}
         <Button 
           variant="ghost" 
           size="icon" 
-          className="lg:hidden min-h-[44px] min-w-[44px] flex-shrink-0"
+          className="lg:hidden h-10 w-10 rounded-xl flex-shrink-0"
           onClick={onMenuClick}
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
         </Button>
         
-        <div className="min-w-0 flex-shrink">
+        {/* Mobile: Show logo, Desktop: Show title */}
+        <div className="lg:hidden">
+          <MiCasaLogo 
+            width={100} 
+            height="auto"
+            useImage={true}
+            className="dark:invert"
+          />
+        </div>
+        
+        <div className="hidden lg:block min-w-0 flex-shrink">
           <h1 className="text-lg font-semibold text-foreground truncate">{title}</h1>
           {subtitle && (
-            <p className="text-sm text-foreground/65 hidden sm:block truncate">{subtitle}</p>
+            <p className="text-sm text-foreground/60 truncate">{subtitle}</p>
           )}
         </div>
+        
         {isDemoMode && (
-          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/30 hidden sm:inline-flex flex-shrink-0">
-            Demo Data
+          <Badge 
+            variant="secondary" 
+            className="bg-primary/10 text-primary border-primary/30 hidden sm:inline-flex flex-shrink-0 text-[10px] px-2 py-0.5"
+          >
+            Demo
           </Badge>
         )}
       </div>
 
-      <div className="flex items-center gap-2 md:gap-4">
-
+      <div className="flex items-center gap-1.5 md:gap-3">
         {/* Mobile Search Button */}
         <Button 
           variant="ghost" 
           size="icon" 
-          className="md:hidden min-h-[44px] min-w-[44px]"
+          className="md:hidden h-10 w-10 rounded-xl"
           onClick={onSearchClick}
           aria-label="Search"
         >
@@ -62,17 +81,16 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search..."
-            className="pl-9 bg-background border-border"
+            className="pl-9 bg-background/50 border-border/50 rounded-xl h-9"
           />
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 md:gap-2">
-          <ThemeToggle />
+        <div className="flex items-center gap-0.5 md:gap-1">
+          <div className="hidden md:block">
+            <ThemeToggle />
+          </div>
           <NotificationBell onNavigate={onNavigate} />
-          <Button variant="ghost" size="icon" className="hidden sm:flex min-h-[44px] min-w-[44px]">
-            <HelpCircle className="w-5 h-5" />
-          </Button>
         </div>
       </div>
     </header>
