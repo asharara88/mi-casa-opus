@@ -33,7 +33,7 @@ function prettyJson(value: unknown): string {
 }
 
 export function AiAssistantPanel({
-  contextTitle = 'AI Assistant',
+  contextTitle = 'Mi Asistente',
   contextType,
   bosPayload,
   complianceResult,
