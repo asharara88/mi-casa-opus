@@ -51,7 +51,7 @@ const NAV_ITEMS: NavItem[] = [
   // === OPERATOR ===
   // Dashboard
   { id: 'dashboard', label: 'Control Room', icon: LayoutDashboard, roles: ['Operator'], group: 'dashboard' },
-  { id: 'ai-agent', label: 'MICASA Ai', icon: Bot, roles: ['Operator'], group: 'dashboard' },
+  { id: 'ai-agent', label: 'Mi Asistente', icon: Bot, roles: ['Operator'], group: 'dashboard' },
   
   // Marketing (Campaigns, Ads, Prospects)
   { id: 'marketing', label: 'Marketing Hub', icon: Megaphone, roles: ['Operator'], group: 'marketing' },
