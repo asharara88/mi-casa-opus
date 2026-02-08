@@ -22,27 +22,27 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
   const canAccessDemo = role === 'Operator' || role === 'LegalOwner';
 
   return (
-    <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-4 md:px-6">
-      <div className="flex items-center gap-3">
+    <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-4 md:px-6 overflow-hidden">
+      <div className="flex items-center gap-3 min-w-0 flex-shrink">
         {/* Mobile menu button */}
         <Button 
           variant="ghost" 
           size="icon" 
-          className="lg:hidden min-h-[44px] min-w-[44px]"
+          className="lg:hidden min-h-[44px] min-w-[44px] flex-shrink-0"
           onClick={onMenuClick}
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
         </Button>
         
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+        <div className="min-w-0 flex-shrink">
+          <h1 className="text-lg font-semibold text-foreground truncate">{title}</h1>
           {subtitle && (
-            <p className="text-sm text-foreground/65 hidden sm:block">{subtitle}</p>
+            <p className="text-sm text-foreground/65 hidden sm:block truncate">{subtitle}</p>
           )}
         </div>
         {isDemoMode && (
-          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/30 hidden sm:inline-flex">
+          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/30 hidden sm:inline-flex flex-shrink-0">
             Demo Data
           </Badge>
         )}
