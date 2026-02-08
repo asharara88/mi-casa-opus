@@ -17,24 +17,18 @@ export function DemoToggle() {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant={isDemoMode ? 'default' : 'outline'}
-            size="sm"
+            variant="ghost"
+            size="icon"
             onClick={toggleDemoMode}
             className={cn(
-              'gap-2 transition-all duration-300',
-              isDemoMode && 'bg-primary text-primary-foreground animate-pulse'
+              'h-8 w-8 transition-all duration-300',
+              isDemoMode && 'text-primary'
             )}
           >
             {isDemoMode ? (
-              <>
-                <Pause className="w-4 h-4" />
-                <span className="hidden sm:inline">Exit Demo</span>
-              </>
+              <Pause className="w-3.5 h-3.5" />
             ) : (
-              <>
-                <Play className="w-4 h-4" />
-                <span className="hidden sm:inline">Demo Mode</span>
-              </>
+              <Play className="w-3.5 h-3.5" />
             )}
           </Button>
         </TooltipTrigger>
