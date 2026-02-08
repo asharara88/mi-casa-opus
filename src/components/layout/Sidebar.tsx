@@ -206,14 +206,13 @@ export function Sidebar({
                 width={36} 
                 height={36}
                 useImage={false}
-                className="flex-shrink-0 dark:invert"
               />
             ) : (
               <MiCasaLogo 
                 width={140} 
                 height="auto"
                 useImage={true}
-                className="transition-all duration-300 dark:invert"
+                className="transition-all duration-300"
               />
             )}
           </div>
