@@ -74,7 +74,7 @@ const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   templates: { title: 'Rules & Templates', subtitle: 'Document templates and business rules' },
   contracts: { title: 'Smart Contracts', subtitle: 'Tokenization, contracts, and payment escrow' },
   'ai-insights': { title: 'AI Insights', subtitle: 'Read-only intelligence (non-authoritative)' },
-  'ai-agent': { title: 'Mi Asistente', subtitle: 'Your BOS operations assistant' },
+  'ai-agent': { title: 'Mi Ai', subtitle: 'Your BOS operations assistant' },
   users: { title: 'User Management', subtitle: 'Manage users and broker profiles' },
   settings: { title: 'System Settings', subtitle: 'Brokerage context and configuration' },
   

@@ -118,7 +118,7 @@ export function AIAgentChat() {
             <Bot className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-foreground">Mi Asistente</h2>
+            <h2 className="text-xl font-bold text-foreground">Mi Ai</h2>
             <p className="text-sm text-muted-foreground">Your BOS operations assistant</p>
           </div>
         </div>

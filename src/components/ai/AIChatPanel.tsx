@@ -102,7 +102,7 @@ export function AIChatPanel({
         }}
       >
         <Sparkles className="h-4 w-4 text-primary" />
-        Mi Asistente
+        Mi Ai
       </Button>
     );
   }
@@ -112,7 +112,7 @@ export function AIChatPanel({
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-sm flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
-          Mi Asistente
+          Mi Ai
         </CardTitle>
         <Button
           variant="ghost"

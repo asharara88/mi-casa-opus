@@ -238,7 +238,7 @@ export function AIVoiceAgent({
         <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
           <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5" />
           <div className="text-xs text-muted-foreground">
-            <p className="font-medium text-amber-600">Mi Asistente Mode</p>
+            <p className="font-medium text-amber-600">Mi Ai Mode</p>
             <p>The AI will greet the prospect, qualify their interest, and can schedule callbacks or capture requirements automatically.</p>
           </div>
         </div>
