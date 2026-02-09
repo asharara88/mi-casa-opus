@@ -24,6 +24,42 @@ export default defineConfig(({ mode }) => ({
     include: ["react", "react-dom"],
   },
   build: {
+    // Enable minification and tree-shaking
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+    // Code splitting configuration
+    rollupOptions: {
+      output: {
+        // Manual chunks for optimal caching
+        manualChunks: {
+          // Core React ecosystem
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // UI framework
+          'vendor-ui': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-select',
+            '@radix-ui/react-accordion',
+          ],
+          // Data & state management
+          'vendor-data': ['@tanstack/react-query', '@supabase/supabase-js'],
+          // Animation & visualization
+          'vendor-viz': ['framer-motion', 'recharts'],
+          // Utilities
+          'vendor-utils': ['date-fns', 'clsx', 'tailwind-merge', 'zod'],
+        },
+      },
+    },
+    // Increase chunk size warning limit
+    chunkSizeWarningLimit: 500,
     commonjsOptions: {
       // Ensure React is treated as a singleton in production builds
       include: [/node_modules/],
