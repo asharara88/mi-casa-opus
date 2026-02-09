@@ -377,7 +377,7 @@ export function LeadQualificationPanel({ lead, onSave, onCancel }: LeadQualifica
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <MessageSquare className="h-4 w-4 text-primary" />
-            Mi Asistente
+            Mi Ai
           </CardTitle>
           <CardDescription>
             Ask questions; routed to OPS / Lead Qualify. Advisory only.

@@ -147,7 +147,7 @@ export function FloatingAIChat() {
           "hidden lg:flex", // Only show on desktop
           isOpen && "lg:scale-0 lg:opacity-0"
         )}
-        aria-label="Open Mi Asistente"
+        aria-label="Open Mi Ai"
       >
         <Bot className="w-6 h-6" />
         {/* Pulse indicator */}
@@ -170,7 +170,7 @@ export function FloatingAIChat() {
                   <Bot className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <SheetTitle className="text-base">Mi Asistente</SheetTitle>
+                  <SheetTitle className="text-base">Mi Ai</SheetTitle>
                   <p className="text-xs text-muted-foreground">Advisory & Documents</p>
                 </div>
               </div>
