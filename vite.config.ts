@@ -24,14 +24,8 @@ export default defineConfig(({ mode }) => ({
     include: ["react", "react-dom"],
   },
   build: {
-    // Enable minification and tree-shaking
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
+    // Enable minification with esbuild (built-in, no extra dependency)
+    minify: 'esbuild',
     // Code splitting configuration
     rollupOptions: {
       output: {
