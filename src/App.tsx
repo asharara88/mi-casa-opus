@@ -14,6 +14,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Architecture = lazy(() => import("./pages/Architecture"));
+const MortgageCalculator = lazy(() => import("./pages/MortgageCalculator"));
 
 // Minimal loading spinner for route transitions
 function RouteLoader() {
@@ -67,6 +68,7 @@ function AppRoutes() {
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
         <Route path="/architecture" element={<Architecture />} />
+        <Route path="/mortgage-calculator" element={<MortgageCalculator />} />
         <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
