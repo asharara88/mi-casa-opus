@@ -133,7 +133,8 @@ export default function Login() {
         <motion.div className="relative z-10 space-y-8" variants={containerVariants}>
           <motion.div variants={itemVariants}>
             <h2 className="text-4xl font-bold text-foreground mb-4 leading-tight">
-              AI-Powered <br />
+              AI-Enabled <br />
+              
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70">
                 Brokerage Operations
               </span>
