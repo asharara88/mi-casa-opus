@@ -5,6 +5,7 @@ import enbdLogo from '@/assets/bank-logos/enbd.png';
 import dibLogo from '@/assets/bank-logos/dib.png';
 import cbdLogo from '@/assets/bank-logos/cbd.png';
 import rakbankLogo from '@/assets/bank-logos/rakbank.png';
+import mashreqLogo from '@/assets/bank-logos/mashreq.png';
 
 export type BankPreset = {
   id: string;
@@ -59,6 +60,7 @@ export const UAE_BANK_PRESETS: BankPreset[] = [
     name: 'Mashreq Bank',
     shortName: 'Mashreq',
     mortgagePageUrl: 'https://www.mashreqbank.com/en/uae/personal/loans/mortgage',
+    logo: mashreqLogo,
   },
   {
     id: 'rakbank',
