@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,6 +40,8 @@ import { cn } from '@/lib/utils';
 import type { OverridePayload } from '@/types/compliance';
 import { AIChatPanel } from '@/components/ai/AIChatPanel';
 import { DocumentGeneratorPanel } from '@/components/documents/DocumentGeneratorPanel';
+
+const MortgageCalculatorWidget = lazy(() => import('@/components/mortgage-calculator/MortgageCalculatorWidget').then(m => ({ default: m.MortgageCalculatorWidget })));
 
 interface DealDetailProps {
   deal: Deal;
@@ -293,6 +295,12 @@ export const DealDetail: React.FC<DealDetailProps> = ({
               <TabsTrigger value="parties">Parties</TabsTrigger>
               <TabsTrigger value="registry">Registry</TabsTrigger>
               <TabsTrigger value="timeline">Timeline</TabsTrigger>
+              {deal.deal_type === 'Sale' && (
+                <TabsTrigger value="mortgage">
+                  <DollarSign className="h-4 w-4 mr-1" />
+                  Mortgage
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
@@ -516,6 +524,21 @@ export const DealDetail: React.FC<DealDetailProps> = ({
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {deal.deal_type === 'Sale' && (
+              <TabsContent value="mortgage">
+                <Suspense fallback={<div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+                  <MortgageCalculatorWidget
+                    dealContext={{
+                      dealId: deal.deal_id,
+                      dealDbId: dealDbId || '',
+                      purchasePrice: (deal as any).deal_economics?.transaction_value_aed,
+                      propertyName: (deal as any).property_name || deal.deal_id,
+                    }}
+                  />
+                </Suspense>
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </div>
