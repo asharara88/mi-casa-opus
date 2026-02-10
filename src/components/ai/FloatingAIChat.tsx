@@ -296,7 +296,7 @@ export function FloatingAIChat() {
           )}
 
           {/* Input Area */}
-          <div className="p-3 border-t border-border bg-card flex-shrink-0">
+          <div className="p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-border bg-card flex-shrink-0">
             <input
               ref={fileInputRef}
               type="file"
