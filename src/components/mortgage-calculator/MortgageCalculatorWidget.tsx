@@ -148,8 +148,11 @@ export function MortgageCalculatorWidget({ dealContext }: MortgageCalculatorWidg
 
   const downPayment = purchasePriceAed != null && loanAmountAed != null ? Math.max(0, purchasePriceAed - loanAmountAed) : 0;
   const upfrontTotal = downPayment + upfrontLines.reduce((sum, l) => sum + l.amountAed, 0);
-  const usedSources = Array.from(new Map(upfrontLines.flatMap((x) => x.sources).map((s) => [s.id, s])).values());
-  if (rateOption?.published_rate_pct) usedSources.push(rateOption.published_rate_pct);
+  const usedSources = useMemo(() => {
+    const sources = Array.from(new Map(upfrontLines.flatMap((x) => x.sources).map((s) => [s.id, s])).values());
+    if (rateOption?.published_rate_pct) sources.push(rateOption.published_rate_pct);
+    return sources;
+  }, [upfrontLines, rateOption]);
 
   const handleComparisonToggle = (id: string) => {
     setComparisonIds((prev) =>
@@ -235,7 +238,7 @@ export function MortgageCalculatorWidget({ dealContext }: MortgageCalculatorWidg
 
       {/* Results Summary */}
       <Card>
-        <CardContent className="pt-6 grid grid-cols-3 gap-4 text-center">
+        <CardContent className="pt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-xs text-muted-foreground">Monthly Payment</p>
             <p className="text-xl font-bold text-primary">{amort ? formatAed(amort.schedule[0]?.paymentTotal ?? NaN) : '—'}</p>
@@ -299,22 +302,17 @@ export function MortgageCalculatorWidget({ dealContext }: MortgageCalculatorWidg
       />
 
       {/* Qualification */}
-      <details>
-        <summary className="cursor-pointer font-semibold">Qualification (LTV + DBR)</summary>
-        <div className="mt-3">
-          <QualificationPanel
-            rateOption={rateOption}
-            purchasePriceAed={purchasePriceAed}
-            loanAmountAed={loanAmountAed}
-            monthlyIncomeAed={monthlyIncomeAed}
-            existingMonthlyDebtsAed={existingMonthlyDebtsAed}
-            monthlyMortgagePaymentAed={amort?.schedule[0]?.paymentTotal}
-            onMonthlyIncome={setMonthlyIncomeAed}
-            onExistingDebts={setExistingMonthlyDebtsAed}
-            aecbEnabled={false}
-          />
-        </div>
-      </details>
+      <QualificationPanel
+        rateOption={rateOption}
+        purchasePriceAed={purchasePriceAed}
+        loanAmountAed={loanAmountAed}
+        monthlyIncomeAed={monthlyIncomeAed}
+        existingMonthlyDebtsAed={existingMonthlyDebtsAed}
+        monthlyMortgagePaymentAed={amort?.schedule[0]?.paymentTotal}
+        onMonthlyIncome={setMonthlyIncomeAed}
+        onExistingDebts={setExistingMonthlyDebtsAed}
+        aecbEnabled={false}
+      />
 
       <SourcesPanel used={usedSources} />
     </div>

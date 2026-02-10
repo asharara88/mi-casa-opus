@@ -13,7 +13,12 @@ type Props = {
 };
 
 export function InputSlider({ label, value, onChange, min, max, step, unit = 'AED', placeholder }: Props) {
-  const displayValue = unit === 'AED' && value != null ? formatAed(value) : value?.toString() ?? '';
+  const handleManualChange = (raw: string) => {
+    if (!raw) { onChange(undefined); return; }
+    const n = Number(raw);
+    if (isNaN(n)) return;
+    onChange(Math.min(max, Math.max(min, n)));
+  };
 
   return (
     <div className="space-y-2">
@@ -38,7 +43,7 @@ export function InputSlider({ label, value, onChange, min, max, step, unit = 'AE
           className="w-28 border rounded-md px-2 py-1.5 text-sm bg-background text-foreground text-right"
           placeholder={placeholder}
           value={value ?? ''}
-          onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
+          onChange={(e) => handleManualChange(e.target.value)}
         />
       </div>
     </div>
