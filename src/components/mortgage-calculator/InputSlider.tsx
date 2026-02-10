@@ -30,17 +30,17 @@ export function InputSlider({ label, value, onChange, min, max, step, unit = 'AE
           </span>
         )}
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <Slider
           value={value != null ? [value] : [min]}
           onValueChange={([v]) => onChange(v)}
           min={min}
           max={max}
           step={step}
-          className="flex-1"
+          className="flex-1 min-w-0"
         />
         <input
-          className="w-28 border rounded-md px-2 py-1.5 text-sm bg-background text-foreground text-right"
+          className="w-20 sm:w-28 border rounded-md px-2 py-1.5 text-sm bg-background text-foreground text-right shrink-0"
           placeholder={placeholder}
           value={value ?? ''}
           onChange={(e) => handleManualChange(e.target.value)}
