@@ -1,4 +1,8 @@
 import { RateOption } from '@/mortgage-data/types';
+import { InputSlider } from './InputSlider';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
 type Props = {
   rateOption?: RateOption;
@@ -14,6 +18,7 @@ type Props = {
 };
 
 export function QualificationPanel(props: Props) {
+  const [open, setOpen] = useState(false);
   const ltv = props.purchasePriceAed && props.loanAmountAed ? (props.loanAmountAed / props.purchasePriceAed) * 100 : undefined;
   const dbr =
     props.monthlyIncomeAed && props.existingMonthlyDebtsAed != null && props.monthlyMortgagePaymentAed != null
@@ -21,56 +26,69 @@ export function QualificationPanel(props: Props) {
       : undefined;
 
   return (
-    <div className="space-y-3 text-sm">
-      <p className="text-muted-foreground">
-        Qualification runs in guidance mode unless your team has sourced and configured an official underwriting threshold.
-      </p>
-
-      <div className="grid gap-2">
-        <label className="font-medium">Monthly income (AED)</label>
-        <input
-          className="border rounded-md px-3 py-2 bg-background"
-          value={props.monthlyIncomeAed ?? ''}
-          onChange={(e) => props.onMonthlyIncome(e.target.value ? Number(e.target.value) : undefined)}
-        />
-      </div>
-
-      <div className="grid gap-2">
-        <label className="font-medium">Existing monthly debt instalments (AED)</label>
-        <input
-          className="border rounded-md px-3 py-2 bg-background"
-          value={props.existingMonthlyDebtsAed ?? ''}
-          onChange={(e) => props.onExistingDebts(e.target.value ? Number(e.target.value) : undefined)}
-        />
-        <button
-          type="button"
-          onClick={props.onAecbImportClick}
-          disabled={!props.aecbEnabled}
-          className="border rounded-md px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Import from AECB (requires consent)
-        </button>
-        {!props.aecbEnabled && (
-          <p className="text-xs text-muted-foreground">Enable backend consent endpoints before turning this on in production.</p>
-        )}
-      </div>
-
-      <div className="border rounded-md p-3 space-y-1">
-        <p><strong>LTV:</strong> {ltv ? `${ltv.toFixed(2)}%` : '—'}</p>
-        <p className={dbr != null && dbr > 50 ? 'text-destructive font-medium' : ''}>
-          <strong>DBR:</strong> {dbr ? `${dbr.toFixed(2)}%` : '—'}
-        </p>
-        {dbr != null && dbr > 50 && (
-          <p className="text-xs text-destructive">
-            ⚠ DBR exceeds 50% — UAE Central Bank guidelines cap DBR at 50%. Consider increasing down payment or reducing existing debts to lower your monthly obligation.
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger className="flex items-center gap-2 w-full cursor-pointer font-semibold text-sm py-2">
+        <ChevronDown className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+        Qualification (LTV + DBR)
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="space-y-3 text-sm pt-2">
+          <p className="text-muted-foreground">
+            Qualification runs in guidance mode unless your team has sourced and configured an official underwriting threshold.
           </p>
-        )}
-        <p className="text-xs text-muted-foreground">DBR = (existing monthly instalments + new mortgage payment) / monthly income.</p>
-      </div>
 
-      {props.rateOption?.ltv_caps?.length ? (
-        <p className="text-xs text-muted-foreground">Selected bank has published LTV caps; apply only to the correct customer segment.</p>
-      ) : null}
-    </div>
+          <InputSlider
+            label="Monthly Income"
+            value={props.monthlyIncomeAed}
+            onChange={props.onMonthlyIncome}
+            min={5000}
+            max={500000}
+            step={1000}
+            unit="AED"
+            placeholder="AED"
+          />
+
+          <InputSlider
+            label="Existing Monthly Debts"
+            value={props.existingMonthlyDebtsAed}
+            onChange={props.onExistingDebts}
+            min={0}
+            max={200000}
+            step={500}
+            unit="AED"
+            placeholder="AED"
+          />
+
+          <button
+            type="button"
+            onClick={props.onAecbImportClick}
+            disabled={!props.aecbEnabled}
+            className="border rounded-md px-3 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Import from AECB (requires consent)
+          </button>
+          {!props.aecbEnabled && (
+            <p className="text-xs text-muted-foreground">Enable backend consent endpoints before turning this on in production.</p>
+          )}
+
+          <div className="border rounded-md p-3 space-y-1">
+            <p><strong>LTV:</strong> {ltv ? `${ltv.toFixed(2)}%` : '—'}</p>
+            <p className={dbr != null && dbr > 50 ? 'text-destructive font-medium' : ''}>
+              <strong>DBR:</strong> {dbr ? `${dbr.toFixed(2)}%` : '—'}
+            </p>
+            {dbr != null && dbr > 50 && (
+              <p className="text-xs text-destructive">
+                ⚠ DBR exceeds 50% — UAE Central Bank guidelines cap DBR at 50%. Consider increasing down payment or reducing existing debts to lower your monthly obligation.
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">DBR = (existing monthly instalments + new mortgage payment) / monthly income.</p>
+          </div>
+
+          {props.rateOption?.ltv_caps?.length ? (
+            <p className="text-xs text-muted-foreground">Selected bank has published LTV caps; apply only to the correct customer segment.</p>
+          ) : null}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

@@ -112,8 +112,12 @@ export function ComparisonTable({ rateOptions, selectedIds, onToggle, loanAmount
           </div>
         )}
 
-        {rows.length < 2 && selectedIds.length > 0 && (
-          <p className="text-xs text-muted-foreground">Select at least 2 options to see a comparison.</p>
+        {rows.length < 2 && (
+          <p className="text-xs text-muted-foreground">
+            {selectedIds.length === 0
+              ? 'Select rate options above to compare them side-by-side.'
+              : 'Select at least 2 options to see a comparison.'}
+          </p>
         )}
       </CardContent>
     </Card>
