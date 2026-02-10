@@ -1614,6 +1614,47 @@ export type Database = {
         }
         Relationships: []
       }
+      mortgage_scenarios: {
+        Row: {
+          created_at: string
+          deal_id: string | null
+          id: string
+          inputs: Json
+          name: string
+          results: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deal_id?: string | null
+          id?: string
+          inputs?: Json
+          name: string
+          results?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string | null
+          id?: string
+          inputs?: Json
+          name?: string
+          results?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mortgage_scenarios_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string

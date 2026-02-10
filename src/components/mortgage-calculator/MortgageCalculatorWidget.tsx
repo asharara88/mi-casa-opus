@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ABU_DHABI_MORTGAGE_DATA } from '@/mortgage-data/abuDhabiMortgageData';
 import { formatAed } from '@/lib/money';
 import { amortize, buildHybridSegments, buildSingleRateSegments } from '@/lib/mortgageEngine';
@@ -12,11 +12,18 @@ import { AmortizationChart } from './AmortizationChart';
 import { AmortizationScheduleTable } from './AmortizationScheduleTable';
 import { ExtraPaymentSimulator } from './ExtraPaymentSimulator';
 import { ComparisonTable } from './ComparisonTable';
+import { SavedScenariosPanel } from './SavedScenariosPanel';
+import { DealPrefillBanner, type DealContext } from './DealPrefillBanner';
 import { RateOption } from '@/mortgage-data/types';
 import type { ScrapedRate } from '@/hooks/useMortgageRateScraper';
+import type { MortgageScenarioInputs } from '@/hooks/useMortgageScenarios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export function MortgageCalculatorWidget() {
+interface MortgageCalculatorWidgetProps {
+  dealContext?: DealContext;
+}
+
+export function MortgageCalculatorWidget({ dealContext }: MortgageCalculatorWidgetProps = {}) {
   const [purchasePriceAed, setPurchasePriceAed] = useState<number>();
   const [loanAmountAed, setLoanAmountAed] = useState<number>();
   const [termYears, setTermYears] = useState<number>();
@@ -27,6 +34,43 @@ export function MortgageCalculatorWidget() {
   const [liveRateOptions, setLiveRateOptions] = useState<RateOption[]>([]);
   const [extraPayment, setExtraPayment] = useState(0);
   const [comparisonIds, setComparisonIds] = useState<string[]>([]);
+  const [dealApplied, setDealApplied] = useState(false);
+
+  // Auto-apply deal context on mount
+  useEffect(() => {
+    if (dealContext && !dealApplied) {
+      if (dealContext.purchasePrice) {
+        setPurchasePriceAed(dealContext.purchasePrice);
+        // Suggest 75% LTV
+        setLoanAmountAed(Math.round(dealContext.purchasePrice * 0.75));
+      }
+      if (dealContext.clientIncome) {
+        setMonthlyIncomeAed(dealContext.clientIncome);
+      }
+      setDealApplied(true);
+    }
+  }, [dealContext]);
+
+  const handleApplyDealContext = (ctx: DealContext) => {
+    if (ctx.purchasePrice) {
+      setPurchasePriceAed(ctx.purchasePrice);
+      setLoanAmountAed(Math.round(ctx.purchasePrice * 0.75));
+    }
+    if (ctx.clientIncome) {
+      setMonthlyIncomeAed(ctx.clientIncome);
+    }
+    setDealApplied(true);
+  };
+
+  const handleLoadScenario = (inputs: MortgageScenarioInputs) => {
+    if (inputs.purchasePriceAed != null) setPurchasePriceAed(inputs.purchasePriceAed);
+    if (inputs.loanAmountAed != null) setLoanAmountAed(inputs.loanAmountAed);
+    if (inputs.termYears != null) setTermYears(inputs.termYears);
+    if (inputs.rateOptionId != null) setRateOptionId(inputs.rateOptionId);
+    if (inputs.postFixedRatePct != null) setPostFixedRatePct(inputs.postFixedRatePct);
+    if (inputs.extraPayment != null) setExtraPayment(inputs.extraPayment);
+    if (inputs.comparisonIds) setComparisonIds(inputs.comparisonIds);
+  };
 
   const allRateOptions = [...ABU_DHABI_MORTGAGE_DATA.rate_options, ...liveRateOptions];
   const rateOption = allRateOptions.find((x) => x.id === rateOptionId);
@@ -113,9 +157,27 @@ export function MortgageCalculatorWidget() {
     );
   };
 
+  const currentInputs: MortgageScenarioInputs = {
+    purchasePriceAed, loanAmountAed, termYears, rateOptionId, postFixedRatePct, extraPayment, comparisonIds,
+  };
+  const currentResults = {
+    monthlyPayment: amort?.schedule[0]?.paymentTotal,
+    totalInterest: amort?.totalInterest,
+    upfrontTotal: loanAmountAed ? upfrontTotal : undefined,
+  };
+
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-5">
       <h1 className="text-2xl font-bold">Abu Dhabi Mortgage Calculator</h1>
+
+      {/* Deal Pre-fill Banner */}
+      {dealContext && (
+        <DealPrefillBanner
+          dealContext={dealContext}
+          onApply={handleApplyDealContext}
+          applied={dealApplied}
+        />
+      )}
 
       {/* Interactive Inputs */}
       <Card>
@@ -227,6 +289,14 @@ export function MortgageCalculatorWidget() {
 
       {/* Yearly Schedule */}
       {amort && <AmortizationScheduleTable schedule={amort.schedule} />}
+
+      {/* Save/Load Scenarios */}
+      <SavedScenariosPanel
+        currentInputs={currentInputs}
+        currentResults={currentResults}
+        dealId={dealContext?.dealDbId}
+        onLoadScenario={handleLoadScenario}
+      />
 
       {/* Qualification */}
       <details>
