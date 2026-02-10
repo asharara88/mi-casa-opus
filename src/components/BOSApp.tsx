@@ -45,6 +45,7 @@ const TeamsSection = lazy(() => import('@/components/teams/TeamsSection').then(m
 const SmartContractsSection = lazy(() => import('@/components/contracts/SmartContractsSection').then(m => ({ default: m.SmartContractsSection })));
 const AIAgentChat = lazy(() => import('@/components/ai/AIAgentChat').then(m => ({ default: m.AIAgentChat })));
 const FloatingAIChat = lazy(() => import('@/components/ai/FloatingAIChat').then(m => ({ default: m.FloatingAIChat })));
+const MortgageCalculatorWidget = lazy(() => import('@/components/mortgage-calculator/MortgageCalculatorWidget').then(m => ({ default: m.MortgageCalculatorWidget })));
 
 // Section loading fallback - minimal and fast
 function SectionLoader() {
@@ -73,6 +74,7 @@ const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   exports: { title: 'Export Center', subtitle: 'Generate deal and broker dossiers' },
   templates: { title: 'Rules & Templates', subtitle: 'Document templates and business rules' },
   contracts: { title: 'Smart Contracts', subtitle: 'Tokenization, contracts, and payment escrow' },
+  'mortgage-calc': { title: 'Mortgage Calculator', subtitle: 'Abu Dhabi mortgage guidance and qualification' },
   'ai-insights': { title: 'AI Insights', subtitle: 'Read-only intelligence (non-authoritative)' },
   'ai-agent': { title: 'Mi Ai', subtitle: 'Your BOS operations assistant' },
   users: { title: 'User Management', subtitle: 'Manage users and broker profiles' },
@@ -199,6 +201,9 @@ export function BOSApp() {
       
       case 'prospects':
         return <ProspectsSection />;
+      
+      case 'mortgage-calc':
+        return <MortgageCalculatorWidget />;
       
       case 'marketing':
         return <MarketingSection />;

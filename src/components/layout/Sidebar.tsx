@@ -19,6 +19,7 @@ import {
   TrendingUp,
   FileSignature,
   Play,
+  Calculator,
 } from 'lucide-react';
 import {
   Collapsible,
@@ -68,6 +69,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'documents', label: 'Documents', icon: FileText, roles: ['Operator'], group: 'operations' },
   { id: 'contracts', label: 'Smart Contracts', icon: FileSignature, roles: ['Operator'], group: 'operations' },
   { id: 'commissions', label: 'Commissions', icon: DollarSign, roles: ['Operator'], group: 'operations' },
+  { id: 'mortgage-calc', label: 'Mortgage Calculator', icon: Calculator, roles: ['Operator', 'Broker'], group: 'operations' },
   
   // Teams (Internal collaboration)
   { id: 'meetings', label: 'Meetings', icon: Users, roles: ['Operator', 'LegalOwner', 'Broker'], group: 'teams' },
