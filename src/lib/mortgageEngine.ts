@@ -77,3 +77,38 @@ export function amortize(params: {
 
   return { schedule, totalInterest };
 }
+
+export type YearlyRow = {
+  year: number;
+  openingBalance: number;
+  totalPaid: number;
+  totalInterest: number;
+  totalPrincipal: number;
+  closingBalance: number;
+};
+
+export function yearlyAggregate(
+  schedule: Array<{ month: number; paymentTotal: number; interest: number; principal: number; balance: number }>
+): YearlyRow[] {
+  const years: YearlyRow[] = [];
+  let currentYear = 1;
+  let row: YearlyRow = { year: 1, openingBalance: 0, totalPaid: 0, totalInterest: 0, totalPrincipal: 0, closingBalance: 0 };
+
+  for (const m of schedule) {
+    const y = Math.ceil(m.month / 12);
+    if (y !== currentYear) {
+      years.push(row);
+      currentYear = y;
+      row = { year: y, openingBalance: years[years.length - 1].closingBalance, totalPaid: 0, totalInterest: 0, totalPrincipal: 0, closingBalance: 0 };
+    }
+    if (m.month === 1 || (m.month - 1) % 12 === 0) {
+      row.openingBalance = m.balance + m.principal;
+    }
+    row.totalPaid += m.paymentTotal;
+    row.totalInterest += m.interest;
+    row.totalPrincipal += m.principal;
+    row.closingBalance = m.balance;
+  }
+  if (row.totalPaid > 0) years.push(row);
+  return years;
+}
