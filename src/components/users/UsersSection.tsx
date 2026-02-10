@@ -13,14 +13,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -43,6 +35,7 @@ import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { useUsers, UserWithRole } from '@/hooks/useUsers';
 import { format } from 'date-fns';
+import { InviteTeamMemberModal } from '@/components/teams/InviteTeamMemberModal';
 
 const ROLE_COLORS: Record<string, string> = {
   Operator: 'bg-primary/20 text-primary border-primary/30',
@@ -129,7 +122,7 @@ export function UsersSection() {
         </div>
         <Button className="btn-gold" onClick={() => setShowAddDialog(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Add User
+          Invite User
         </Button>
       </div>
 
@@ -303,55 +296,7 @@ export function UsersSection() {
         </CardContent>
       </Card>
 
-      {/* Add User Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
-            <DialogDescription>
-              Create a new user account and assign a role
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Full Name</label>
-              <Input placeholder="Enter full name" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
-              <Input type="email" placeholder="Enter email address" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Role</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Operator">Operator</SelectItem>
-                  <SelectItem value="LegalOwner">Legal Owner</SelectItem>
-                  <SelectItem value="Broker">Broker</SelectItem>
-                  <SelectItem value="Investor">Investor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              className="btn-gold"
-              onClick={() => {
-                toast({ title: 'User Invited', description: 'Invitation email sent' });
-                setShowAddDialog(false);
-              }}
-            >
-              Send Invitation
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <InviteTeamMemberModal open={showAddDialog} onOpenChange={setShowAddDialog} />
     </div>
   );
 }

@@ -89,3 +89,6 @@ verify_jwt = false
 
 [functions.mortgage-rate-extract]
 verify_jwt = false
+
+[functions.invite-team-member]
+verify_jwt = false
