@@ -61,11 +61,34 @@ export function BankRateSelector({ allRateOptions, selectedId, onSelect, onRates
       {/* Dropdown */}
       {open && (
         <div className="absolute z-50 mt-1 w-full border rounded-md bg-popover shadow-lg max-h-[420px] overflow-y-auto">
-          {/* Existing rate options */}
-          {allRateOptions.length > 0 && (
+          {/* Market Average options */}
+          {allRateOptions.filter(o => o.bank_id === 'MARKET_AVG').length > 0 && (
             <div className="p-1">
-              <p className="px-2 py-1 text-xs font-semibold text-muted-foreground">Available Rates</p>
-              {allRateOptions.map(option => (
+              <p className="px-2 py-1 text-xs font-semibold text-muted-foreground">Market Averages</p>
+              {allRateOptions.filter(o => o.bank_id === 'MARKET_AVG').map(option => (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={`w-full text-left px-3 py-2 text-sm rounded-sm hover:bg-accent flex items-center justify-between ${
+                    option.id === selectedId ? 'bg-accent' : ''
+                  }`}
+                  onClick={() => { onSelect(option.id); setOpen(false); }}
+                >
+                  <span className="truncate">{option.bank_name} — {option.label}</span>
+                  <Badge variant="secondary" className="ml-2 text-[10px] shrink-0">Avg</Badge>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Divider */}
+          {allRateOptions.filter(o => o.bank_id === 'MARKET_AVG').length > 0 && <div className="border-t mx-2" />}
+
+          {/* Individual bank rate options */}
+          {allRateOptions.filter(o => o.bank_id !== 'MARKET_AVG').length > 0 && (
+            <div className="p-1">
+              <p className="px-2 py-1 text-xs font-semibold text-muted-foreground">Individual Bank Rates</p>
+              {allRateOptions.filter(o => o.bank_id !== 'MARKET_AVG').map(option => (
                 <button
                   key={option.id}
                   type="button"
