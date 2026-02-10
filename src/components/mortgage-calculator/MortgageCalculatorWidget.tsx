@@ -138,7 +138,7 @@ export function MortgageCalculatorWidget() {
       <SourcesPanel used={usedSources} />
 
       <details>
-        <summary className="cursor-pointer font-semibold">🔍 Live Rate Scraper (Firecrawl + AI)</summary>
+        <summary className="cursor-pointer font-semibold">🔍 Research Mortgage Rates</summary>
         <div className="mt-3">
           <RateScraperPanel onRatesExtracted={handleScrapedRates} />
         </div>
