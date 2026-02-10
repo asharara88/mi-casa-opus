@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Send, Loader2, Trash2, Sparkles, MessageCircle } from 'lucide-react';
+import { Bot, Send, Loader2, Trash2, Sparkles, MessageCircle, Paperclip, X, FileText, Image as ImageIcon } from 'lucide-react';
 import { useBosLlmOps, useBosLlmRouter } from '@/hooks/useBosLlm';
 import { cn } from '@/lib/utils';
 import { generateSuggestions, INITIAL_SUGGESTIONS } from '@/lib/chat-suggestions';
@@ -14,12 +14,19 @@ import { ChatMessageRenderer } from './ChatMessageRenderer';
 import { useConversationContext } from '@/hooks/useConversationContext';
 import { toast } from 'sonner';
 
+interface Attachment {
+  file: File;
+  preview?: string;
+  type: 'image' | 'document';
+}
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   mode?: string;
   timestamp: Date;
+  attachments?: Attachment[];
 }
 
 export function FloatingAIChat() {
@@ -27,6 +34,8 @@ export function FloatingAIChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const { askOps, isStreaming, response } = useBosLlmOps();
@@ -85,24 +94,54 @@ export function FloatingAIChat() {
     });
   }, [navigate, storeTemplatePrefill]);
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newAttachments: Attachment[] = files.map(file => {
+      const isImage = file.type.startsWith('image/');
+      return {
+        file,
+        preview: isImage ? URL.createObjectURL(file) : undefined,
+        type: isImage ? 'image' : 'document',
+      };
+    });
+    setAttachments(prev => [...prev, ...newAttachments]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => {
+      const removed = prev[index];
+      if (removed.preview) URL.revokeObjectURL(removed.preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
   const handleSend = async (text?: string) => {
     const messageText = text || input.trim();
-    if (!messageText || isStreaming) return;
+    if ((!messageText && attachments.length === 0) || isStreaming) return;
 
+    const currentAttachments = [...attachments];
     setInput('');
+    setAttachments([]);
+
+    // Build display content with attachment info
+    const attachmentInfo = currentAttachments.length > 0
+      ? `\n[${currentAttachments.map(a => `📎 ${a.file.name}`).join(', ')}]`
+      : '';
 
     // Add user message
     const userMsg: Message = {
       id: `user-${Date.now()}`,
       role: 'user',
-      content: messageText,
+      content: messageText + attachmentInfo,
       timestamp: new Date(),
+      attachments: currentAttachments.length > 0 ? currentAttachments : undefined,
     };
     setMessages(prev => [...prev, userMsg]);
 
     // Route the request
     const mode = await routeRequest({
-      userIntent: messageText,
+      userIntent: messageText || 'Analyze the attached file(s)',
       contextType: null,
       bosPayload: {},
     });
@@ -119,7 +158,7 @@ export function FloatingAIChat() {
     setMessages(prev => [...prev, assistantMsg]);
     setActiveMessageId(assistantId);
 
-    await askOps(messageText, {}, undefined);
+    await askOps(messageText || 'Analyze the attached file(s)', {}, undefined);
     setActiveMessageId(null);
   };
 
@@ -234,11 +273,50 @@ export function FloatingAIChat() {
             />
           )}
 
+          {/* Attachments Preview */}
+          {attachments.length > 0 && (
+            <div className="px-3 pt-2 flex gap-2 flex-wrap">
+              {attachments.map((att, i) => (
+                <div key={i} className="relative group flex items-center gap-1.5 bg-muted rounded-lg px-2 py-1.5 text-xs">
+                  {att.type === 'image' && att.preview ? (
+                    <img src={att.preview} alt="" className="w-8 h-8 rounded object-cover" />
+                  ) : (
+                    <FileText className="w-4 h-4 text-muted-foreground" />
+                  )}
+                  <span className="max-w-[100px] truncate">{att.file.name}</span>
+                  <button
+                    onClick={() => removeAttachment(i)}
+                    className="ml-1 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Input Area */}
           <div className="p-3 border-t border-border bg-card flex-shrink-0">
-            <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,.pdf,.doc,.docx,.txt,.csv"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+            <div className="flex gap-2 items-end">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 flex-shrink-0"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isStreaming}
+              >
+                <Paperclip className="w-4 h-4" />
+              </Button>
               <Textarea
-                placeholder="Ask anything or request a document..."
+                placeholder="Ask anything or attach a file..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -250,7 +328,7 @@ export function FloatingAIChat() {
                 size="icon"
                 className="h-10 w-10 flex-shrink-0"
                 onClick={() => handleSend()}
-                disabled={!input.trim() || isStreaming}
+                disabled={(!input.trim() && attachments.length === 0) || isStreaming}
               >
                 {isStreaming ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
