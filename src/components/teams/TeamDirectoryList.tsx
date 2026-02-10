@@ -1,14 +1,17 @@
 import { useState } from 'react';
-import { Search, Mail, Phone, User } from 'lucide-react';
+import { Search, Mail, Phone, User, UserPlus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUsers, UserWithRole } from '@/hooks/useUsers';
+import { InviteTeamMemberModal } from './InviteTeamMemberModal';
 
 export function TeamDirectoryList() {
   const [search, setSearch] = useState('');
+  const [showInvite, setShowInvite] = useState(false);
   const { data: users = [], isLoading } = useUsers();
 
   // Filter users by search (only internal roles: Operator, LegalOwner, Broker)
@@ -57,15 +60,21 @@ export function TeamDirectoryList() {
 
   return (
     <div className="space-y-4">
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Search team members..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
+      {/* Search + Invite */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search team members..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Button className="btn-gold" onClick={() => setShowInvite(true)}>
+          <UserPlus className="h-4 w-4 mr-2" />
+          Invite Member
+        </Button>
       </div>
 
       {/* User Grid */}
@@ -133,6 +142,8 @@ export function TeamDirectoryList() {
       <div className="text-sm text-muted-foreground">
         Showing {filteredUsers.length} of {internalUsers.length} team members
       </div>
+
+      <InviteTeamMemberModal open={showInvite} onOpenChange={setShowInvite} />
     </div>
   );
 }
