@@ -18,6 +18,9 @@ import { RateOption } from '@/mortgage-data/types';
 import type { ScrapedRate } from '@/hooks/useMortgageRateScraper';
 import type { MortgageScenarioInputs } from '@/hooks/useMortgageScenarios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { FileDown } from 'lucide-react';
+import { exportMortgagePdf } from '@/lib/mortgage-pdf-export';
 
 interface MortgageCalculatorWidgetProps {
   dealContext?: DealContext;
@@ -238,7 +241,8 @@ export function MortgageCalculatorWidget({ dealContext }: MortgageCalculatorWidg
 
       {/* Results Summary */}
       <Card>
-        <CardContent className="pt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+        <CardContent className="pt-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-xs text-muted-foreground">Monthly Payment</p>
             <p className="text-xl font-bold text-primary">{amort ? formatAed(amort.schedule[0]?.paymentTotal ?? NaN) : '—'}</p>
@@ -251,6 +255,36 @@ export function MortgageCalculatorWidget({ dealContext }: MortgageCalculatorWidg
             <p className="text-xs text-muted-foreground">Upfront Cash</p>
             <p className="text-xl font-bold">{loanAmountAed ? formatAed(upfrontTotal) : '—'}</p>
           </div>
+          </div>
+          {amort && (
+            <div className="flex justify-center pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => exportMortgagePdf({
+                  purchasePriceAed,
+                  loanAmountAed,
+                  termYears,
+                  rateLabel: rateOption?.label,
+                  ratePct: rateOption?.published_rate_pct?.value,
+                  monthlyPayment: amort.schedule[0]?.paymentTotal,
+                  totalInterest: amort.totalInterest,
+                  schedule: amort.schedule,
+                  downPayment,
+                  upfrontLines,
+                  upfrontTotal,
+                  extraPayment,
+                  baseMonths: amort.schedule.length,
+                  baseTotalInterest: amort.totalInterest,
+                  extraMonths: amortWithExtra?.schedule.length,
+                  extraTotalInterest: amortWithExtra?.totalInterest,
+                })}
+              >
+                <FileDown className="w-4 h-4" />
+                Export PDF
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
