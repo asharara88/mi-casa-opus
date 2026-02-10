@@ -57,7 +57,14 @@ export function QualificationPanel(props: Props) {
 
       <div className="border rounded-md p-3 space-y-1">
         <p><strong>LTV:</strong> {ltv ? `${ltv.toFixed(2)}%` : '—'}</p>
-        <p><strong>DBR:</strong> {dbr ? `${dbr.toFixed(2)}%` : '—'}</p>
+        <p className={dbr != null && dbr > 50 ? 'text-destructive font-medium' : ''}>
+          <strong>DBR:</strong> {dbr ? `${dbr.toFixed(2)}%` : '—'}
+        </p>
+        {dbr != null && dbr > 50 && (
+          <p className="text-xs text-destructive">
+            ⚠ DBR exceeds 50% — UAE Central Bank guidelines cap DBR at 50%. Consider increasing down payment or reducing existing debts to lower your monthly obligation.
+          </p>
+        )}
         <p className="text-xs text-muted-foreground">DBR = (existing monthly instalments + new mortgage payment) / monthly income.</p>
       </div>
 
