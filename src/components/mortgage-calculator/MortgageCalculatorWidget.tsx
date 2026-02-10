@@ -6,8 +6,15 @@ import { computeMortgageRegistrationFees } from '@/lib/upfrontFees';
 import { QualificationPanel } from './QualificationPanel';
 import { SourcesPanel } from './SourcesPanel';
 import { BankRateSelector } from './BankRateSelector';
+import { InputSlider } from './InputSlider';
+import { UpfrontBreakdownCard } from './UpfrontBreakdownCard';
+import { AmortizationChart } from './AmortizationChart';
+import { AmortizationScheduleTable } from './AmortizationScheduleTable';
+import { ExtraPaymentSimulator } from './ExtraPaymentSimulator';
+import { ComparisonTable } from './ComparisonTable';
 import { RateOption } from '@/mortgage-data/types';
 import type { ScrapedRate } from '@/hooks/useMortgageRateScraper';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function MortgageCalculatorWidget() {
   const [purchasePriceAed, setPurchasePriceAed] = useState<number>();
@@ -18,6 +25,8 @@ export function MortgageCalculatorWidget() {
   const [monthlyIncomeAed, setMonthlyIncomeAed] = useState<number>();
   const [existingMonthlyDebtsAed, setExistingMonthlyDebtsAed] = useState<number>();
   const [liveRateOptions, setLiveRateOptions] = useState<RateOption[]>([]);
+  const [extraPayment, setExtraPayment] = useState(0);
+  const [comparisonIds, setComparisonIds] = useState<string[]>([]);
 
   const allRateOptions = [...ABU_DHABI_MORTGAGE_DATA.rate_options, ...liveRateOptions];
   const rateOption = allRateOptions.find((x) => x.id === rateOptionId);
@@ -61,6 +70,7 @@ export function MortgageCalculatorWidget() {
     }));
     setLiveRateOptions(converted);
   };
+
   const totalMonths = termYears ? Math.round(termYears * 12) : undefined;
 
   const segments = useMemo(() => {
@@ -82,6 +92,11 @@ export function MortgageCalculatorWidget() {
     return amortize({ principal: loanAmountAed, totalMonths, segments });
   }, [loanAmountAed, segments, totalMonths]);
 
+  const amortWithExtra = useMemo(() => {
+    if (!loanAmountAed || !totalMonths || !segments || extraPayment <= 0) return undefined;
+    return amortize({ principal: loanAmountAed, totalMonths, segments, extraPaymentMonthly: extraPayment });
+  }, [loanAmountAed, segments, totalMonths, extraPayment]);
+
   const upfrontLines = useMemo(() => {
     if (!loanAmountAed) return [];
     return computeMortgageRegistrationFees(ABU_DHABI_MORTGAGE_DATA.abu_dhabi_fees, loanAmountAed);
@@ -92,34 +107,130 @@ export function MortgageCalculatorWidget() {
   const usedSources = Array.from(new Map(upfrontLines.flatMap((x) => x.sources).map((s) => [s.id, s])).values());
   if (rateOption?.published_rate_pct) usedSources.push(rateOption.published_rate_pct);
 
+  const handleComparisonToggle = (id: string) => {
+    setComparisonIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : prev.length < 3 ? [...prev, id] : prev
+    );
+  };
+
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-4">
-      <h1 className="text-2xl font-bold">Abu Dhabi Mortgage Calculator (Guidance)</h1>
+    <div className="max-w-3xl mx-auto p-6 space-y-5">
+      <h1 className="text-2xl font-bold">Abu Dhabi Mortgage Calculator</h1>
 
-      <div className="grid md:grid-cols-2 gap-3">
-        <input className="border rounded-md px-3 py-2" placeholder="Purchase price (AED)" value={purchasePriceAed ?? ''} onChange={(e) => setPurchasePriceAed(e.target.value ? Number(e.target.value) : undefined)} />
-        <input className="border rounded-md px-3 py-2" placeholder="Loan amount (AED)" value={loanAmountAed ?? ''} onChange={(e) => setLoanAmountAed(e.target.value ? Number(e.target.value) : undefined)} />
-        <input className="border rounded-md px-3 py-2" placeholder="Term (years)" value={termYears ?? ''} onChange={(e) => setTermYears(e.target.value ? Number(e.target.value) : undefined)} />
-        <BankRateSelector
-          allRateOptions={allRateOptions}
-          selectedId={rateOptionId}
-          onSelect={setRateOptionId}
-          onRatesExtracted={handleScrapedRates}
+      {/* Interactive Inputs */}
+      <Card>
+        <CardContent className="pt-6 space-y-5">
+          <InputSlider
+            label="Purchase Price"
+            value={purchasePriceAed}
+            onChange={setPurchasePriceAed}
+            min={500000}
+            max={50000000}
+            step={50000}
+            unit="AED"
+            placeholder="AED"
+          />
+          <InputSlider
+            label="Loan Amount"
+            value={loanAmountAed}
+            onChange={setLoanAmountAed}
+            min={100000}
+            max={purchasePriceAed ?? 50000000}
+            step={25000}
+            unit="AED"
+            placeholder="AED"
+          />
+          <InputSlider
+            label="Term"
+            value={termYears}
+            onChange={setTermYears}
+            min={5}
+            max={30}
+            step={1}
+            unit="years"
+            placeholder="years"
+          />
+          <BankRateSelector
+            allRateOptions={allRateOptions}
+            selectedId={rateOptionId}
+            onSelect={setRateOptionId}
+            onRatesExtracted={handleScrapedRates}
+          />
+          {rateOption?.rate_kind === 'FIXED_FOR_X_THEN_USER_RATE' && (
+            <InputSlider
+              label="Post-fixed Rate"
+              value={postFixedRatePct}
+              onChange={setPostFixedRatePct}
+              min={1}
+              max={12}
+              step={0.05}
+              unit="%"
+              placeholder="%"
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Results Summary */}
+      <Card>
+        <CardContent className="pt-6 grid grid-cols-3 gap-4 text-center">
+          <div>
+            <p className="text-xs text-muted-foreground">Monthly Payment</p>
+            <p className="text-xl font-bold text-primary">{amort ? formatAed(amort.schedule[0]?.paymentTotal ?? NaN) : '—'}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Total Interest</p>
+            <p className="text-xl font-bold text-destructive">{amort ? formatAed(amort.totalInterest) : '—'}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Upfront Cash</p>
+            <p className="text-xl font-bold">{loanAmountAed ? formatAed(upfrontTotal) : '—'}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Amortization Chart */}
+      {amort && <AmortizationChart schedule={amort.schedule} segments={segments} />}
+
+      {/* Upfront Breakdown */}
+      {loanAmountAed && (
+        <UpfrontBreakdownCard
+          downPayment={downPayment}
+          purchasePrice={purchasePriceAed}
+          upfrontLines={upfrontLines}
+          upfrontTotal={upfrontTotal}
         />
-      </div>
-
-      {rateOption?.rate_kind === 'FIXED_FOR_X_THEN_USER_RATE' && (
-        <input className="border rounded-md px-3 py-2 w-full" placeholder="Post-fixed rate % (user-entered)" value={postFixedRatePct ?? ''} onChange={(e) => setPostFixedRatePct(e.target.value ? Number(e.target.value) : undefined)} />
       )}
 
-      <div className="border rounded-md p-4 space-y-1">
-        <p><strong>Monthly payment:</strong> {amort ? formatAed(amort.schedule[0]?.paymentTotal ?? NaN) : '—'}</p>
-        <p><strong>Total interest:</strong> {amort ? formatAed(amort.totalInterest) : '—'}</p>
-        <p><strong>Upfront cash (down payment + DARI mortgage registration):</strong> {loanAmountAed ? formatAed(upfrontTotal) : '—'}</p>
-      </div>
+      {/* Extra Payment Simulator */}
+      {amort && (
+        <ExtraPaymentSimulator
+          extraPayment={extraPayment}
+          onExtraPaymentChange={setExtraPayment}
+          baseMonths={amort.schedule.length}
+          baseTotalInterest={amort.totalInterest}
+          extraMonths={amortWithExtra?.schedule.length}
+          extraTotalInterest={amortWithExtra?.totalInterest}
+          maxPayment={Math.round((amort.schedule[0]?.paymentTotal ?? 5000) * 2)}
+        />
+      )}
 
+      {/* Multi-Bank Comparison */}
+      <ComparisonTable
+        rateOptions={allRateOptions}
+        selectedIds={comparisonIds}
+        onToggle={handleComparisonToggle}
+        loanAmount={loanAmountAed}
+        totalMonths={totalMonths}
+        postFixedRatePct={postFixedRatePct}
+      />
+
+      {/* Yearly Schedule */}
+      {amort && <AmortizationScheduleTable schedule={amort.schedule} />}
+
+      {/* Qualification */}
       <details>
-        <summary className="cursor-pointer font-semibold">Qualification (LTV + DBR + optional AECB import)</summary>
+        <summary className="cursor-pointer font-semibold">Qualification (LTV + DBR)</summary>
         <div className="mt-3">
           <QualificationPanel
             rateOption={rateOption}
