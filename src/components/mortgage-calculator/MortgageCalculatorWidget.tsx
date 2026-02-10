@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { MiCasaLogo } from '@/components/branding/MiCasaLogo';
 import { ABU_DHABI_MORTGAGE_DATA } from '@/mortgage-data/abuDhabiMortgageData';
 import { formatAed } from '@/lib/money';
 import { amortize, buildHybridSegments, buildSingleRateSegments } from '@/lib/mortgageEngine';
@@ -176,18 +177,27 @@ export function MortgageCalculatorWidget({ dealContext }: MortgageCalculatorWidg
   const navigate = useNavigate();
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-4 sm:px-6 sm:py-6 space-y-4 sm:space-y-5">
-      <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0 h-9 w-9"
-          onClick={() => navigate(-1)}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-xl sm:text-2xl font-bold">Mortgage Calculator</h1>
-      </div>
+    <div className="min-h-screen">
+      {/* Header */}
+      <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 h-9 w-9"
+            onClick={() => navigate('/')}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <Link to="/">
+            <MiCasaLogo useImage width={120} />
+          </Link>
+          <div className="h-5 w-px bg-border mx-1 hidden sm:block" />
+          <h1 className="text-base sm:text-lg font-semibold truncate">Mortgage Calculator</h1>
+        </div>
+      </header>
+
+      <div className="max-w-3xl mx-auto px-4 py-4 sm:px-6 sm:py-6 space-y-4 sm:space-y-5">
 
       {/* Deal Pre-fill Banner */}
       {dealContext && (
@@ -362,6 +372,7 @@ export function MortgageCalculatorWidget({ dealContext }: MortgageCalculatorWidg
       />
 
       <SourcesPanel used={usedSources} />
+      </div>
     </div>
   );
 }
