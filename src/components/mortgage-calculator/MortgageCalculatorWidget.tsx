@@ -5,6 +5,9 @@ import { amortize, buildHybridSegments, buildSingleRateSegments } from '@/lib/mo
 import { computeMortgageRegistrationFees } from '@/lib/upfrontFees';
 import { QualificationPanel } from './QualificationPanel';
 import { SourcesPanel } from './SourcesPanel';
+import { RateScraperPanel } from './RateScraperPanel';
+import { RateOption } from '@/mortgage-data/types';
+import type { ScrapedRate } from '@/hooks/useMortgageRateScraper';
 
 export function MortgageCalculatorWidget() {
   const [purchasePriceAed, setPurchasePriceAed] = useState<number>();
@@ -14,8 +17,50 @@ export function MortgageCalculatorWidget() {
   const [postFixedRatePct, setPostFixedRatePct] = useState<number>();
   const [monthlyIncomeAed, setMonthlyIncomeAed] = useState<number>();
   const [existingMonthlyDebtsAed, setExistingMonthlyDebtsAed] = useState<number>();
+  const [liveRateOptions, setLiveRateOptions] = useState<RateOption[]>([]);
 
-  const rateOption = ABU_DHABI_MORTGAGE_DATA.rate_options.find((x) => x.id === rateOptionId);
+  const allRateOptions = [...ABU_DHABI_MORTGAGE_DATA.rate_options, ...liveRateOptions];
+  const rateOption = allRateOptions.find((x) => x.id === rateOptionId);
+
+  const handleScrapedRates = (rates: ScrapedRate[]) => {
+    const converted: RateOption[] = rates.map((r, i) => ({
+      id: `scraped.${r.bank_name.replace(/\s+/g, '_').toLowerCase()}.${i}`,
+      bank_id: r.bank_name.replace(/\s+/g, '_').toUpperCase(),
+      bank_name: r.bank_name,
+      label: `${r.product_name} — ${r.rate_pct}% (live scraped)`,
+      rate_kind: r.rate_kind === 'FIXED_FOR_X_THEN_VARIABLE' ? 'FIXED_FOR_X_THEN_USER_RATE' : 'FIXED_FULL_TERM',
+      published_rate_pct: {
+        id: `scraped.rate.${i}`,
+        label: `${r.bank_name} — ${r.product_name}`,
+        value: r.rate_pct,
+        unit: '%',
+        applies_to: `${r.bank_name} — ${r.product_name}`,
+        source: {
+          authority_name: r.bank_name,
+          source_url: r.source_url,
+          publish_date: 'date not stated',
+          checked_on: new Date().toISOString().slice(0, 10),
+          notes: r.notes || undefined,
+        },
+      },
+      ...(r.fixed_period_months ? {
+        fixed_period_months: {
+          id: `scraped.fixed.${i}`,
+          label: 'Fixed period',
+          value: r.fixed_period_months,
+          unit: 'months' as const,
+          applies_to: `${r.bank_name} fixed period`,
+          source: {
+            authority_name: r.bank_name,
+            source_url: r.source_url,
+            publish_date: 'date not stated',
+            checked_on: new Date().toISOString().slice(0, 10),
+          },
+        },
+      } : {}),
+    }));
+    setLiveRateOptions(converted);
+  };
   const totalMonths = termYears ? Math.round(termYears * 12) : undefined;
 
   const segments = useMemo(() => {
@@ -57,7 +102,7 @@ export function MortgageCalculatorWidget() {
         <input className="border rounded-md px-3 py-2" placeholder="Term (years)" value={termYears ?? ''} onChange={(e) => setTermYears(e.target.value ? Number(e.target.value) : undefined)} />
         <select className="border rounded-md px-3 py-2" value={rateOptionId ?? ''} onChange={(e) => setRateOptionId(e.target.value)}>
           <option value="">Select bank rate option</option>
-          {ABU_DHABI_MORTGAGE_DATA.rate_options.map((option) => (
+          {allRateOptions.map((option) => (
             <option key={option.id} value={option.id}>{option.bank_name} — {option.label}</option>
           ))}
         </select>
@@ -91,6 +136,13 @@ export function MortgageCalculatorWidget() {
       </details>
 
       <SourcesPanel used={usedSources} />
+
+      <details>
+        <summary className="cursor-pointer font-semibold">🔍 Live Rate Scraper (Firecrawl + AI)</summary>
+        <div className="mt-3">
+          <RateScraperPanel onRatesExtracted={handleScrapedRates} />
+        </div>
+      </details>
     </div>
   );
 }
