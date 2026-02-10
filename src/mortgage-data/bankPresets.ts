@@ -4,6 +4,7 @@ import adibLogo from '@/assets/bank-logos/adib.png';
 import enbdLogo from '@/assets/bank-logos/enbd.png';
 import dibLogo from '@/assets/bank-logos/dib.png';
 import cbdLogo from '@/assets/bank-logos/cbd.png';
+import rakbankLogo from '@/assets/bank-logos/rakbank.png';
 
 export type BankPreset = {
   id: string;
@@ -64,6 +65,7 @@ export const UAE_BANK_PRESETS: BankPreset[] = [
     name: 'RAKBANK',
     shortName: 'RAK',
     mortgagePageUrl: 'https://rakbank.ae/wps/portal/retail-banking/loans/home-loans',
+    logo: rakbankLogo,
   },
   {
     id: 'cbd',
