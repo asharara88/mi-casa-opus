@@ -1,10 +1,17 @@
+import adcbLogo from '@/assets/bank-logos/adcb.png';
+import fabLogo from '@/assets/bank-logos/fab.png';
+import adibLogo from '@/assets/bank-logos/adib.png';
+import enbdLogo from '@/assets/bank-logos/enbd.png';
+import dibLogo from '@/assets/bank-logos/dib.png';
+import cbdLogo from '@/assets/bank-logos/cbd.png';
+
 export type BankPreset = {
   id: string;
   name: string;
   shortName: string;
   mortgagePageUrl: string;
   alternateUrls?: string[];
-  logoEmoji: string;
+  logo?: string;
 };
 
 export const UAE_BANK_PRESETS: BankPreset[] = [
@@ -16,55 +23,53 @@ export const UAE_BANK_PRESETS: BankPreset[] = [
     alternateUrls: [
       'https://www.adcb.com/en/personal/offers/loans/own-your-dream-home',
     ],
-    logoEmoji: '🏦',
+    logo: adcbLogo,
   },
   {
     id: 'fab',
     name: 'First Abu Dhabi Bank',
     shortName: 'FAB',
     mortgagePageUrl: 'https://www.bankfab.com/en-ae/personal/loans/home-loans',
-    logoEmoji: '🏛️',
+    logo: fabLogo,
   },
   {
     id: 'adib',
     name: 'Abu Dhabi Islamic Bank',
     shortName: 'ADIB',
     mortgagePageUrl: 'https://www.adib.ae/en/personal/finance/home-finance',
-    logoEmoji: '🕌',
+    logo: adibLogo,
   },
   {
     id: 'enbd',
     name: 'Emirates NBD',
     shortName: 'ENBD',
     mortgagePageUrl: 'https://www.emiratesnbd.com/en/personal-banking/loans/home-loans',
-    logoEmoji: '🏢',
+    logo: enbdLogo,
   },
   {
     id: 'dib',
     name: 'Dubai Islamic Bank',
     shortName: 'DIB',
     mortgagePageUrl: 'https://www.dib.ae/personal/home-finance',
-    logoEmoji: '🌙',
+    logo: dibLogo,
   },
   {
     id: 'mashreq',
     name: 'Mashreq Bank',
     shortName: 'Mashreq',
     mortgagePageUrl: 'https://www.mashreqbank.com/en/uae/personal/loans/mortgage',
-    logoEmoji: '💳',
   },
   {
     id: 'rakbank',
     name: 'RAKBANK',
     shortName: 'RAK',
     mortgagePageUrl: 'https://rakbank.ae/wps/portal/retail-banking/loans/home-loans',
-    logoEmoji: '🏗️',
   },
   {
     id: 'cbd',
     name: 'Commercial Bank of Dubai',
     shortName: 'CBD',
     mortgagePageUrl: 'https://www.cbd.ae/personal/loans/home-loans',
-    logoEmoji: '🏙️',
+    logo: cbdLogo,
   },
 ];

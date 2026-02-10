@@ -147,7 +147,11 @@ function BankCard({
       <CardContent className="p-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className="text-lg">{bank.logoEmoji}</span>
+            {bank.logo ? (
+              <img src={bank.logo} alt={bank.shortName} className="h-6 w-auto object-contain" />
+            ) : (
+              <span className="text-xs font-bold text-muted-foreground bg-muted rounded px-1.5 py-0.5">{bank.shortName}</span>
+            )}
             <span className="font-medium text-sm">{bank.shortName}</span>
           </div>
           {statusIcon()}
