@@ -5,7 +5,7 @@ import { amortize, buildHybridSegments, buildSingleRateSegments } from '@/lib/mo
 import { computeMortgageRegistrationFees } from '@/lib/upfrontFees';
 import { QualificationPanel } from './QualificationPanel';
 import { SourcesPanel } from './SourcesPanel';
-import { RateScraperPanel } from './RateScraperPanel';
+import { BankRateSelector } from './BankRateSelector';
 import { RateOption } from '@/mortgage-data/types';
 import type { ScrapedRate } from '@/hooks/useMortgageRateScraper';
 
@@ -100,12 +100,12 @@ export function MortgageCalculatorWidget() {
         <input className="border rounded-md px-3 py-2" placeholder="Purchase price (AED)" value={purchasePriceAed ?? ''} onChange={(e) => setPurchasePriceAed(e.target.value ? Number(e.target.value) : undefined)} />
         <input className="border rounded-md px-3 py-2" placeholder="Loan amount (AED)" value={loanAmountAed ?? ''} onChange={(e) => setLoanAmountAed(e.target.value ? Number(e.target.value) : undefined)} />
         <input className="border rounded-md px-3 py-2" placeholder="Term (years)" value={termYears ?? ''} onChange={(e) => setTermYears(e.target.value ? Number(e.target.value) : undefined)} />
-        <select className="border rounded-md px-3 py-2" value={rateOptionId ?? ''} onChange={(e) => setRateOptionId(e.target.value)}>
-          <option value="">Select bank rate option</option>
-          {allRateOptions.map((option) => (
-            <option key={option.id} value={option.id}>{option.bank_name} — {option.label}</option>
-          ))}
-        </select>
+        <BankRateSelector
+          allRateOptions={allRateOptions}
+          selectedId={rateOptionId}
+          onSelect={setRateOptionId}
+          onRatesExtracted={handleScrapedRates}
+        />
       </div>
 
       {rateOption?.rate_kind === 'FIXED_FOR_X_THEN_USER_RATE' && (
@@ -136,13 +136,6 @@ export function MortgageCalculatorWidget() {
       </details>
 
       <SourcesPanel used={usedSources} />
-
-      <details>
-        <summary className="cursor-pointer font-semibold">🔍 Research Mortgage Rates</summary>
-        <div className="mt-3">
-          <RateScraperPanel onRatesExtracted={handleScrapedRates} />
-        </div>
-      </details>
     </div>
   );
 }
