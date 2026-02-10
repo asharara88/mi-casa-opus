@@ -174,7 +174,7 @@ export function MortgageCalculatorWidget({ dealContext }: MortgageCalculatorWidg
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-5">
-      <h1 className="text-2xl font-bold">Abu Dhabi Mortgage Calculator</h1>
+      <h1 className="text-2xl font-bold">Mortgage Calculator</h1>
 
       {/* Deal Pre-fill Banner */}
       {dealContext && (
