@@ -31,7 +31,10 @@ export const UAE_BANK_PRESETS: BankPreset[] = [
     id: 'fab',
     name: 'First Abu Dhabi Bank',
     shortName: 'FAB',
-    mortgagePageUrl: 'https://www.bankfab.com/en-ae/personal/loans/home-loans',
+    mortgagePageUrl: 'https://www.bankfab.com/en-ae/personal/mortgages',
+    alternateUrls: [
+      'https://www.bankfab.com/en-ae/personal/mortgages/first-time-homeowner',
+    ],
     logo: fabLogo,
   },
   {
