@@ -1,0 +1,66 @@
+%PDF-1.4
+%
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 2531 >>
+stream
+BT
+/F1 11 Tf
+45 800 Td
+(Mi Casa BOS ? One-Page App Summary) Tj
+0 -15 Td () Tj
+0 -15 Td (What it is) Tj
+0 -15 Td (- Mi Casa BOS is a role-based brokerage operating system web app for managing real-estate workflows.) Tj
+0 -15 Td (- It combines CRM/pipeline operations, documents, communications, and AI-assisted tools in one interface.) Tj
+0 -15 Td () Tj
+0 -15 Td (Who it's for) Tj
+0 -15 Td (- Primary persona: Real-estate brokerage operators and brokers \(with additional LegalOwner and Investor role views\).) Tj
+0 -15 Td () Tj
+0 -15 Td (What it does) Tj
+0 -15 Td (- Runs role-based workspaces \(Operator, LegalOwner, Broker, Investor\) with tailored navigation.) Tj
+0 -15 Td (- Manages prospect-to-lead-to-deal workflows and pipeline stages.) Tj
+0 -15 Td (- Handles listings, document center, signatures, and evidence/export workflows.) Tj
+0 -15 Td (- Supports commissions, payout management, and user/settings administration.) Tj
+0 -15 Td (- Includes marketing hub and outreach functions \(campaigns/prospects + templates\).) Tj
+0 -15 Td (- Provides AI assistant and AI routing modes for ops, lead qualification, listing FAQ, and marketing copy.) Tj
+0 -15 Td (- Includes mortgage calculator guidance for Abu Dhabi use cases.) Tj
+0 -15 Td () Tj
+0 -15 Td (How it works \(repo-evidenced architecture\)) Tj
+0 -15 Td (- Frontend: React + Vite SPA with routed pages \(/login, /register, /, /architecture, /mortgage-calculator\), React Query state, and role-protected routes.) Tj
+0 -15 Td (- UI composition: BOSApp lazy-loads feature sections \(Leads, Deals, Documents, Commissions, Marketing, Teams, AI, Mortgage, etc.\) and fetches brokerage/leads/deals/commissions/event data.) Tj
+0 -15 Td (- Data/auth layer: Supabase JS client uses browser localStorage session persistence and token auto-refresh.) Tj
+0 -15 Td (- Backend services: Supabase Edge Functions implement AI routing, portal lead ingestion/parsing, Twilio messaging, SendGrid email templates, and DocuSign envelope flow \(currently mock envelope path; full JWT signing marked as not implemented\).) Tj
+0 -15 Td (- Integrations/API notes: A small Node server includes placeholder AECB credit-bureau endpoints returning "Not implemented".) Tj
+0 -15 Td () Tj
+0 -15 Td (How to run \(minimal\)) Tj
+0 -15 Td (- Install dependencies: npm i) Tj
+0 -15 Td (- Start development app: npm run dev) Tj
+0 -15 Td (- Build production bundle: npm run build) Tj
+0 -15 Td (- Environment variables required for live integrations \(Supabase/Twilio/SendGrid/DocuSign\): Not found in repo.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000000317 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2900
+%%EOF
