@@ -13,8 +13,8 @@ interface PropertyMapProps {
   height?: string;
 }
 
-// Default to Dubai Marina if no coordinates provided
-const DEFAULT_CENTER: [number, number] = [55.1385, 25.0808];
+// Default to Abu Dhabi (Corniche area)
+const DEFAULT_CENTER: [number, number] = [54.3773, 24.4539];
 const DEFAULT_ZOOM = 14;
 
 export function PropertyMap({

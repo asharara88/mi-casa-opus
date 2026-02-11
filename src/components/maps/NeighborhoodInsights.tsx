@@ -58,12 +58,12 @@ function formatDistance(meters: number): string {
 
 // Demo data for when API isn't available
 const demoPOIs: POI[] = [
-  { name: 'Dubai International School', category: 'school', distance: 450 },
-  { name: 'Mediclinic Marina', category: 'hospital', distance: 800 },
-  { name: 'DMCC Metro Station', category: 'transit', distance: 350 },
-  { name: 'Marina Mall', category: 'shopping', distance: 600 },
-  { name: 'Costa Coffee', category: 'cafe', distance: 150 },
-  { name: 'Fitness First', category: 'gym', distance: 400 },
+  { name: 'GEMS American Academy', category: 'school', distance: 450 },
+  { name: 'Cleveland Clinic Abu Dhabi', category: 'hospital', distance: 800 },
+  { name: 'Abu Dhabi Bus Station', category: 'transit', distance: 350 },
+  { name: 'The Galleria Al Maryah Island', category: 'shopping', distance: 600 },
+  { name: 'Costa Coffee Corniche', category: 'cafe', distance: 150 },
+  { name: 'NAS Sports Complex', category: 'gym', distance: 400 },
   { name: 'GEMS Wellington Academy', category: 'school', distance: 1200 },
   { name: 'Saudi German Hospital', category: 'hospital', distance: 2500 },
 ];
