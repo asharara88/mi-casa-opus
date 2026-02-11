@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Send, Loader2, Bot, User, Trash2, AlertTriangle } from 'lucide-react';
+import { Sparkles, Send, Loader2, Bot, User, Trash2, AlertTriangle, Paperclip, X, FileText } from 'lucide-react';
 import { useBosLlmOps, useBosLlmRouter } from '@/hooks/useBosLlm';
 import { cn } from '@/lib/utils';
 import { generateSuggestions, INITIAL_SUGGESTIONS } from '@/lib/chat-suggestions';
@@ -21,6 +21,8 @@ interface Message {
 export function AIAgentChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [attachments, setAttachments] = useState<{ file: File; preview?: string; type: 'image' | 'document' }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const { askOps, isStreaming, response } = useBosLlmOps();
@@ -59,17 +61,45 @@ export function AIAgentChat() {
     }
   }, [messages]);
 
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newAttachments = files.map(file => {
+      const isImage = file.type.startsWith('image/');
+      return {
+        file,
+        preview: isImage ? URL.createObjectURL(file) : undefined,
+        type: (isImage ? 'image' : 'document') as 'image' | 'document',
+      };
+    });
+    setAttachments(prev => [...prev, ...newAttachments]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
+
+  const removeAttachment = useCallback((index: number) => {
+    setAttachments(prev => {
+      const removed = prev[index];
+      if (removed.preview) URL.revokeObjectURL(removed.preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  }, []);
+
   const handleSend = async (text?: string) => {
     const messageText = text || input.trim();
-    if (!messageText || isStreaming) return;
+    if ((!messageText && attachments.length === 0) || isStreaming) return;
 
+    const currentAttachments = [...attachments];
     setInput('');
+    setAttachments([]);
+
+    const attachmentInfo = currentAttachments.length > 0
+      ? `\n[${currentAttachments.map(a => `📎 ${a.file.name}`).join(', ')}]`
+      : '';
 
     // Add user message
     const userMsg: Message = {
       id: `user-${Date.now()}`,
       role: 'user',
-      content: messageText,
+      content: messageText + attachmentInfo,
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMsg]);
@@ -236,11 +266,47 @@ export function AIAgentChat() {
             />
           )}
 
+          {/* Attachments Preview */}
+          {attachments.length > 0 && (
+            <div className="px-4 pt-2 flex gap-2 flex-wrap border-t border-border">
+              {attachments.map((att, i) => (
+                <div key={i} className="relative group flex items-center gap-1.5 bg-muted rounded-lg px-2 py-1.5 text-xs">
+                  {att.type === 'image' && att.preview ? (
+                    <img src={att.preview} alt="" className="w-8 h-8 rounded object-cover" />
+                  ) : (
+                    <FileText className="w-4 h-4 text-muted-foreground" />
+                  )}
+                  <span className="max-w-[100px] truncate">{att.file.name}</span>
+                  <button onClick={() => removeAttachment(i)} className="ml-1 text-muted-foreground hover:text-foreground">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Input Area */}
-          <div className="p-4 border-t border-border bg-card">
-            <div className="flex gap-2">
+          <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-border bg-card">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,.pdf,.doc,.docx,.txt,.csv"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+            <div className="flex gap-2 items-end">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-11 w-11 flex-shrink-0"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isStreaming}
+              >
+                <Paperclip className="w-4 h-4" />
+              </Button>
               <Textarea
-                placeholder="Ask about your pipeline, leads, deals..."
+                placeholder="Ask anything or attach a file..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -252,8 +318,8 @@ export function AIAgentChat() {
                 size="icon"
                 className="h-11 w-11 flex-shrink-0"
                 onClick={() => handleSend()}
-                disabled={!input.trim() || isStreaming}
-              >
+                disabled={(!input.trim() && attachments.length === 0) || isStreaming}
+                >
                 {isStreaming ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
