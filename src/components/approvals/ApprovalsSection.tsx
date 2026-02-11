@@ -41,7 +41,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useApprovals, useUpdateApproval } from '@/hooks/useApprovals';
 interface Approval {
   id: string;
-  approval_type: 'EconomicsOverride' | 'PayoutBatch' | 'ComplianceWaiver' | 'TemplatePublish' | 'RoleChange';
+  approval_type: 'EconomicsOverride' | 'PayoutBatch' | 'ComplianceWaiver' | 'TemplatePublish' | 'RoleChange' | 'UserApproval';
   entity_type: string;
   entity_id: string;
   requested_by: string;
@@ -131,6 +131,11 @@ const TYPE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color:
     icon: <Shield className="h-4 w-4" />,
     color: 'bg-purple-500/20 text-purple-600 border-purple-500/30',
   },
+  UserApproval: {
+    label: 'New User',
+    icon: <User className="h-4 w-4" />,
+    color: 'bg-blue-500/20 text-blue-600 border-blue-500/30',
+  },
 };
 
 const STATUS_CONFIG: Record<string, { color: string; icon: React.ReactNode }> = {
@@ -195,6 +200,31 @@ export function ApprovalsSection() {
           setProcessing(false);
           return;
         }
+      }
+    }
+
+    // If this is a UserApproval, activate the user and set their requested role
+    if (selectedApproval.approval_type === 'UserApproval') {
+      const targetUserId = selectedApproval.entity_id;
+      const requestedRole = (selectedApproval.after_state as any)?.requested_role;
+      
+      // Activate profile
+      const { error: profileErr } = await supabase
+        .from('profiles')
+        .update({ status: 'active' })
+        .eq('user_id', targetUserId);
+      if (profileErr) {
+        toast({ title: 'Error', description: 'Failed to activate user: ' + profileErr.message, variant: 'destructive' });
+        setProcessing(false);
+        return;
+      }
+
+      // Update role if a specific one was requested
+      if (requestedRole && requestedRole !== 'Broker') {
+        await supabase
+          .from('user_roles')
+          .update({ role: requestedRole })
+          .eq('user_id', targetUserId);
       }
     }
 
@@ -475,7 +505,7 @@ export function ApprovalsSection() {
               </Button>
               <Button className="btn-gold" onClick={handleApprove} disabled={processing}>
                 {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
-                {selectedApproval?.approval_type === 'RoleChange' ? 'Approve & Update Role' : 'Approve'}
+                {selectedApproval?.approval_type === 'RoleChange' ? 'Approve & Update Role' : selectedApproval?.approval_type === 'UserApproval' ? 'Approve & Activate' : 'Approve'}
               </Button>
             </DialogFooter>
           )}

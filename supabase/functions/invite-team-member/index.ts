@@ -129,6 +129,13 @@ Deno.serve(async (req) => {
       }, { onConflict: "user_id" });
     }
 
+    // Auto-approve any pending UserApproval for this user (Manager invited = pre-approved)
+    await adminClient.from("approvals")
+      .update({ status: "Approved", reviewed_by: caller.id, reviewed_at: new Date().toISOString(), notes: `Auto-approved via Manager invite by ${caller.email}` })
+      .eq("approval_type", "UserApproval")
+      .eq("entity_id", newUserId)
+      .eq("status", "Pending");
+
     const wasExisting = !!inviteError;
     return new Response(
       JSON.stringify({

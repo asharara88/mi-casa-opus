@@ -153,12 +153,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     
     if (data.user) {
-      // Create profile - RLS allows users to insert their own profile
+      // Create profile with 'pending' status — requires Manager approval
       const { error: profileError } = await supabase.from('profiles').insert({
         user_id: data.user.id,
         full_name: fullName,
         email: email,
-        status: 'active',
+        status: 'pending',
       });
       
       if (profileError) {
@@ -166,9 +166,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: new Error('Account created but profile setup failed. Please contact support.') };
       }
 
-      // Note: Role is automatically assigned by database trigger (handle_new_user_role)
-      // First user becomes Operator, subsequent users become Broker
-      // Special role requests (Operator, LegalOwner, Investor) require operator approval
+      // Create approval request for Manager review
+      await supabase.from('approvals').insert({
+        approval_type: 'UserApproval' as any,
+        entity_type: 'user',
+        entity_id: data.user.id,
+        requested_by: data.user.id,
+        status: 'Pending',
+        before_state: { status: 'pending' },
+        after_state: { status: 'active', requested_role: requestedRole },
+        notes: `${fullName} (${email}) requests access as ${requestedRole}`,
+      });
 
       // If Broker role requested, create broker profile (will be pending until ICA verification)
       if (requestedRole === 'Broker') {
@@ -180,7 +188,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (brokerError) {
           console.error('Failed to create broker profile:', brokerError);
-          // Non-fatal - operator can create this later
         }
       }
     }

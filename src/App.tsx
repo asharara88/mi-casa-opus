@@ -29,7 +29,7 @@ function RouteLoader() {
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const { isDemoBypass } = useDemoMode();
   
   // Allow access if demo bypass is enabled
@@ -45,7 +45,38 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   
-  return user ? <>{children}</> : <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
+
+  // Block users with pending approval
+  if (profile?.status === 'pending') {
+    return <PendingApprovalScreen />;
+  }
+
+  return <>{children}</>;
+}
+
+function PendingApprovalScreen() {
+  const { signOut } = useAuth();
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <div className="max-w-md text-center space-y-6">
+        <div className="mx-auto w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h2 className="text-2xl font-bold text-foreground">Account Pending Approval</h2>
+        <p className="text-muted-foreground">
+          Your account has been created and is awaiting approval from a Manager. 
+          You'll be able to access the system once your account is approved.
+        </p>
+        <button
+          onClick={() => signOut()}
+          className="text-sm text-primary hover:underline"
+        >
+          Sign out
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
