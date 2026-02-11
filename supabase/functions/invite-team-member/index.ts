@@ -70,7 +70,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create user with admin API — inviteUserByEmail sends a magic link / set-password email
+    // Try to invite — if user already exists, look them up instead
+    let newUserId: string;
+
     const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
       data: {
         full_name,
@@ -79,14 +81,27 @@ Deno.serve(async (req) => {
     });
 
     if (inviteError) {
-      console.error("Invite error:", inviteError);
-      return new Response(JSON.stringify({ error: inviteError.message }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      // If user already exists, find them and proceed with role/profile setup
+      if (inviteError.message?.includes("already been registered")) {
+        const { data: listData } = await adminClient.auth.admin.listUsers();
+        const existingUser = listData?.users?.find((u: any) => u.email === email);
+        if (!existingUser) {
+          return new Response(JSON.stringify({ error: "User exists but could not be found" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        newUserId = existingUser.id;
+      } else {
+        console.error("Invite error:", inviteError);
+        return new Response(JSON.stringify({ error: inviteError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else {
+      newUserId = inviteData.user.id;
     }
-
-    const newUserId = inviteData.user.id;
 
     // Create profile
     await adminClient.from("profiles").upsert({
@@ -114,10 +129,13 @@ Deno.serve(async (req) => {
       }, { onConflict: "user_id" });
     }
 
+    const wasExisting = !!inviteError;
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Invitation sent to ${email}`,
+        message: wasExisting
+          ? `${email} already registered — role updated to ${role}`
+          : `Invitation sent to ${email}`,
         user_id: newUserId,
       }),
       {
