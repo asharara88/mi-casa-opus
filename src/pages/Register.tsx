@@ -82,7 +82,7 @@ export default function Register() {
     } else {
       toast({
         title: 'Account Created',
-        description: 'You can now sign in to the system',
+        description: 'Your account is pending Manager approval. You will be notified once approved.',
       });
       navigate('/login');
     }
