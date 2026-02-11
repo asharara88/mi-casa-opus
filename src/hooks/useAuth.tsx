@@ -6,7 +6,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 
-export type AppRole = 'Operator' | 'LegalOwner' | 'Broker' | 'Investor';
+export type AppRole = 'Manager' | 'Agent' | 'Broker' | 'Owner';
 
 interface Profile {
   id: string;

@@ -234,13 +234,13 @@ export default function Register() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Broker">Broker</SelectItem>
-                    <SelectItem value="Operator">Operator (Admin)</SelectItem>
-                    <SelectItem value="LegalOwner">Legal Owner</SelectItem>
-                    <SelectItem value="Investor">Investor</SelectItem>
+                    <SelectItem value="Agent">Agent</SelectItem>
+                    <SelectItem value="Manager">Manager (Admin)</SelectItem>
+                    <SelectItem value="Owner">Owner</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Role assignment requires verification by an Operator
+                  Role assignment requires verification by a Manager
                 </p>
               </motion.div>
 

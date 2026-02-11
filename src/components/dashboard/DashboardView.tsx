@@ -88,8 +88,8 @@ export function DashboardView({ role, onNavigate }: DashboardViewProps) {
 
   return (
      <div className="space-y-6 animate-fade-in">
-       {/* Tabs for Operator role */}
-       {role === 'Operator' ? (
+       {/* Tabs for Manager role */}
+       {role === 'Manager' ? (
          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
            <TabsList>
              <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -168,8 +168,8 @@ export function DashboardView({ role, onNavigate }: DashboardViewProps) {
        {/* Welcome Header */}
       <div>
         <h2 className="text-2xl font-bold text-foreground">
-          {role === 'Operator' && 'Operations Dashboard'}
-          {role === 'LegalOwner' && 'Compliance Overview'}
+           {role === 'Manager' && 'Operations Dashboard'}
+           {role === 'Owner' && 'Compliance Overview'}
           {role === 'Broker' && 'My Dashboard'}
         </h2>
         <p className="text-foreground/70 mt-1">
@@ -326,7 +326,7 @@ export function DashboardView({ role, onNavigate }: DashboardViewProps) {
           </div>
 
           {/* Quick Stats */}
-          {role === 'Operator' && (
+          {role === 'Manager' && (
             <div className="card-surface p-4">
               <h3 className="font-semibold text-foreground mb-4">System Health</h3>
               <div className="space-y-3">

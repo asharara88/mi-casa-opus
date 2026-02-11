@@ -51,40 +51,40 @@ interface NavItem {
 // Simplified navigation: 6 groups
 // Dashboard | Marketing | Sales | Operations | Teams | Settings
 const NAV_ITEMS: NavItem[] = [
-  // === OPERATOR ===
+  // === MANAGER ===
   // Dashboard
-  { id: 'dashboard', label: 'Control Room', icon: LayoutDashboard, roles: ['Operator'], group: 'dashboard' },
-  { id: 'ai-agent', label: 'Mi Ai', icon: Bot, roles: ['Operator'], group: 'dashboard' },
+  { id: 'dashboard', label: 'Control Room', icon: LayoutDashboard, roles: ['Manager'], group: 'dashboard' },
+  { id: 'ai-agent', label: 'Mi Ai', icon: Bot, roles: ['Manager'], group: 'dashboard' },
   
   // Marketing (Campaigns, Ads, Prospects)
-  { id: 'marketing', label: 'Marketing Hub', icon: Megaphone, roles: ['Operator'], group: 'marketing' },
-  { id: 'prospects', label: 'Prospects', icon: Users, roles: ['Operator'], group: 'marketing' },
+  { id: 'marketing', label: 'Marketing Hub', icon: Megaphone, roles: ['Manager'], group: 'marketing' },
+  { id: 'prospects', label: 'Prospects', icon: Users, roles: ['Manager'], group: 'marketing' },
   
   // Sales (Leads → Deals pipeline)
-  { id: 'leads', label: 'Leads', icon: Users, roles: ['Operator'], group: 'sales' },
-  { id: 'deals', label: 'Deals', icon: Handshake, roles: ['Operator'], group: 'sales' },
+  { id: 'leads', label: 'Leads', icon: Users, roles: ['Manager'], group: 'sales' },
+  { id: 'deals', label: 'Deals', icon: Handshake, roles: ['Manager'], group: 'sales' },
   
   // Operations (Listings, Documents, Commissions)
-  { id: 'listings', label: 'Listings', icon: Building2, roles: ['Operator'], group: 'operations' },
-  { id: 'documents', label: 'Documents', icon: FileText, roles: ['Operator'], group: 'operations' },
-  { id: 'contracts', label: 'Smart Contracts', icon: FileSignature, roles: ['Operator'], group: 'operations' },
-  { id: 'commissions', label: 'Commissions', icon: DollarSign, roles: ['Operator'], group: 'operations' },
-  { id: 'mortgage-calc', label: 'Mortgage Calculator', icon: Calculator, roles: ['Operator', 'Broker'], group: 'operations' },
+  { id: 'listings', label: 'Listings', icon: Building2, roles: ['Manager'], group: 'operations' },
+  { id: 'documents', label: 'Documents', icon: FileText, roles: ['Manager'], group: 'operations' },
+  { id: 'contracts', label: 'Smart Contracts', icon: FileSignature, roles: ['Manager'], group: 'operations' },
+  { id: 'commissions', label: 'Commissions', icon: DollarSign, roles: ['Manager'], group: 'operations' },
+  { id: 'mortgage-calc', label: 'Mortgage Calculator', icon: Calculator, roles: ['Manager', 'Broker'], group: 'operations' },
   
   // Teams (Internal collaboration)
-  { id: 'meetings', label: 'Meetings', icon: Users, roles: ['Operator', 'LegalOwner', 'Broker'], group: 'teams' },
-  { id: 'directory', label: 'Team Directory', icon: Users, roles: ['Operator', 'LegalOwner', 'Broker'], group: 'teams' },
+  { id: 'meetings', label: 'Meetings', icon: Users, roles: ['Manager', 'Owner', 'Broker'], group: 'teams' },
+  { id: 'directory', label: 'Team Directory', icon: Users, roles: ['Manager', 'Owner', 'Broker'], group: 'teams' },
   
   // Settings (Users, Templates, System)
-  { id: 'users', label: 'Users', icon: Users, roles: ['Operator'], group: 'settings' },
-  { id: 'templates', label: 'Rules & Templates', icon: FileText, roles: ['Operator'], group: 'settings' },
-  { id: 'settings', label: 'Settings', icon: Settings, roles: ['Operator'], group: 'settings' },
+  { id: 'users', label: 'Users', icon: Users, roles: ['Manager'], group: 'settings' },
+  { id: 'templates', label: 'Rules & Templates', icon: FileText, roles: ['Manager'], group: 'settings' },
+  { id: 'settings', label: 'Settings', icon: Settings, roles: ['Manager'], group: 'settings' },
 
-  // === LEGAL OWNER ===
-  { id: 'oversight', label: 'Oversight', icon: LayoutDashboard, roles: ['LegalOwner'], group: 'dashboard' },
-  { id: 'approvals', label: 'Approvals', icon: FileText, roles: ['LegalOwner'], group: 'operations' },
-  { id: 'deals', label: 'Deals (View)', icon: Handshake, roles: ['LegalOwner'], group: 'operations' },
-  { id: 'documents', label: 'Documents', icon: FileText, roles: ['LegalOwner'], group: 'operations' },
+  // === OWNER (read-only access to everything) ===
+  { id: 'oversight', label: 'Oversight', icon: LayoutDashboard, roles: ['Owner'], group: 'dashboard' },
+  { id: 'approvals', label: 'Approvals', icon: FileText, roles: ['Owner'], group: 'operations' },
+  { id: 'deals', label: 'Deals (View)', icon: Handshake, roles: ['Owner'], group: 'operations' },
+  { id: 'documents', label: 'Documents', icon: FileText, roles: ['Owner'], group: 'operations' },
 
   // === BROKER ===
   { id: 'my-day', label: 'My Day', icon: LayoutDashboard, roles: ['Broker'], group: 'dashboard' },
@@ -93,11 +93,11 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'listings', label: 'Listings', icon: Building2, roles: ['Broker'], group: 'operations' },
   { id: 'my-earnings', label: 'My Earnings', icon: DollarSign, roles: ['Broker'], group: 'operations' },
 
-  // === INVESTOR ===
-  { id: 'investor-profile', label: 'Profile', icon: Users, roles: ['Investor'], group: 'dashboard' },
-  { id: 'shortlists', label: 'Shortlists', icon: Building2, roles: ['Investor'], group: 'operations' },
-  { id: 'deal-room', label: 'Deals Room', icon: Handshake, roles: ['Investor'], group: 'operations' },
-  { id: 'investor-docs', label: 'Documents', icon: FileText, roles: ['Investor'], group: 'operations' },
+  // === AGENT ===
+  { id: 'investor-profile', label: 'Profile', icon: Users, roles: ['Agent'], group: 'dashboard' },
+  { id: 'shortlists', label: 'Shortlists', icon: Building2, roles: ['Agent'], group: 'operations' },
+  { id: 'deal-room', label: 'Deals Room', icon: Handshake, roles: ['Agent'], group: 'operations' },
+  { id: 'investor-docs', label: 'Documents', icon: FileText, roles: ['Agent'], group: 'operations' },
 ];
 
 const GROUP_CONFIG: Record<string, { label: string; icon: React.ElementType }> = {
@@ -162,14 +162,14 @@ export function Sidebar({
 
   const getRoleBadge = (role: AppRole | null) => {
     switch (role) {
-      case 'Operator':
-        return { label: 'Operator', className: 'bg-purple/20 text-purple border-purple/50' };
-      case 'LegalOwner':
-        return { label: 'Legal Owner', className: 'bg-emerald/20 text-emerald border-emerald/50' };
+      case 'Manager':
+        return { label: 'Manager', className: 'bg-purple/20 text-purple border-purple/50' };
+      case 'Owner':
+        return { label: 'Owner', className: 'bg-emerald/20 text-emerald border-emerald/50' };
       case 'Broker':
         return { label: 'Broker', className: 'bg-cyan/20 text-cyan border-cyan/50' };
-      case 'Investor':
-        return { label: 'Investor', className: 'bg-amber-500/20 text-amber-500 border-amber-500/50' };
+      case 'Agent':
+        return { label: 'Agent', className: 'bg-amber-500/20 text-amber-500 border-amber-500/50' };
       default:
         return { label: 'Guest', className: 'bg-muted text-muted-foreground' };
     }

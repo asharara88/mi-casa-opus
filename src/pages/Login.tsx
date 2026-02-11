@@ -80,7 +80,7 @@ export default function Login() {
     enterDemoBypass();
     toast({
       title: 'Demo Mode Activated',
-      description: 'Exploring BOS with sample data as Operator',
+      description: 'Exploring BOS with sample data as Manager',
     });
     navigate('/');
   };

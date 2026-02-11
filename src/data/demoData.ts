@@ -895,7 +895,7 @@ export const DEMO_EVENTS = [
     event_id: 'EVT-001',
     timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
     actor_user_id: 'demo-user-1',
-    actor_role: 'Operator',
+    actor_role: 'Manager',
     entity_type: 'Lead',
     entity_id: 'demo-lead-1',
     action: 'lead.created',
@@ -919,7 +919,7 @@ export const DEMO_EVENTS = [
     event_id: 'EVT-003',
     timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
     actor_user_id: 'demo-user-1',
-    actor_role: 'Operator',
+    actor_role: 'Manager',
     entity_type: 'Commission',
     entity_id: 'demo-comm-1',
     action: 'commission.paid',
@@ -943,7 +943,7 @@ export const DEMO_EVENTS = [
     event_id: 'EVT-005',
     timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
     actor_user_id: 'demo-user-1',
-    actor_role: 'Operator',
+    actor_role: 'Manager',
     entity_type: 'Listing',
     entity_id: 'demo-listing-3',
     action: 'listing.reserved',
@@ -1306,7 +1306,7 @@ export const DEMO_PROFILES = [
 
 // Demo User Roles
 export const DEMO_USER_ROLES = [
-  { id: 'demo-role-1', user_id: 'demo-user-1', role: 'Operator', created_at: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString() },
+  { id: 'demo-role-1', user_id: 'demo-user-1', role: 'Manager', created_at: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString() },
   { id: 'demo-role-2', user_id: 'demo-user-2', role: 'Broker', created_at: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString() },
   { id: 'demo-role-3', user_id: 'demo-user-3', role: 'Broker', created_at: new Date(Date.now() - 280 * 24 * 60 * 60 * 1000).toISOString() },
   { id: 'demo-role-4', user_id: 'demo-user-4', role: 'Broker', created_at: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString() },

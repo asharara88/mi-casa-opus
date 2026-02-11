@@ -11,7 +11,7 @@ export interface UserWithRole {
   phone: string | null;
   status: string | null;
   created_at: string;
-  role: 'Operator' | 'LegalOwner' | 'Broker' | 'Investor' | null;
+  role: 'Manager' | 'Agent' | 'Broker' | 'Owner' | null;
   broker_id?: string;
   license_no?: string;
 }
@@ -24,7 +24,7 @@ const DEMO_USERS: UserWithRole[] = [
     full_name: 'Ahmed Sharara',
     email: 'ahmed.m.sharara@gmail.com',
     phone: null,
-    role: 'Operator',
+    role: 'Manager',
     status: 'active',
     created_at: '2026-01-12T16:15:36.138964+00:00',
   },

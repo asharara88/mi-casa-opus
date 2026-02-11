@@ -240,8 +240,8 @@ export function useCanOverride() {
         .eq("user_id", user.id)
         .single();
 
-      // Only Operators and LegalOwners can override
-      return data?.role === "Operator" || data?.role === "LegalOwner";
+      // Only Managers and Owners can override
+      return data?.role === "Manager" || data?.role === "Owner";
     },
   });
 }
