@@ -233,9 +233,9 @@ export function AIAgentChat() {
                           : 'bg-muted'
                       )}
                     >
-                      {msg.mode && msg.role === 'assistant' && (
+                      {msg.mode && msg.role === 'assistant' && msg.content && (
                         <Badge variant="secondary" className="mb-2 text-[10px]">
-                          {msg.mode}
+                          {msg.mode.replace(/_/g, ' ').toLowerCase()}
                         </Badge>
                       )}
                       <div className="text-sm whitespace-pre-wrap">
