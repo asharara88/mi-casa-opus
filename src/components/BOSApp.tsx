@@ -77,7 +77,7 @@ const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   approvals: { title: 'Approvals Queue', subtitle: 'Pending approvals and overrides' },
   exports: { title: 'Export Center', subtitle: 'Generate deal and broker dossiers' },
   templates: { title: 'Rules & Templates', subtitle: 'Document templates and business rules' },
-  contracts: { title: 'Smart Contracts', subtitle: 'Tokenization, contracts, and payment escrow' },
+  
   'mortgage-calc': { title: 'Mortgage Calculator', subtitle: 'Abu Dhabi mortgage guidance and qualification' },
   'ai-insights': { title: 'AI Insights', subtitle: 'Read-only intelligence (non-authoritative)' },
   'ai-agent': { title: 'Mi Ai', subtitle: 'Your BOS operations assistant' },
@@ -185,8 +185,6 @@ export function BOSApp() {
       case 'templates':
         return <TemplatesSection />;
       
-      case 'contracts':
-        return null;
       
       case 'users':
         return <UsersSection />;
