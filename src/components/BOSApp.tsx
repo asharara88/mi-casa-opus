@@ -19,6 +19,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { transformDbBrokerageToFrontend } from '@/lib/transforms';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Building2, Shield, FileText, DollarSign, Sparkles, Settings, 
@@ -628,6 +629,11 @@ function SettingsSection({ onNavigate }: { onNavigate: (section: string) => void
         </Button>
       </div>
 
+      {/* Owner → Manager Promotion */}
+      {role === 'Owner' && (
+        <OwnerPromotionCard userId={profile?.user_id} userName={profile?.full_name} />
+      )}
+
       {/* Sign Out */}
       <div className="card-surface p-6">
         <Button variant="destructive" size="sm" onClick={async () => {
@@ -637,6 +643,77 @@ function SettingsSection({ onNavigate }: { onNavigate: (section: string) => void
           Sign Out
         </Button>
       </div>
+    </div>
+  );
+}
+
+function OwnerPromotionCard({ userId, userName }: { userId?: string; userName?: string | null }) {
+  const [requesting, setRequesting] = useState(false);
+  const [existingRequest, setExistingRequest] = useState<'Pending' | 'Approved' | 'Rejected' | null>(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from('approvals')
+      .select('status')
+      .eq('approval_type', 'RoleChange')
+      .eq('entity_type', 'user_role')
+      .eq('requested_by', userId)
+      .eq('entity_id', userId)
+      .order('requested_at', { ascending: false })
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setExistingRequest(data[0].status as any);
+        }
+      });
+  }, [userId]);
+
+  const handleRequest = async () => {
+    if (!userId) return;
+    setRequesting(true);
+    const { error } = await supabase.from('approvals').insert({
+      approval_type: 'RoleChange',
+      entity_type: 'user_role',
+      entity_id: userId,
+      requested_by: userId,
+      status: 'Pending',
+      before_state: { role: 'Owner' },
+      after_state: { role: 'Manager' },
+      notes: `${userName || 'Owner'} requests promotion to Manager role`,
+    });
+    setRequesting(false);
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to submit request', variant: 'destructive' });
+    } else {
+      setExistingRequest('Pending');
+      toast({ title: 'Request submitted', description: 'A Manager will review your promotion request.' });
+    }
+  };
+
+  return (
+    <div className="card-surface p-6 space-y-3 border-purple-500/30">
+      <h3 className="font-semibold flex items-center gap-2">
+        <Shield className="w-4 h-4 text-purple-500" /> Role Upgrade
+      </h3>
+      <p className="text-sm text-muted-foreground">
+        As an Owner you have read-only oversight access. Request a promotion to Manager for full administrative control.
+      </p>
+      {existingRequest === 'Pending' ? (
+        <Badge className="bg-amber-500/20 text-amber-600">Request Pending — awaiting Manager approval</Badge>
+      ) : existingRequest === 'Rejected' ? (
+        <div className="space-y-2">
+          <Badge className="bg-destructive/20 text-destructive">Previous request was rejected</Badge>
+          <Button size="sm" variant="outline" onClick={handleRequest} disabled={requesting}>
+            Request Again
+          </Button>
+        </div>
+      ) : (
+        <Button size="sm" onClick={handleRequest} disabled={requesting}>
+          {requesting ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Shield className="w-4 h-4 mr-1" />}
+          Request Manager Role
+        </Button>
+      )}
     </div>
   );
 }

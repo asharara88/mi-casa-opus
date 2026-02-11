@@ -3158,6 +3158,7 @@ export type Database = {
         | "PayoutBatch"
         | "ComplianceWaiver"
         | "TemplatePublish"
+        | "RoleChange"
       broker_status: "Pending" | "Active" | "Suspended" | "Terminated"
       campaign_channel:
         | "Email"
@@ -3538,6 +3539,7 @@ export const Constants = {
         "PayoutBatch",
         "ComplianceWaiver",
         "TemplatePublish",
+        "RoleChange",
       ],
       broker_status: ["Pending", "Active", "Suspended", "Terminated"],
       campaign_channel: [
