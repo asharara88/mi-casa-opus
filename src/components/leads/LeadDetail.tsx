@@ -68,7 +68,7 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
       lead,
       targetState,
       'current-user-id', // Would come from auth context
-      'Operator'
+      'Manager'
     );
 
     if (result.success && result.lead) {
@@ -94,7 +94,7 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
       updatedLead,
       'Qualified',
       'current-user-id',
-      'Operator'
+      'Manager'
     );
 
     if (result.success && result.lead) {
@@ -123,7 +123,7 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
       { ...lead, notes: notes || 'Disqualified by operator' },
       'Disqualified',
       'current-user-id',
-      'Operator'
+      'Manager'
     );
 
     if (result.success && result.lead) {

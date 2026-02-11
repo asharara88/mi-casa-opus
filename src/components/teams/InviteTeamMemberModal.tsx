@@ -147,9 +147,9 @@ export function InviteTeamMemberModal({ open, onOpenChange }: InviteTeamMemberMo
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Broker">Broker</SelectItem>
-                <SelectItem value="Operator">Operator</SelectItem>
-                <SelectItem value="LegalOwner">Legal Owner</SelectItem>
-                <SelectItem value="Investor">Investor</SelectItem>
+                <SelectItem value="Agent">Agent</SelectItem>
+                <SelectItem value="Manager">Manager</SelectItem>
+                <SelectItem value="Owner">Owner</SelectItem>
               </SelectContent>
             </Select>
           </div>

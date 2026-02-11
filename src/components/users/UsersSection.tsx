@@ -38,10 +38,10 @@ import { format } from 'date-fns';
 import { InviteTeamMemberModal } from '@/components/teams/InviteTeamMemberModal';
 
 const ROLE_COLORS: Record<string, string> = {
-  Operator: 'bg-primary/20 text-primary border-primary/30',
-  LegalOwner: 'bg-purple-500/20 text-purple-600 border-purple-500/30',
+  Manager: 'bg-primary/20 text-primary border-primary/30',
+  Owner: 'bg-purple-500/20 text-purple-600 border-purple-500/30',
   Broker: 'bg-emerald/20 text-emerald border-emerald/30',
-  Investor: 'bg-blue-500/20 text-blue-600 border-blue-500/30',
+  Agent: 'bg-blue-500/20 text-blue-600 border-blue-500/30',
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -133,8 +133,8 @@ export function UsersSection() {
             <div className="flex items-center gap-3">
               <Shield className="h-6 w-6 text-primary" />
               <div>
-                <div className="text-xl font-bold text-foreground">{roleCount('Operator')}</div>
-                <div className="text-xs text-muted-foreground">Operators</div>
+                <div className="text-xl font-bold text-foreground">{roleCount('Manager')}</div>
+                <div className="text-xs text-muted-foreground">Managers</div>
               </div>
             </div>
           </CardContent>
@@ -155,8 +155,8 @@ export function UsersSection() {
             <div className="flex items-center gap-3">
               <UserCheck className="h-6 w-6 text-purple-500" />
               <div>
-                <div className="text-xl font-bold text-foreground">{roleCount('LegalOwner')}</div>
-                <div className="text-xs text-muted-foreground">Legal Owners</div>
+                <div className="text-xl font-bold text-foreground">{roleCount('Owner')}</div>
+                <div className="text-xs text-muted-foreground">Owners</div>
               </div>
             </div>
           </CardContent>
@@ -166,8 +166,8 @@ export function UsersSection() {
             <div className="flex items-center gap-3">
               <Users className="h-6 w-6 text-blue-500" />
               <div>
-                <div className="text-xl font-bold text-foreground">{roleCount('Investor')}</div>
-                <div className="text-xs text-muted-foreground">Investors</div>
+                <div className="text-xl font-bold text-foreground">{roleCount('Agent')}</div>
+                <div className="text-xs text-muted-foreground">Agents</div>
               </div>
             </div>
           </CardContent>
@@ -193,10 +193,10 @@ export function UsersSection() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="Operator">Operator</SelectItem>
-                <SelectItem value="LegalOwner">Legal Owner</SelectItem>
+                <SelectItem value="Manager">Manager</SelectItem>
+                <SelectItem value="Owner">Owner</SelectItem>
                 <SelectItem value="Broker">Broker</SelectItem>
-                <SelectItem value="Investor">Investor</SelectItem>
+                <SelectItem value="Agent">Agent</SelectItem>
               </SelectContent>
             </Select>
           </div>

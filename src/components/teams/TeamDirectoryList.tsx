@@ -14,9 +14,9 @@ export function TeamDirectoryList() {
   const [showInvite, setShowInvite] = useState(false);
   const { data: users = [], isLoading } = useUsers();
 
-  // Filter users by search (only internal roles: Operator, LegalOwner, Broker)
+  // Filter users by search (only internal roles: Manager, Owner, Broker, Agent)
   const internalUsers = users.filter(user => 
-    user.role && ['Operator', 'LegalOwner', 'Broker'].includes(user.role)
+    user.role && ['Manager', 'Owner', 'Broker', 'Agent'].includes(user.role)
   );
 
   const filteredUsers = internalUsers.filter(user => 
@@ -26,10 +26,12 @@ export function TeamDirectoryList() {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'Operator':
+      case 'Manager':
         return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'LegalOwner':
+      case 'Owner':
         return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+      case 'Agent':
+        return 'bg-blue-100 text-blue-800 border-blue-300';
       case 'Broker':
         return 'bg-cyan-100 text-cyan-800 border-cyan-300';
       default:

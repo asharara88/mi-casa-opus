@@ -184,7 +184,7 @@ export function transformDbEventLogToFrontend(dbEvent: DbEventLog): FrontendEven
     event_id: dbEvent.event_id,
     timestamp: dbEvent.timestamp,
     actor_user_id: dbEvent.actor_user_id || 'SYSTEM',
-    actor_role: (dbEvent.actor_role as UserRole) || 'Operator',
+    actor_role: (dbEvent.actor_role as UserRole) || 'Manager',
     entity_ref: {
       entity_type: dbEvent.entity_type,
       entity_id: dbEvent.entity_id,

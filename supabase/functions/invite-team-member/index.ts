@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify the caller is an Operator
+    // Verify the caller is a Manager
     const callerClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check caller has Operator role
+    // Check caller has Manager role
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
     const { data: callerRole } = await adminClient
       .from("user_roles")
@@ -45,8 +45,8 @@ Deno.serve(async (req) => {
       .eq("user_id", caller.id)
       .single();
 
-    if (callerRole?.role !== "Operator") {
-      return new Response(JSON.stringify({ error: "Only Operators can invite team members" }), {
+    if (callerRole?.role !== "Manager") {
+      return new Response(JSON.stringify({ error: "Only Managers can invite team members" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     }
 
     // Validate role
-    const validRoles = ["Operator", "LegalOwner", "Broker", "Investor"];
+    const validRoles = ["Manager", "Owner", "Broker", "Agent"];
     if (!validRoles.includes(role)) {
       return new Response(JSON.stringify({ error: `Invalid role. Must be one of: ${validRoles.join(", ")}` }), {
         status: 400,

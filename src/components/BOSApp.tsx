@@ -87,7 +87,7 @@ const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   meetings: { title: 'Team Meetings', subtitle: 'Schedule and manage team meetings' },
   directory: { title: 'Team Directory', subtitle: 'Internal team contacts and info' },
   
-  // LegalOwner sections
+  // Owner sections
   oversight: { title: 'Oversight Dashboard', subtitle: 'Compliance posture and approvals' },
   
   // Broker sections
@@ -96,8 +96,8 @@ const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   'my-deals': { title: 'My Deals', subtitle: 'Your active deals' },
   'my-earnings': { title: 'My Earnings', subtitle: 'Your commission history' },
   
-  // Investor sections
-  'investor-profile': { title: 'Investor Profile', subtitle: 'Your preferences and documents' },
+  // Agent sections
+  'investor-profile': { title: 'Agent Profile', subtitle: 'Your preferences and documents' },
   shortlists: { title: 'Shortlists', subtitle: 'Your property shortlist' },
   'deal-room': { title: 'Deals Room', subtitle: 'Your active deals' },
   'investor-docs': { title: 'Documents', subtitle: 'Contracts and signatures' },
@@ -112,8 +112,8 @@ export function BOSApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   
-  // In demo bypass mode, use Operator role
-  const effectiveRole: AppRole = isDemoBypass ? 'Operator' : (role || 'Operator');
+  // In demo bypass mode, use Manager role
+  const effectiveRole: AppRole = isDemoBypass ? 'Manager' : (role || 'Manager');
   const effectiveUserName = isDemoBypass ? 'Demo User' : (profile?.full_name || 'User');
 
   // Fetch brokerage context

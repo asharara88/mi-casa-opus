@@ -25,7 +25,7 @@
        if (error) throw error;
        return data as TeamMetrics[];
      },
-     enabled: role === 'Operator',
+     enabled: role === 'Manager',
    });
  }
  
@@ -45,7 +45,7 @@
        if (error) throw error;
        return data;
      },
-     enabled: role === 'Operator',
+     enabled: role === 'Manager',
    });
  }
  

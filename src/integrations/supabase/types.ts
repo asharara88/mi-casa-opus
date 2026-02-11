@@ -3151,7 +3151,7 @@ export type Database = {
         | "Expired"
         | "Rejected"
       aml_risk_level: "LOW" | "MEDIUM" | "HIGH"
-      app_role: "Operator" | "LegalOwner" | "Broker" | "Investor"
+      app_role: "Manager" | "Owner" | "Broker" | "Agent"
       approval_status: "Pending" | "Approved" | "Rejected"
       approval_type:
         | "EconomicsOverride"
@@ -3531,7 +3531,7 @@ export const Constants = {
         "Rejected",
       ],
       aml_risk_level: ["LOW", "MEDIUM", "HIGH"],
-      app_role: ["Operator", "LegalOwner", "Broker", "Investor"],
+      app_role: ["Manager", "Owner", "Broker", "Agent"],
       approval_status: ["Pending", "Approved", "Rejected"],
       approval_type: [
         "EconomicsOverride",
