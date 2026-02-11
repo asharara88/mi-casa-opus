@@ -151,32 +151,31 @@ export const DealDetail: React.FC<DealDetailProps> = ({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 h-9 w-9">
+            <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-foreground">{deal.deal_id}</h1>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">{deal.deal_id}</h1>
               <StateBadge state={deal.deal_state} type="deal" />
             </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {deal.deal_type} • {deal.side} Side • Created {formatDate(deal.created_at)}
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 truncate">
+              {deal.deal_type} • {deal.side} Side • {formatDate(deal.created_at)}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-0 sm:ml-11">
           <EvidenceDrawer
             evidence={context.evidence}
             entityId={deal.deal_id}
             entityType="Deal"
           />
           <Button variant="outline" size="sm">
-            <FileText className="h-4 w-4 mr-2" />
-            Documents
+            <FileText className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Documents</span>
           </Button>
         </div>
       </div>
@@ -262,52 +261,54 @@ export const DealDetail: React.FC<DealDetailProps> = ({
         {/* Right Column - Tabs */}
         <div className="lg:col-span-2">
           <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList className="flex-wrap h-auto gap-1">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="gate">
-                <Gavel className="h-4 w-4 mr-1" />
-                Gate
-              </TabsTrigger>
-              <TabsTrigger value="compliance">
-                <Shield className="h-4 w-4 mr-1" />
-                Compliance
-              </TabsTrigger>
-              <TabsTrigger value="ai">
-                <Sparkles className="h-4 w-4 mr-1" />
-                AI
-              </TabsTrigger>
-              <TabsTrigger value="documents">
-                <FileText className="h-4 w-4 mr-1" />
-                Documents
-              </TabsTrigger>
-              <TabsTrigger value="portal">
-                <MapPin className="h-4 w-4 mr-1" />
-                Portal
-              </TabsTrigger>
-              <TabsTrigger value="audit">
-                <FileArchive className="h-4 w-4 mr-1" />
-                Audit
-              </TabsTrigger>
-              <TabsTrigger value="payments">
-                <CreditCard className="h-4 w-4 mr-1" />
-                Payments
-              </TabsTrigger>
-              <TabsTrigger value="parties">Parties</TabsTrigger>
-              <TabsTrigger value="registry">Registry</TabsTrigger>
-              <TabsTrigger value="timeline">Timeline</TabsTrigger>
-              {deal.deal_type === 'Sale' && (
-                <TabsTrigger value="mortgage">
-                  <DollarSign className="h-4 w-4 mr-1" />
-                  Mortgage
+            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+              <TabsList className="inline-flex h-auto gap-1 w-max sm:w-auto sm:flex-wrap">
+                <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+                <TabsTrigger value="gate" className="text-xs sm:text-sm">
+                  <Gavel className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                  Gate
                 </TabsTrigger>
-              )}
-            </TabsList>
+                <TabsTrigger value="compliance" className="text-xs sm:text-sm">
+                  <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                  Compliance
+                </TabsTrigger>
+                <TabsTrigger value="ai" className="text-xs sm:text-sm">
+                  <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                  AI
+                </TabsTrigger>
+                <TabsTrigger value="documents" className="text-xs sm:text-sm">
+                  <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                  Docs
+                </TabsTrigger>
+                <TabsTrigger value="portal" className="text-xs sm:text-sm">
+                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                  Portal
+                </TabsTrigger>
+                <TabsTrigger value="audit" className="text-xs sm:text-sm">
+                  <FileArchive className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                  Audit
+                </TabsTrigger>
+                <TabsTrigger value="payments" className="text-xs sm:text-sm">
+                  <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                  Pay
+                </TabsTrigger>
+                <TabsTrigger value="parties" className="text-xs sm:text-sm">Parties</TabsTrigger>
+                <TabsTrigger value="registry" className="text-xs sm:text-sm">Registry</TabsTrigger>
+                <TabsTrigger value="timeline" className="text-xs sm:text-sm">Timeline</TabsTrigger>
+                {deal.deal_type === 'Sale' && (
+                  <TabsTrigger value="mortgage" className="text-xs sm:text-sm">
+                    <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                    Mortgage
+                  </TabsTrigger>
+                )}
+              </TabsList>
+            </div>
 
             <TabsContent value="overview" className="space-y-4">
               <DealEconomicsSnapshot deal={deal} />
               
               {/* Quick Stats */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <Card>
                   <CardContent className="p-4 text-center">
                     <FileText className="h-6 w-6 text-primary mx-auto mb-2" />

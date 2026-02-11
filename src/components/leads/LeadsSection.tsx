@@ -275,16 +275,17 @@ export function LeadsSection() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Leads</h1>
-          <p className="text-sm text-muted-foreground">
-            {leads.length} total leads • {leads.filter(l => l.lead_state === 'New').length} new
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Leads</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            {leads.length} total • {leads.filter(l => l.lead_state === 'New').length} new
           </p>
         </div>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Lead
+        <Button onClick={() => setShowAddModal(true)} size="sm" className="shrink-0 h-10 sm:h-9">
+          <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Add Lead</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
 
@@ -305,45 +306,47 @@ export function LeadsSection() {
 
         <TabsContent value="leads" className="mt-4 space-y-4">
           {/* Filters */}
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-sm">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search leads..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 h-11 sm:h-9"
               />
             </div>
-            <Select value={stateFilter} onValueChange={(v) => setStateFilter(v as LeadState | 'all')}>
-              <SelectTrigger className="w-40">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Filter by state" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All States</SelectItem>
-                <SelectItem value="New">New</SelectItem>
-                <SelectItem value="Contacted">Contacted</SelectItem>
-                <SelectItem value="Qualified">Qualified</SelectItem>
-                <SelectItem value="Disqualified">Disqualified</SelectItem>
-                <SelectItem value="Converted">Converted</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="flex items-center border rounded-lg">
-              <Button
-                variant={viewMode === 'pipeline' ? 'secondary' : 'ghost'}
-                size="icon"
-                onClick={() => setViewMode('pipeline')}
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="icon"
-                onClick={() => setViewMode('list')}
-              >
-                <List className="w-4 h-4" />
-              </Button>
+            <div className="flex items-center gap-3">
+              <Select value={stateFilter} onValueChange={(v) => setStateFilter(v as LeadState | 'all')}>
+                <SelectTrigger className="w-full sm:w-40 h-11 sm:h-9">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Filter by state" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All States</SelectItem>
+                  <SelectItem value="New">New</SelectItem>
+                  <SelectItem value="Contacted">Contacted</SelectItem>
+                  <SelectItem value="Qualified">Qualified</SelectItem>
+                  <SelectItem value="Disqualified">Disqualified</SelectItem>
+                  <SelectItem value="Converted">Converted</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="hidden sm:flex items-center border rounded-lg">
+                <Button
+                  variant={viewMode === 'pipeline' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  onClick={() => setViewMode('pipeline')}
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
 

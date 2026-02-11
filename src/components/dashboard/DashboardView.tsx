@@ -167,7 +167,7 @@ export function DashboardView({ role, onNavigate }: DashboardViewProps) {
      <>
        {/* Welcome Header */}
       <div>
-        <h2 className="text-2xl font-bold text-foreground">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground">
            {role === 'Manager' && 'Operations Dashboard'}
            {role === 'Owner' && 'Compliance Overview'}
           {role === 'Broker' && 'My Dashboard'}
@@ -182,8 +182,8 @@ export function DashboardView({ role, onNavigate }: DashboardViewProps) {
         </p>
       </div>
 
-      {/* Metrics Grid with Animated Counters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+       {/* Metrics Grid with Animated Counters */}
+       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <MetricCard
           label="Active Leads"
           value={activeLeads}
