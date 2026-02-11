@@ -59,9 +59,9 @@ export function ChatMessageRenderer({ message, onOpenTemplate }: ChatMessageRend
           )}
         >
           {/* Mode badge for assistant */}
-          {message.mode && !isUser && (
+          {message.mode && !isUser && text && (
             <Badge variant="secondary" className="mb-1 text-[9px] h-4">
-              {message.mode}
+              {message.mode.replace(/_/g, ' ').toLowerCase()}
             </Badge>
           )}
           
