@@ -67,7 +67,7 @@ const NAV_ITEMS: NavItem[] = [
   // Operations (Listings, Documents, Commissions)
   { id: 'listings', label: 'Listings', icon: Building2, roles: ['Manager'], group: 'operations' },
   { id: 'documents', label: 'Documents', icon: FileText, roles: ['Manager'], group: 'operations' },
-  { id: 'contracts', label: 'Smart Contracts', icon: FileSignature, roles: ['Manager'], group: 'operations' },
+  
   { id: 'commissions', label: 'Commissions', icon: DollarSign, roles: ['Manager'], group: 'operations' },
   { id: 'mortgage-calc', label: 'Mortgage Calculator', icon: Calculator, roles: ['Manager', 'Broker'], group: 'operations' },
   
