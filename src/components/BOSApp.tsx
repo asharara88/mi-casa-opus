@@ -46,7 +46,7 @@ const TemplatesSection = lazy(() => import('@/components/templates/TemplatesSect
 const ProspectsSection = lazy(() => import('@/components/prospects/ProspectsSection').then(m => ({ default: m.ProspectsSection })));
 const MarketingSection = lazy(() => import('@/components/marketing/MarketingSection').then(m => ({ default: m.MarketingSection })));
 const TeamsSection = lazy(() => import('@/components/teams/TeamsSection').then(m => ({ default: m.TeamsSection })));
-const SmartContractsSection = lazy(() => import('@/components/contracts/SmartContractsSection').then(m => ({ default: m.SmartContractsSection })));
+
 const AIAgentChat = lazy(() => import('@/components/ai/AIAgentChat').then(m => ({ default: m.AIAgentChat })));
 const FloatingAIChat = lazy(() => import('@/components/ai/FloatingAIChat').then(m => ({ default: m.FloatingAIChat })));
 const MortgageCalculatorWidget = lazy(() => import('@/components/mortgage-calculator/MortgageCalculatorWidget').then(m => ({ default: m.MortgageCalculatorWidget })));
@@ -186,7 +186,7 @@ export function BOSApp() {
         return <TemplatesSection />;
       
       case 'contracts':
-        return <SmartContractsSection />;
+        return null;
       
       case 'users':
         return <UsersSection />;
