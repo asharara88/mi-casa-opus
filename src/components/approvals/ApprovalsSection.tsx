@@ -30,14 +30,18 @@ import {
   AlertTriangle,
   User,
   ArrowRight,
-  Eye
+  Eye,
+  Shield,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
-
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useApprovals, useUpdateApproval } from '@/hooks/useApprovals';
 interface Approval {
   id: string;
-  approval_type: 'EconomicsOverride' | 'PayoutBatch' | 'ComplianceWaiver' | 'TemplatePublish';
+  approval_type: 'EconomicsOverride' | 'PayoutBatch' | 'ComplianceWaiver' | 'TemplatePublish' | 'RoleChange';
   entity_type: string;
   entity_id: string;
   requested_by: string;
@@ -122,6 +126,11 @@ const TYPE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color:
     icon: <FileText className="h-4 w-4" />,
     color: 'bg-blue-500/20 text-blue-600 border-blue-500/30',
   },
+  RoleChange: {
+    label: 'Role Change',
+    icon: <Shield className="h-4 w-4" />,
+    color: 'bg-purple-500/20 text-purple-600 border-purple-500/30',
+  },
 };
 
 const STATUS_CONFIG: Record<string, { color: string; icon: React.ReactNode }> = {
@@ -131,10 +140,32 @@ const STATUS_CONFIG: Record<string, { color: string; icon: React.ReactNode }> = 
 };
 
 export function ApprovalsSection() {
-  const [approvals, setApprovals] = useState<Approval[]>(DEMO_APPROVALS);
+  const { user } = useAuth();
+  const { data: dbApprovals } = useApprovals();
+  const updateApproval = useUpdateApproval();
+  
+  // Merge DB approvals with demo data
+  const dbMapped: Approval[] = (dbApprovals || []).map(a => ({
+    id: a.id,
+    approval_type: a.approval_type as Approval['approval_type'],
+    entity_type: a.entity_type,
+    entity_id: a.entity_id,
+    requested_by: a.requested_by,
+    requested_at: a.requested_at,
+    status: a.status as Approval['status'],
+    before_state: a.before_state as Record<string, unknown> | undefined,
+    after_state: a.after_state as Record<string, unknown> | undefined,
+    notes: a.notes || undefined,
+    reviewed_by: a.reviewed_by || undefined,
+    reviewed_at: a.reviewed_at || undefined,
+  }));
+  
+  const approvals = [...dbMapped, ...DEMO_APPROVALS.filter(d => !dbMapped.some(db => db.id === d.id))];
+  
   const [selectedApproval, setSelectedApproval] = useState<Approval | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const pendingCount = approvals.filter(a => a.status === 'Pending').length;
   const approvedCount = approvals.filter(a => a.status === 'Approved').length;
@@ -146,30 +177,51 @@ export function ApprovalsSection() {
     setIsReviewDialogOpen(true);
   };
 
-  const handleApprove = () => {
-    if (!selectedApproval) return;
-    setApprovals(prev =>
-      prev.map(a =>
-        a.id === selectedApproval.id
-          ? { ...a, status: 'Approved', reviewed_by: 'Current User', reviewed_at: new Date().toISOString() }
-          : a
-      )
+  const handleApprove = async () => {
+    if (!selectedApproval || !user) return;
+    setProcessing(true);
+
+    // If this is a RoleChange approval, update the user's role in DB
+    if (selectedApproval.approval_type === 'RoleChange') {
+      const targetUserId = selectedApproval.entity_id;
+      const newRole = (selectedApproval.after_state as any)?.role;
+      if (targetUserId && newRole) {
+        const { error } = await supabase
+          .from('user_roles')
+          .update({ role: newRole })
+          .eq('user_id', targetUserId);
+        if (error) {
+          toast({ title: 'Error', description: 'Failed to update role: ' + error.message, variant: 'destructive' });
+          setProcessing(false);
+          return;
+        }
+      }
+    }
+
+    // Update approval status
+    updateApproval.mutate(
+      { id: selectedApproval.id, updates: { status: 'Approved', reviewed_by: user.id, notes: reviewNotes || selectedApproval.notes } },
+      {
+        onSettled: () => {
+          setProcessing(false);
+          setIsReviewDialogOpen(false);
+        },
+      }
     );
-    toast({ title: 'Approved', description: `${selectedApproval.approval_type} has been approved` });
-    setIsReviewDialogOpen(false);
   };
 
-  const handleReject = () => {
-    if (!selectedApproval) return;
-    setApprovals(prev =>
-      prev.map(a =>
-        a.id === selectedApproval.id
-          ? { ...a, status: 'Rejected', reviewed_by: 'Current User', reviewed_at: new Date().toISOString() }
-          : a
-      )
+  const handleReject = async () => {
+    if (!selectedApproval || !user) return;
+    setProcessing(true);
+    updateApproval.mutate(
+      { id: selectedApproval.id, updates: { status: 'Rejected', reviewed_by: user.id, notes: reviewNotes || selectedApproval.notes } },
+      {
+        onSettled: () => {
+          setProcessing(false);
+          setIsReviewDialogOpen(false);
+        },
+      }
     );
-    toast({ title: 'Rejected', description: `${selectedApproval.approval_type} has been rejected`, variant: 'destructive' });
-    setIsReviewDialogOpen(false);
   };
 
   const renderApprovalRow = (approval: Approval) => {
@@ -417,13 +469,13 @@ export function ApprovalsSection() {
               <Button variant="outline" onClick={() => setIsReviewDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={handleReject}>
-                <XCircle className="h-4 w-4 mr-2" />
+              <Button variant="destructive" onClick={handleReject} disabled={processing}>
+                {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XCircle className="h-4 w-4 mr-2" />}
                 Reject
               </Button>
-              <Button className="btn-gold" onClick={handleApprove}>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Approve
+              <Button className="btn-gold" onClick={handleApprove} disabled={processing}>
+                {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+                {selectedApproval?.approval_type === 'RoleChange' ? 'Approve & Update Role' : 'Approve'}
               </Button>
             </DialogFooter>
           )}
