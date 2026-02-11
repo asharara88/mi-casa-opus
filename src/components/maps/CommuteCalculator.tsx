@@ -18,14 +18,14 @@ interface CommuteCalculatorProps {
   className?: string;
 }
 
-// Common destinations in Dubai
+// Common destinations in Abu Dhabi
 const commonDestinations = [
-  { name: 'Dubai Mall', coords: [55.2796, 25.1972] },
-  { name: 'DIFC', coords: [55.2803, 25.2121] },
-  { name: 'Dubai Marina', coords: [55.1385, 25.0808] },
-  { name: 'Palm Jumeirah', coords: [55.1344, 25.1124] },
-  { name: 'Dubai Airport (DXB)', coords: [55.3647, 25.2532] },
-  { name: 'JBR Beach', coords: [55.1313, 25.0793] },
+  { name: 'Abu Dhabi Mall', coords: [54.3833, 24.4950] },
+  { name: 'ADGM (Al Maryah Island)', coords: [54.3942, 24.5022] },
+  { name: 'Yas Island', coords: [54.6073, 24.4883] },
+  { name: 'Saadiyat Island', coords: [54.4341, 24.5470] },
+  { name: 'Abu Dhabi Airport (AUH)', coords: [54.6511, 24.4430] },
+  { name: 'Corniche Beach', coords: [54.3550, 24.4625] },
 ];
 
 export function CommuteCalculator({
