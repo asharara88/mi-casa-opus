@@ -78,7 +78,7 @@ const NAV_ITEMS: NavItem[] = [
   // Settings (Users, Templates, System)
   { id: 'users', label: 'Users', icon: Users, roles: ['Operator'], group: 'settings' },
   { id: 'templates', label: 'Rules & Templates', icon: FileText, roles: ['Operator'], group: 'settings' },
-  { id: 'settings', label: 'System Settings', icon: Settings, roles: ['Operator'], group: 'settings' },
+  { id: 'settings', label: 'Settings', icon: Settings, roles: ['Operator'], group: 'settings' },
 
   // === LEGAL OWNER ===
   { id: 'oversight', label: 'Oversight', icon: LayoutDashboard, roles: ['LegalOwner'], group: 'dashboard' },

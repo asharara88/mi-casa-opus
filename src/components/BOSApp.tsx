@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 import { useAuth, AppRole } from '@/hooks/useAuth';
 import { useDemoMode } from '@/contexts/DemoContext';
 import { ValidationContext } from '@/types/bos';
@@ -7,7 +8,8 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { MobileSearchSheet } from '@/components/layout/MobileSearchSheet';
-import { DemoBanner } from '@/components/demo/DemoBanner';
+import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 import { useBrokerageContext } from '@/hooks/useBrokerage';
 import { useLeads } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
@@ -22,8 +24,9 @@ import {
   Building2, Shield, FileText, DollarSign, Sparkles, Settings, 
   AlertTriangle, Users, PenTool, Eye, ClipboardCheck, Download,
   FileStack, Calendar, UserCheck, Wallet, Briefcase, Handshake, LayoutDashboard,
-  Loader2
+  Loader2, Sun, Moon, Monitor
 } from 'lucide-react';
+import { DemoBanner } from '@/components/demo/DemoBanner';
 
 // Lazy-loaded sections for code splitting - reduces initial bundle by ~70%
 const DashboardView = lazy(() => import('@/components/dashboard/DashboardView').then(m => ({ default: m.DashboardView })));
@@ -78,7 +81,7 @@ const SECTION_TITLES: Record<string, { title: string; subtitle: string }> = {
   'ai-insights': { title: 'AI Insights', subtitle: 'Read-only intelligence (non-authoritative)' },
   'ai-agent': { title: 'Mi Ai', subtitle: 'Your BOS operations assistant' },
   users: { title: 'User Management', subtitle: 'Manage users and broker profiles' },
-  settings: { title: 'System Settings', subtitle: 'Brokerage context and configuration' },
+  settings: { title: 'Settings', subtitle: 'Profile, notifications, and preferences' },
   
   // Teams sections
   meetings: { title: 'Team Meetings', subtitle: 'Schedule and manage team meetings' },
@@ -215,7 +218,7 @@ export function BOSApp() {
         return <TeamsSection initialTab="directory" />;
       
       case 'settings':
-        return <SettingsSection brokerage={brokerage} isLoading={isLoadingBrokerage} />;
+        return <SettingsSection onNavigate={(section: string) => setActiveSection(section)} />;
 
       default:
         return (
@@ -506,51 +509,133 @@ function MyDaySection() {
   );
 }
 
-function SettingsSection({ brokerage, isLoading }: { brokerage: any; isLoading: boolean }) {
+function SettingsSection({ onNavigate }: { onNavigate: (section: string) => void }) {
+  const { profile, role, signOut, refreshProfile } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
+  const [fullName, setFullName] = useState(profile?.full_name || '');
+  const [phone, setPhone] = useState(profile?.phone || '');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setFullName(profile?.full_name || '');
+    setPhone(profile?.phone || '');
+  }, [profile]);
+
+  const handleSaveProfile = async () => {
+    if (!profile) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ full_name: fullName, phone })
+      .eq('user_id', profile.user_id);
+    setSaving(false);
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to update profile', variant: 'destructive' });
+    } else {
+      await refreshProfile();
+      toast({ title: 'Profile updated' });
+    }
+  };
+
+  const themes = [
+    { value: 'light', label: 'Light', icon: Sun },
+    { value: 'dark', label: 'Dark', icon: Moon },
+    { value: 'system', label: 'System', icon: Monitor },
+  ];
+
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in max-w-2xl">
       <div className="flex items-center gap-3">
         <Settings className="w-6 h-6 text-primary" />
         <div>
-          <h2 className="text-xl font-bold text-foreground">System Settings</h2>
-          <p className="text-sm text-muted-foreground">Brokerage context and configuration</p>
+          <h2 className="text-xl font-bold text-foreground">Settings</h2>
+          <p className="text-sm text-muted-foreground">Profile, preferences, and team management</p>
         </div>
       </div>
 
+      {/* Profile */}
+      <div className="card-surface p-6 space-y-4">
+        <h3 className="font-semibold flex items-center gap-2"><UserCheck className="w-4 h-4" /> Profile</h3>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Full Name</label>
+            <input
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Email</label>
+            <input
+              className="w-full rounded-md border border-input bg-muted px-3 py-2 text-sm cursor-not-allowed"
+              value={profile?.email || ''}
+              disabled
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Phone</label>
+            <input
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Role</label>
+            <input
+              className="w-full rounded-md border border-input bg-muted px-3 py-2 text-sm cursor-not-allowed"
+              value={role || ''}
+              disabled
+            />
+          </div>
+        </div>
+        <Button size="sm" onClick={handleSaveProfile} disabled={saving}>
+          {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : null}
+          Save Changes
+        </Button>
+      </div>
+
+      {/* Appearance */}
+      <div className="card-surface p-6 space-y-4">
+        <h3 className="font-semibold flex items-center gap-2"><Eye className="w-4 h-4" /> Appearance</h3>
+        <div className="flex gap-3">
+          {themes.map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              onClick={() => setTheme(value)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg border text-sm transition-colors",
+                theme === value
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border hover:bg-muted"
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Team */}
+      <div className="card-surface p-6 space-y-3">
+        <h3 className="font-semibold flex items-center gap-2"><Users className="w-4 h-4" /> Team</h3>
+        <p className="text-sm text-muted-foreground">Manage your team members, invite new brokers, and configure roles.</p>
+        <Button variant="outline" size="sm" onClick={() => onNavigate('directory')}>
+          Open Team Directory
+        </Button>
+      </div>
+
+      {/* Sign Out */}
       <div className="card-surface p-6">
-        <h3 className="font-semibold mb-4">Brokerage Context</h3>
-        {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-4 w-40" />
-          </div>
-        ) : brokerage ? (
-          <div className="space-y-3">
-            <div>
-              <p className="text-xs text-muted-foreground">Trade Name</p>
-              <p className="font-medium">{brokerage.trade_name}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Legal Name</p>
-              <p className="font-medium">{brokerage.legal_name}</p>
-            </div>
-            {brokerage.license_context?.[0] && (
-              <>
-                <div>
-                  <p className="text-xs text-muted-foreground">License Number</p>
-                  <p className="font-medium">{brokerage.license_context[0].license_no}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Jurisdiction</p>
-                  <p className="font-medium">{brokerage.license_context[0].jurisdiction}</p>
-                </div>
-              </>
-            )}
-          </div>
-        ) : (
-          <p className="text-muted-foreground">No brokerage context configured</p>
-        )}
+        <Button variant="destructive" size="sm" onClick={async () => {
+          await signOut();
+          navigate('/login');
+        }}>
+          Sign Out
+        </Button>
       </div>
     </div>
   );
