@@ -37,13 +37,9 @@ export function Header({ title, subtitle, onMenuClick, onSearchClick, onNavigate
           <Menu className="w-5 h-5" />
         </Button>
         
-        {/* Mobile: Show logo, Desktop: Show title */}
-        <div className="lg:hidden">
-          <MiCasaLogo 
-            width={100} 
-            height="auto"
-            useImage={true}
-          />
+        {/* Mobile: Show section title, Desktop: Show full title */}
+        <div className="lg:hidden min-w-0 flex-shrink">
+          <h1 className="text-base font-semibold text-foreground truncate">{title}</h1>
         </div>
         
         <div className="hidden lg:block min-w-0 flex-shrink">

@@ -254,7 +254,7 @@ export function BOSApp() {
           onSearchClick={() => setSearchOpen(true)}
         />
         
-        <main className="flex-1 overflow-auto p-4 md:p-6 pb-20 lg:pb-6 scrollbar-thin">
+        <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 pb-24 lg:pb-6 scrollbar-thin">
           <Suspense fallback={<SectionLoader />}>
             {renderSection()}
           </Suspense>

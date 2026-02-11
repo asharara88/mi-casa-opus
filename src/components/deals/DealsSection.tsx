@@ -259,18 +259,19 @@ export function DealsSection() {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-foreground">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-lg sm:text-xl font-bold text-foreground">
             {role === 'Broker' ? 'My Deals' : 'Deal Pipeline'}
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {deals.length} total • {deals.filter(d => !['ClosedWon', 'ClosedLost'].includes(d.deal_state)).length} active
           </p>
         </div>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Deal
+        <Button onClick={() => setShowAddModal(true)} size="sm" className="shrink-0 h-10 sm:h-9">
+          <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Add Deal</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
       <DealPipeline

@@ -141,21 +141,21 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={onBack}>
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 h-9 w-9">
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-foreground">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">
               {lead.contact_identity.full_name}
             </h1>
-            <Badge className={cn(stateColors.bg, stateColors.text, stateColors.border, "border")}>
+            <Badge className={cn(stateColors.bg, stateColors.text, stateColors.border, "border shrink-0")}>
               {lead.lead_state}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Lead ID: {lead.lead_id}
+          <p className="text-xs sm:text-sm text-muted-foreground truncate">
+            {lead.lead_id}
           </p>
         </div>
       </div>
@@ -302,40 +302,40 @@ export function LeadDetail({ lead, onBack, onUpdate, onConvertToDeal }: LeadDeta
                   <CardTitle className="text-base">Contact Information</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <User className="w-5 h-5 text-primary" />
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{lead.contact_identity.full_name}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{lead.contact_identity.full_name}</p>
                         <p className="text-xs text-muted-foreground">Full Name</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <Phone className="w-5 h-5 text-primary" />
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{lead.contact_identity.phone}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{lead.contact_identity.phone}</p>
                         <p className="text-xs text-muted-foreground">Phone</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <Mail className="w-5 h-5 text-primary" />
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{lead.contact_identity.email}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{lead.contact_identity.email}</p>
                         <p className="text-xs text-muted-foreground">Email</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <Globe className="w-5 h-5 text-primary" />
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{lead.source}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{lead.source}</p>
                         <p className="text-xs text-muted-foreground">Source</p>
                       </div>
                     </div>
