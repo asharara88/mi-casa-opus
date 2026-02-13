@@ -7,7 +7,7 @@
 
 /* ============================================
    MI CASA PROPERTY SOLUTIONS
-   Design System - Critical CSS (variables + base)
+   Design System - Premium Dark Theme
    ============================================ */
 
 @layer base {
@@ -16,33 +16,42 @@
     --background: 220 20% 8%;
     --foreground: 210 20% 98%;
 
+    /* Card surfaces - Elevated with subtle distinction */
     --card: 220 18% 12%;
     --card-foreground: 210 20% 98%;
 
+    /* Popover/Dropdown surfaces */
     --popover: 220 18% 14%;
     --popover-foreground: 210 20% 98%;
 
+    /* Primary - Cyan/Teal for professional tech feel */
     --primary: 190 95% 45%;
     --primary-foreground: 220 20% 8%;
 
+    /* Secondary - Subtle slate */
     --secondary: 220 15% 18%;
     --secondary-foreground: 210 20% 90%;
 
+    /* Muted elements */
     --muted: 220 15% 22%;
     --muted-foreground: 215 15% 60%;
 
+    /* Accent - Gold for luxury highlights */
     --accent: 45 95% 55%;
     --accent-foreground: 220 20% 8%;
 
+    /* Destructive - Vibrant red */
     --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 100%;
 
+    /* Borders and inputs */
     --border: 220 15% 20%;
     --input: 220 15% 20%;
     --ring: 190 95% 45%;
 
     --radius: 0.5rem;
 
+    /* Sidebar - Darker for depth */
     --sidebar-background: 220 22% 6%;
     --sidebar-foreground: 210 20% 90%;
     --sidebar-primary: 190 95% 45%;
@@ -52,11 +61,13 @@
     --sidebar-border: 220 15% 15%;
     --sidebar-ring: 190 95% 45%;
 
+    /* Mobile Bottom Nav */
     --mobile-nav-background: 220 22% 6%;
     --mobile-nav-foreground: 215 15% 55%;
     --mobile-nav-foreground-active: 190 95% 45%;
     --mobile-nav-border: 220 15% 15%;
 
+    /* Custom semantic colors */
     --gold: 45 95% 55%;
     --gold-muted: 45 70% 40%;
     --emerald: 160 85% 40%;
@@ -66,26 +77,31 @@
     --cyan: 190 95% 50%;
     --purple: 270 80% 60%;
 
+    /* State colors */
     --state-new: 210 90% 60%;
     --state-active: 160 85% 45%;
     --state-pending: 45 95% 55%;
     --state-blocked: 0 85% 55%;
     --state-closed: 220 15% 45%;
 
+    /* Warning color */
     --warning: 45 95% 55%;
     --warning-foreground: 220 20% 8%;
 
+    /* Chart colors - High contrast palette */
     --chart-1: 190 95% 50%;
     --chart-2: 160 85% 45%;
     --chart-3: 45 95% 55%;
     --chart-4: 270 80% 60%;
     --chart-5: 0 80% 55%;
 
+    /* Gradients */
     --gradient-gold: linear-gradient(135deg, hsl(45 95% 55%) 0%, hsl(35 100% 45%) 100%);
     --gradient-dark: linear-gradient(180deg, hsl(220 20% 10%) 0%, hsl(220 22% 6%) 100%);
     --gradient-surface: linear-gradient(135deg, hsl(220 18% 14%) 0%, hsl(220 18% 10%) 100%);
     --gradient-primary: linear-gradient(135deg, hsl(190 95% 45%) 0%, hsl(200 95% 40%) 100%);
 
+    /* Shadows */
     --shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
     --shadow-xs: 0 1px 3px 0 hsl(0 0% 0% / 0.35);
     --shadow-sm: 0 2px 4px 0 hsl(0 0% 0% / 0.4);
@@ -105,6 +121,7 @@
     --spacing: 0.25rem;
   }
 
+  /* Light mode override (optional) */
   .light {
     --background: 210 20% 98%;
     --foreground: 220 20% 10%;
@@ -140,6 +157,7 @@
     --mobile-nav-border: 220 15% 90%;
   }
 
+  /* Dark mode class (same as root for dark-first) */
   .dark {
     --background: 220 20% 8%;
     --foreground: 210 20% 98%;
@@ -191,10 +209,12 @@
     font-family: 'Inter', system-ui, sans-serif;
   }
 
+  /* Typography */
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
   }
 
+  /* Monospace for IDs, hashes, codes */
   .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
@@ -204,7 +224,224 @@
   }
 }
 
-/* Login page CSS animations */
+@layer components {
+  /* Card variants */
+  .card-surface {
+    @apply bg-card border border-border rounded-lg;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-elevated {
+    @apply bg-card border border-border rounded-lg;
+    box-shadow: var(--shadow-md);
+  }
+
+  .card-gold {
+    @apply bg-card border border-primary/30 rounded-lg;
+    box-shadow: var(--shadow-gold);
+  }
+
+  /* State badges */
+  .state-badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border;
+  }
+
+  .state-new {
+    @apply bg-blue-500/20 text-blue-400 border-blue-500/50;
+  }
+
+  .state-active {
+    @apply bg-emerald-500/20 text-emerald-400 border-emerald-500/50;
+  }
+
+  .state-pending {
+    @apply bg-amber-500/20 text-amber-400 border-amber-500/50;
+  }
+
+  .state-blocked {
+    @apply bg-destructive/20 text-destructive border-destructive/50;
+  }
+
+  .state-closed {
+    @apply bg-slate-500/20 text-slate-400 border-slate-500/50;
+  }
+
+  .state-won {
+    @apply bg-primary/20 text-primary border-primary/50;
+  }
+
+  /* Sidebar navigation */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200;
+    @apply text-muted-foreground hover:text-foreground hover:bg-secondary;
+  }
+
+  .nav-item-active {
+    @apply bg-primary/10 text-primary border-l-2 border-primary;
+  }
+
+  /* Data table styling */
+  .data-table {
+    @apply w-full text-sm;
+  }
+
+  .data-table th {
+    @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted/50;
+  }
+
+  .data-table td {
+    @apply px-4 py-3 border-t border-border;
+  }
+
+  .data-table tr:hover td {
+    @apply bg-muted/30;
+  }
+
+  /* Pipeline/Kanban columns */
+  .pipeline-column {
+    @apply flex-1 min-w-[280px] max-w-[320px] bg-muted/30 rounded-lg p-3;
+  }
+
+  .pipeline-card {
+    @apply bg-card border border-border rounded-lg p-3 mb-2 cursor-pointer transition-all duration-200;
+    @apply hover:border-primary/50 hover:shadow-md;
+  }
+
+  /* Metric cards */
+  .metric-card {
+    @apply bg-card border border-border rounded-lg p-4;
+  }
+
+  .metric-value {
+    @apply text-2xl font-bold text-foreground;
+  }
+
+  .metric-label {
+    @apply text-sm text-muted-foreground;
+  }
+
+  /* Event log styling */
+  .event-log-entry {
+    @apply flex gap-4 py-3 border-b border-border last:border-0;
+  }
+
+  .event-allowed {
+    @apply border-l-2 border-emerald-500 pl-3;
+  }
+
+  .event-blocked {
+    @apply border-l-2 border-destructive pl-3;
+  }
+
+  /* Block reasons */
+  .block-reason {
+    @apply flex items-start gap-2 text-sm text-destructive bg-destructive/10 px-3 py-2 rounded border border-destructive/30;
+  }
+
+  /* Gold accent button */
+  .btn-gold {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 font-semibold;
+    box-shadow: var(--shadow-gold);
+  }
+
+  /* Ghost button on dark */
+  .btn-ghost-dark {
+    @apply text-muted-foreground hover:text-foreground hover:bg-secondary;
+  }
+}
+
+@layer utilities {
+  /* Text gradient */
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-gold);
+  }
+
+  /* Scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Mobile-optimized touch interactions */
+  @media (max-width: 768px) {
+    .touch-manipulation {
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Smoother momentum scrolling on mobile */
+    .scroll-smooth-mobile {
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Prevent text selection on nav items */
+    nav button {
+      -webkit-user-select: none;
+      user-select: none;
+    }
+  }
+
+  /* Glass morphism effect for mobile surfaces */
+  .glass-surface {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+
+  /* Premium shadow for elevated mobile elements */
+  .shadow-elevated {
+    box-shadow: 
+      0 4px 6px -1px hsl(0 0% 0% / 0.2),
+      0 10px 15px -3px hsl(0 0% 0% / 0.15),
+      0 -1px 2px 0 hsl(0 0% 100% / 0.05) inset;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Login page CSS animations - replaces framer-motion for lighter initial bundle */
 @keyframes loginFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
