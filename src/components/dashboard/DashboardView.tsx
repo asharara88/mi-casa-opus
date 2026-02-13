@@ -163,198 +163,198 @@ export function DashboardView({ role, onNavigate }: DashboardViewProps) {
    formatCurrency,
    onNavigate,
  }: DashboardOverviewContentProps) {
-   return (
-     <>
-       {/* Welcome Header */}
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-           {role === 'Manager' && 'Operations Dashboard'}
-           {role === 'Owner' && 'Compliance Overview'}
-          {role === 'Broker' && 'My Dashboard'}
-        </h2>
-        <p className="text-foreground/70 mt-1">
-          {new Date().toLocaleDateString('en-GB', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </p>
-      </div>
-
-       {/* Metrics Grid with Animated Counters */}
-       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <MetricCard
-          label="Active Leads"
-          value={activeLeads}
-          icon={Users}
-          change={activeLeads > 0 ? { value: 12, type: 'increase' } : undefined}
-        />
-        <MetricCard
-          label="Active Deals"
-          value={activeDeals}
-          icon={Handshake}
-          change={activeDeals > 0 ? { value: 8, type: 'increase' } : undefined}
-        />
-        <MetricCard
-          label="Pipeline Value"
-          value={totalPipeline > 0 ? `${formatCurrency(totalPipeline)} AED` : '0 AED'}
-          icon={TrendingUp}
-          variant="gold"
-        />
-        <MetricCard
-          label="Expected Commission"
-          value={expectedCommissions > 0 ? `${formatCurrency(expectedCommissions)} AED` : '0 AED'}
-          icon={DollarSign}
-          variant="success"
-        />
-      </div>
-
-      {/* Sales Funnel & Pipeline Health */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <SalesFunnelChart onNavigate={onNavigate} />
+    return (
+      <div className="space-y-8">
+        {/* Welcome Header */}
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+            {role === 'Manager' && 'Operations Dashboard'}
+            {role === 'Owner' && 'Compliance Overview'}
+            {role === 'Broker' && 'My Dashboard'}
+          </h2>
+          <p className="text-foreground/70 mt-1">
+            {new Date().toLocaleDateString('en-GB', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </p>
         </div>
-        <PipelineHealthWidget onNavigate={onNavigate} />
-      </div>
 
-      {/* Forecast Widget */}
-      <ForecastWidget 
-        deals={(dbDeals || []).map(d => ({
-          deal_id: d.deal_id,
-          deal_state: d.deal_state,
-          deal_economics: d.deal_economics as Record<string, unknown> | null,
-        }))}
-      />
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          <MetricCard
+            label="Active Leads"
+            value={activeLeads}
+            icon={Users}
+            change={activeLeads > 0 ? { value: 12, type: 'increase' } : undefined}
+          />
+          <MetricCard
+            label="Active Deals"
+            value={activeDeals}
+            icon={Handshake}
+            change={activeDeals > 0 ? { value: 8, type: 'increase' } : undefined}
+          />
+          <MetricCard
+            label="Pipeline Value"
+            value={totalPipeline > 0 ? `${formatCurrency(totalPipeline)} AED` : '0 AED'}
+            icon={TrendingUp}
+            variant="gold"
+          />
+          <MetricCard
+            label="Expected Commission"
+            value={expectedCommissions > 0 ? `${formatCurrency(expectedCommissions)} AED` : '0 AED'}
+            icon={DollarSign}
+            variant="success"
+          />
+        </div>
 
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Activity */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Recent Leads */}
-          <div className="card-surface p-4">
-            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              Recent Leads
-            </h3>
-            <div className="space-y-3">
-              {leads.length > 0 ? (
-                leads.slice(0, 5).map(lead => (
-                  <div key={lead.lead_id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-medium">
-                        {(lead.contact_identity.full_name || 'Unknown').split(' ').map(n => n[0]).join('').slice(0, 2)}
+        {/* Sales Funnel & Pipeline Health */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
+          <div className="lg:col-span-2">
+            <SalesFunnelChart onNavigate={onNavigate} />
+          </div>
+          <PipelineHealthWidget onNavigate={onNavigate} />
+        </div>
+
+        {/* Forecast Widget */}
+        <ForecastWidget 
+          deals={(dbDeals || []).map(d => ({
+            deal_id: d.deal_id,
+            deal_state: d.deal_state,
+            deal_economics: d.deal_economics as Record<string, unknown> | null,
+          }))}
+        />
+
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
+          {/* Left Column - Activity */}
+          <div className="lg:col-span-2 space-y-5">
+            {/* Recent Leads */}
+            <div className="card-surface p-5">
+              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" />
+                Recent Leads
+              </h3>
+              <div className="space-y-2.5">
+                {leads.length > 0 ? (
+                  leads.slice(0, 5).map(lead => (
+                    <div key={lead.lead_id} className="flex items-center justify-between p-3.5 bg-muted/30 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-xs font-medium shrink-0">
+                          {(lead.contact_identity.full_name || 'Unknown').split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {lead.contact_identity.full_name}
+                          </p>
+                          <p className="text-xs text-foreground/65">{lead.source}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">
-                          {lead.contact_identity.full_name}
-                        </p>
-                        <p className="text-xs text-foreground/65">{lead.source}</p>
-                      </div>
+                      <StateBadge state={lead.lead_state} type="lead" size="sm" />
                     </div>
-                    <StateBadge state={lead.lead_state} type="lead" size="sm" />
+                  ))
+                ) : (
+                  <div className="text-center py-10 text-foreground/60 text-sm">
+                    No leads yet. Start adding leads to see them here.
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-foreground/60 text-sm">
-                  No leads yet. Start adding leads to see them here.
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Recent Deals */}
-          <div className="card-surface p-4">
-            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Handshake className="w-4 h-4 text-primary" />
-              Active Deals
-            </h3>
-            <div className="space-y-3">
-              {(dbDeals || []).filter(d => !['ClosedWon', 'ClosedLost'].includes(d.deal_state)).length > 0 ? (
-                (dbDeals || [])
-                  .filter(d => !['ClosedWon', 'ClosedLost'].includes(d.deal_state))
-                  .slice(0, 5)
-                  .map(deal => {
-                    const economics = deal.deal_economics as Record<string, unknown> | null;
-                    const agreedPrice = economics?.agreed_price as number | undefined;
-                    return (
-                      <div key={deal.deal_id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                        <div>
-                          <p className="text-sm font-medium text-foreground font-mono">
-                            {deal.deal_id}
-                          </p>
-                          <p className="text-xs text-foreground/65">
-                            {deal.deal_type} • {deal.side}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <StateBadge state={deal.deal_state === 'ClosedWon' ? 'Closed_Won' : deal.deal_state === 'ClosedLost' ? 'Closed_Lost' : deal.deal_state as DealState} type="deal" size="sm" />
-                          {agreedPrice && (
-                            <p className="text-xs text-primary mt-1 font-medium">
-                              {formatCurrency(agreedPrice)} AED
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-              ) : (
-                <div className="text-center py-8 text-foreground/60 text-sm">
-                  No active deals. Create a deal from a qualified lead.
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Event Log */}
-        <div className="space-y-6">
-          <div className="card-surface p-4">
-            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-primary" />
-              Audit Trail
-            </h3>
-            {isLoadingEvents ? (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
-                ))}
+                )}
               </div>
-            ) : (
-              <EventLog events={events} maxItems={10} />
+            </div>
+
+            {/* Recent Deals */}
+            <div className="card-surface p-5">
+              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Handshake className="w-4 h-4 text-primary" />
+                Active Deals
+              </h3>
+              <div className="space-y-2.5">
+                {(dbDeals || []).filter(d => !['ClosedWon', 'ClosedLost'].includes(d.deal_state)).length > 0 ? (
+                  (dbDeals || [])
+                    .filter(d => !['ClosedWon', 'ClosedLost'].includes(d.deal_state))
+                    .slice(0, 5)
+                    .map(deal => {
+                      const economics = deal.deal_economics as Record<string, unknown> | null;
+                      const agreedPrice = economics?.agreed_price as number | undefined;
+                      return (
+                        <div key={deal.deal_id} className="flex items-center justify-between p-3.5 bg-muted/30 rounded-xl">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground font-mono truncate">
+                              {deal.deal_id}
+                            </p>
+                            <p className="text-xs text-foreground/65">
+                              {deal.deal_type} • {deal.side}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0 ml-3">
+                            <StateBadge state={deal.deal_state === 'ClosedWon' ? 'Closed_Won' : deal.deal_state === 'ClosedLost' ? 'Closed_Lost' : deal.deal_state as DealState} type="deal" size="sm" />
+                            {agreedPrice && (
+                              <p className="text-xs text-primary mt-1 font-medium">
+                                {formatCurrency(agreedPrice)} AED
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                ) : (
+                  <div className="text-center py-10 text-foreground/60 text-sm">
+                    No active deals. Create a deal from a qualified lead.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Event Log */}
+          <div className="space-y-5">
+            <div className="card-surface p-5">
+              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                Audit Trail
+              </h3>
+              {isLoadingEvents ? (
+                <div className="space-y-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <EventLog events={events} maxItems={10} />
+              )}
+            </div>
+
+            {/* Quick Stats */}
+            {role === 'Manager' && (
+              <div className="card-surface p-5">
+                <h3 className="font-semibold text-foreground mb-4">System Health</h3>
+                <div className="space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-foreground/70">Event Chain</span>
+                    <span className="flex items-center gap-1 text-sm text-emerald">
+                      <CheckCircle className="w-4 h-4" />
+                      Valid
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-foreground/70">Total Events</span>
+                    <span className="text-sm font-mono text-foreground">{events.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-foreground/70">Blocked Actions</span>
+                    <span className="text-sm font-mono text-foreground">
+                      {events.filter(e => e.decision === 'BLOCKED').length}
+                    </span>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
-
-          {/* Quick Stats */}
-          {role === 'Manager' && (
-            <div className="card-surface p-4">
-              <h3 className="font-semibold text-foreground mb-4">System Health</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground/70">Event Chain</span>
-                  <span className="flex items-center gap-1 text-sm text-emerald">
-                    <CheckCircle className="w-4 h-4" />
-                    Valid
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground/70">Total Events</span>
-                  <span className="text-sm font-mono text-foreground">{events.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground/70">Blocked Actions</span>
-                  <span className="text-sm font-mono text-foreground">
-                    {events.filter(e => e.decision === 'BLOCKED').length}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
-     </>
-   );
- }
+    );
+  }
  
  // Import type for Deal
  import type { Deal } from '@/hooks/useDeals';
