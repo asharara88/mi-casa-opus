@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion, type Variants } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useDemoMode } from '@/contexts/DemoContext';
 import { Button } from '@/components/ui/button';
@@ -9,33 +8,6 @@ import { Label } from '@/components/ui/label';
 import { MiCasaLogo } from '@/components/branding/MiCasaLogo';
 import { Shield, Eye, EyeOff, Play, Loader2, CheckCircle2, FileCheck, Users, Lock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-
-// Animation variants with proper typing
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-  }
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { type: "spring" as const, stiffness: 100, damping: 15 }
-  }
-};
-
-const logoVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: { 
-    opacity: 1, 
-    scale: 1,
-    transition: { type: "spring" as const, stiffness: 200, damping: 20 }
-  }
-};
 
 const features = [
   { icon: FileCheck, label: 'Deterministic Workflows', desc: 'No guessing, no shortcuts' },
@@ -88,53 +60,26 @@ export default function Login() {
   return (
     <main className="min-h-screen flex bg-background overflow-hidden">
       {/* Left Panel - Branding (Desktop only) */}
-      <motion.div 
-        className="hidden lg:flex lg:w-1/2 relative p-12 flex-col justify-between overflow-hidden"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
+      <div 
+        className="hidden lg:flex lg:w-1/2 relative p-12 flex-col justify-between overflow-hidden login-fade-in"
       >
         {/* Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-card via-muted to-card" />
         
         {/* Decorative Glows */}
-        <motion.div 
-          className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl bg-primary/20"
-          animate={{ 
-            scale: [1, 1.2, 1], 
-            opacity: [0.3, 0.5, 0.3] 
-          }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div 
-          className="absolute bottom-40 right-10 w-96 h-96 rounded-full blur-3xl bg-primary/10"
-          animate={{ 
-            scale: [1, 1.2, 1], 
-            opacity: [0.3, 0.5, 0.3] 
-          }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        />
-        <motion.div 
-          className="absolute top-1/2 left-1/3 w-64 h-64 rounded-full blur-3xl bg-accent/20"
-          animate={{ 
-            scale: [1, 1.2, 1], 
-            opacity: [0.3, 0.5, 0.3] 
-          }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        />
+        <div className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl bg-primary/20 login-glow" />
+        <div className="absolute bottom-40 right-10 w-96 h-96 rounded-full blur-3xl bg-primary/10 login-glow login-glow-delay-2" />
+        <div className="absolute top-1/2 left-1/3 w-64 h-64 rounded-full blur-3xl bg-accent/20 login-glow login-glow-delay-1" />
 
         {/* Content */}
-        <div className="relative z-10">
-          <motion.div variants={logoVariants}>
-            <MiCasaLogo useImage width={220} />
-          </motion.div>
+        <div className="relative z-10 login-slide-up">
+          <MiCasaLogo useImage width={220} />
         </div>
 
-        <motion.div className="relative z-10 space-y-8" variants={containerVariants}>
-          <motion.div variants={itemVariants}>
+        <div className="relative z-10 space-y-8 login-slide-up login-delay-1">
+          <div>
             <h2 className="text-4xl font-bold text-foreground mb-4 leading-tight">
               AI-Enabled <br />
-              
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70">
                 Brokerage Operations
               </span>
@@ -143,33 +88,28 @@ export default function Login() {
               Manage leads, deals, documents, and commissions with complete audit trails 
               and regulatory compliance built-in.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div className="grid grid-cols-2 gap-4" variants={containerVariants}>
-            {features.map((feature) => (
-              <motion.div 
+          <div className="grid grid-cols-2 gap-4">
+            {features.map((feature, i) => (
+              <div 
                 key={feature.label} 
-                className="p-4 rounded-xl bg-background/50 border border-border backdrop-blur-sm hover:bg-background/80 transition-colors"
-                variants={itemVariants}
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 400 }}
+                className="p-4 rounded-xl bg-background/50 border border-border backdrop-blur-sm hover:bg-background/80 transition-colors login-slide-up"
+                style={{ animationDelay: `${0.3 + i * 0.1}s` }}
               >
                 <feature.icon className="w-5 h-5 text-primary mb-2" />
                 <p className="font-medium text-foreground text-sm">{feature.label}</p>
                 <p className="text-xs text-muted-foreground">{feature.desc}</p>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
-        <motion.div 
-          className="relative z-10 flex items-center gap-2 text-sm text-muted-foreground"
-          variants={itemVariants}
-        >
+        <div className="relative z-10 flex items-center gap-2 text-sm text-muted-foreground login-slide-up login-delay-2">
           <CheckCircle2 className="w-4 h-4 text-primary" />
           <span>Abu Dhabi Licensed • DARI Compliant</span>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Right Panel - Login Form */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-8 relative">
@@ -177,43 +117,25 @@ export default function Login() {
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/30" />
         
         {/* Mobile decorative glow */}
-        <motion.div 
-          className="absolute top-10 right-10 w-48 h-48 rounded-full blur-3xl bg-primary/10 lg:hidden"
-          animate={{ 
-            scale: [1, 1.2, 1], 
-            opacity: [0.3, 0.5, 0.3] 
-          }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        />
+        <div className="absolute top-10 right-10 w-48 h-48 rounded-full blur-3xl bg-primary/10 lg:hidden login-glow" />
 
-        <motion.div 
-          className="w-full max-w-md relative z-10"
-          initial="hidden"
-          animate="visible"
-          variants={containerVariants}
-        >
+        <div className="w-full max-w-md relative z-10 login-fade-in">
           {/* Mobile Logo */}
-          <motion.div 
-            className="lg:hidden flex justify-center mb-8"
-            variants={logoVariants}
-          >
+          <div className="lg:hidden flex justify-center mb-8 login-slide-up">
             <MiCasaLogo useImage width={180} />
-          </motion.div>
+          </div>
 
           {/* Glass Card */}
-          <motion.div 
-            className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-2xl"
-            variants={itemVariants}
-          >
-            <motion.div className="text-center lg:text-left mb-8" variants={itemVariants}>
+          <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-2xl login-slide-up login-delay-1">
+            <div className="text-center lg:text-left mb-8">
               <h2 className="text-2xl font-bold text-foreground">Welcome back</h2>
               <p className="text-muted-foreground mt-2">
                 Enter your credentials to access the system
               </p>
-            </motion.div>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              <motion.div className="space-y-2" variants={itemVariants}>
+              <div className="space-y-2">
                 <Label htmlFor="email" className="text-foreground/80">Email</Label>
                 <Input
                   id="email"
@@ -224,9 +146,9 @@ export default function Login() {
                   required
                   className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 transition-all"
                 />
-              </motion.div>
+              </div>
 
-              <motion.div className="space-y-2" variants={itemVariants}>
+              <div className="space-y-2">
                 <Label htmlFor="password" className="text-foreground/80">Password</Label>
                 <div className="relative">
                   <Input
@@ -247,9 +169,9 @@ export default function Login() {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div variants={itemVariants}>
+              <div>
                 <Button
                   type="submit"
                   className="w-full h-12 btn-gold font-medium text-base relative overflow-hidden group"
@@ -267,21 +189,21 @@ export default function Login() {
                   </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Button>
-              </motion.div>
+              </div>
             </form>
 
             {/* Divider */}
-            <motion.div className="relative my-6" variants={itemVariants}>
+            <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border/50" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card/80 px-3 text-muted-foreground">Or</span>
               </div>
-            </motion.div>
+            </div>
 
             {/* Demo Mode Button */}
-            <motion.div variants={itemVariants}>
+            <div>
               <Button
                 type="button"
                 variant="outline"
@@ -291,9 +213,9 @@ export default function Login() {
                 <Play className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 View Demo
               </Button>
-            </motion.div>
+            </div>
 
-            <motion.div className="text-center text-sm mt-6" variants={itemVariants}>
+            <div className="text-center text-sm mt-6">
               <span className="text-muted-foreground">Don't have an account? </span>
               <Link 
                 to="/register" 
@@ -301,18 +223,15 @@ export default function Login() {
               >
                 Request Access
               </Link>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* Footer Note */}
-          <motion.p 
-            className="text-xs text-muted-foreground text-center mt-6 px-4"
-            variants={itemVariants}
-          >
+          <p className="text-xs text-muted-foreground text-center mt-6 px-4 login-slide-up login-delay-2">
             By signing in, you agree to the system usage policies and consent 
             to activity logging for audit purposes.
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
       </div>
     </main>
   );

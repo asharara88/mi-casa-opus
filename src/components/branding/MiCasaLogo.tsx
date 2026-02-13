@@ -40,8 +40,8 @@ export function MiCasaLogo({ className = '', width = 180, height = 'auto', useIm
       <img 
         src={logoSrc} 
         alt="MiCasa Property Solutions"
-        width={width}
-        height={height}
+        width={typeof width === 'number' ? width : undefined}
+        height={typeof height === 'number' ? height : 40}
         className={`transition-all duration-200 ${className}`}
         style={{ 
           maxWidth: typeof width === 'number' ? `${width}px` : width,

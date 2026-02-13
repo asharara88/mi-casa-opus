@@ -33,20 +33,25 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           // Core React ecosystem
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          // UI framework
-          'vendor-ui': [
+          // UI framework - split into critical (login needs) and deferred
+          'vendor-ui-core': [
             '@radix-ui/react-dialog',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-label',
+          ],
+          'vendor-ui-extra': [
             '@radix-ui/react-dropdown-menu',
             '@radix-ui/react-tabs',
-            '@radix-ui/react-tooltip',
             '@radix-ui/react-popover',
             '@radix-ui/react-select',
             '@radix-ui/react-accordion',
           ],
           // Data & state management
           'vendor-data': ['@tanstack/react-query', '@supabase/supabase-js'],
-          // Animation & visualization
-          'vendor-viz': ['framer-motion', 'recharts'],
+          // Charts - heavy, only needed on dashboard
+          'vendor-charts': ['recharts'],
+          // Animation - deferred, not needed on login
+          'vendor-motion': ['framer-motion'],
           // Utilities
           'vendor-utils': ['date-fns', 'clsx', 'tailwind-merge', 'zod'],
         },
