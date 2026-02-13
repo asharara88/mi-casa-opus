@@ -1,0 +1,212 @@
+/* ============================================
+   MI CASA PROPERTY SOLUTIONS
+   Deferred Styles - Loaded after initial paint
+   ============================================ */
+
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Card variants */
+  .card-surface {
+    @apply bg-card border border-border rounded-lg;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-elevated {
+    @apply bg-card border border-border rounded-lg;
+    box-shadow: var(--shadow-md);
+  }
+
+  .card-gold {
+    @apply bg-card border border-primary/30 rounded-lg;
+    box-shadow: var(--shadow-gold);
+  }
+
+  /* State badges */
+  .state-badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border;
+  }
+
+  .state-new {
+    @apply bg-blue-500/20 text-blue-400 border-blue-500/50;
+  }
+
+  .state-active {
+    @apply bg-emerald-500/20 text-emerald-400 border-emerald-500/50;
+  }
+
+  .state-pending {
+    @apply bg-amber-500/20 text-amber-400 border-amber-500/50;
+  }
+
+  .state-blocked {
+    @apply bg-destructive/20 text-destructive border-destructive/50;
+  }
+
+  .state-closed {
+    @apply bg-slate-500/20 text-slate-400 border-slate-500/50;
+  }
+
+  .state-won {
+    @apply bg-primary/20 text-primary border-primary/50;
+  }
+
+  /* Sidebar navigation */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200;
+    @apply text-muted-foreground hover:text-foreground hover:bg-secondary;
+  }
+
+  .nav-item-active {
+    @apply bg-primary/10 text-primary border-l-2 border-primary;
+  }
+
+  /* Data table styling */
+  .data-table {
+    @apply w-full text-sm;
+  }
+
+  .data-table th {
+    @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted/50;
+  }
+
+  .data-table td {
+    @apply px-4 py-3 border-t border-border;
+  }
+
+  .data-table tr:hover td {
+    @apply bg-muted/30;
+  }
+
+  /* Pipeline/Kanban columns */
+  .pipeline-column {
+    @apply flex-1 min-w-[280px] max-w-[320px] bg-muted/30 rounded-lg p-3;
+  }
+
+  .pipeline-card {
+    @apply bg-card border border-border rounded-lg p-3 mb-2 cursor-pointer transition-all duration-200;
+    @apply hover:border-primary/50 hover:shadow-md;
+  }
+
+  /* Metric cards */
+  .metric-card {
+    @apply bg-card border border-border rounded-lg p-4;
+  }
+
+  .metric-value {
+    @apply text-2xl font-bold text-foreground;
+  }
+
+  .metric-label {
+    @apply text-sm text-muted-foreground;
+  }
+
+  /* Event log styling */
+  .event-log-entry {
+    @apply flex gap-4 py-3 border-b border-border last:border-0;
+  }
+
+  .event-allowed {
+    @apply border-l-2 border-emerald-500 pl-3;
+  }
+
+  .event-blocked {
+    @apply border-l-2 border-destructive pl-3;
+  }
+
+  /* Block reasons */
+  .block-reason {
+    @apply flex items-start gap-2 text-sm text-destructive bg-destructive/10 px-3 py-2 rounded border border-destructive/30;
+  }
+
+  /* Gold accent button */
+  .btn-gold {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 font-semibold;
+    box-shadow: var(--shadow-gold);
+  }
+
+  /* Ghost button on dark */
+  .btn-ghost-dark {
+    @apply text-muted-foreground hover:text-foreground hover:bg-secondary;
+  }
+}
+
+@layer utilities {
+  /* Text gradient */
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-gold);
+  }
+
+  /* Scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Mobile-optimized touch interactions */
+  @media (max-width: 768px) {
+    .touch-manipulation {
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .scroll-smooth-mobile {
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    nav button {
+      -webkit-user-select: none;
+      user-select: none;
+    }
+  }
+
+  /* Glass morphism effect for mobile surfaces */
+  .glass-surface {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+
+  /* Premium shadow for elevated mobile elements */
+  .shadow-elevated {
+    box-shadow: 
+      0 4px 6px -1px hsl(0 0% 0% / 0.2),
+      0 10px 15px -3px hsl(0 0% 0% / 0.15),
+      0 -1px 2px 0 hsl(0 0% 100% / 0.05) inset;
+  }
+}

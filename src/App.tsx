@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -107,27 +107,33 @@ function AppRoutes() {
   );
 }
 
-const App = () => (
-  <ThemeProvider
-    attribute="class"
-    defaultTheme="dark"
-    enableSystem={false}
-    disableTransitionOnChange
-  >
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <DemoProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </TooltipProvider>
-        </DemoProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  </ThemeProvider>
-);
+const App = () => {
+  useEffect(() => {
+    import("./deferred.css");
+  }, []);
+
+  return (
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="dark"
+      enableSystem={false}
+      disableTransitionOnChange
+    >
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <DemoProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
+            </TooltipProvider>
+          </DemoProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
+  );
+};
 
 export default App;
