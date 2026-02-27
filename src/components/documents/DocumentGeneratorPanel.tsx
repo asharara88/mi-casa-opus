@@ -13,10 +13,16 @@ import {
   Rocket,
   FolderOpen,
   Lock,
-  FileCheck
+  FileCheck,
+  Printer,
+  Share2,
+  Mail,
+  MessageSquare
 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useDocumentGeneratorWithEvidence, useManifestPrompts } from "@/hooks/useManifestExecutor";
+import { generateFilledPDF } from "@/lib/pdf-document-generator";
 import { useWorkflowState, type WorkflowType, getWorkflowState } from "@/hooks/useWorkflowState";
 import { TemplateBrowser } from "./TemplateBrowser";
 import { FormWizard } from "./FormWizard";
@@ -252,6 +258,31 @@ export function DocumentGeneratorPanel({
     }
   }, [generatedDoc]);
 
+  const handlePrintLetterhead = useCallback(() => {
+    if (generatedDoc) {
+      const refNumber = generatedDoc.documentId 
+        ? `MC-${new Date().getFullYear()}-${generatedDoc.documentId.slice(0, 6).toUpperCase()}`
+        : `MC-${new Date().getFullYear()}-DRAFT`;
+      generateFilledPDF(generatedDoc.body, generatedDoc.title, refNumber);
+      toast.success("Opening branded letterhead for print/save");
+    }
+  }, [generatedDoc]);
+
+  const handleShareEmail = useCallback(() => {
+    if (generatedDoc) {
+      const subject = encodeURIComponent(generatedDoc.title + " — MI CASA REALESTATE");
+      const body = encodeURIComponent(generatedDoc.body);
+      window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+    }
+  }, [generatedDoc]);
+
+  const handleShareWhatsApp = useCallback(() => {
+    if (generatedDoc) {
+      const text = encodeURIComponent(`*${generatedDoc.title}*\n\n${generatedDoc.body.slice(0, 2000)}${generatedDoc.body.length > 2000 ? '...' : ''}`);
+      window.open(`https://wa.me/?text=${text}`, '_blank');
+    }
+  }, [generatedDoc]);
+
   const handleEditAndRegenerate = () => {
     setViewState("form");
   };
@@ -328,13 +359,13 @@ export function DocumentGeneratorPanel({
           
           {viewState === "preview" && generatedDoc && (
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handlePrintLetterhead}>
+                <Printer className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">Letterhead</span>
+              </Button>
               <Button variant="outline" size="sm" onClick={handleCopy}>
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 <span className="ml-2 hidden sm:inline">Copy</span>
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleDownload}>
-                <Download className="h-4 w-4" />
-                <span className="ml-2 hidden sm:inline">Download</span>
               </Button>
             </div>
           )}
@@ -460,18 +491,40 @@ export function DocumentGeneratorPanel({
             </ScrollArea>
             
             {/* Quick Actions */}
-            <div className="flex items-center justify-center gap-3 pt-4 border-t">
-              <Button onClick={handleCopy} variant="outline">
-                {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-                Copy to Clipboard
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t">
+              <Button onClick={handlePrintLetterhead} className="gap-2">
+                <Printer className="h-4 w-4" />
+                Print on Letterhead
               </Button>
-              <Button onClick={handleDownload}>
-                <Download className="h-4 w-4 mr-2" />
-                Download Document
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <Share2 className="h-4 w-4" />
+                    Share
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={handleShareEmail}>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Share via Email
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleShareWhatsApp}>
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Share via WhatsApp
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleCopy}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy to Clipboard
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button variant="outline" onClick={handleDownload} className="gap-2">
+                <Download className="h-4 w-4" />
+                Download
               </Button>
               {workflowContext && (
-                <Button variant="secondary" onClick={handleContinueWorkflow}>
-                  <Rocket className="h-4 w-4 mr-2" />
+                <Button variant="secondary" onClick={handleContinueWorkflow} className="gap-2">
+                  <Rocket className="h-4 w-4" />
                   Next Step
                 </Button>
               )}
