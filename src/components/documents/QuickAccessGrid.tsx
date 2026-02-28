@@ -24,10 +24,10 @@ interface QuickAccessGridProps {
 
 // Popular AI templates (excluding static)
 const POPULAR_TEMPLATES = [
-  "DOC_BROKERAGE_SALES",
-  "DOC_BROKERAGE_LEASING",
   "DOC_BUYER_OFFER",
   "DOC_TENANT_OFFER",
+  "DOC_BROKERAGE_SALES",
+  "DOC_BROKERAGE_LEASING",
   "DOC_COMMISSION_INVOICE"
 ];
 
