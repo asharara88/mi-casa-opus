@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, Map, Upload, Phone, MessageCircle } from 'lucide-react';
+import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, Map, Upload, Phone, MessageCircle, Users } from 'lucide-react';
 import { CompliancePanel } from '@/components/compliance/CompliancePanel';
 import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
 import { useUpdateListing } from '@/hooks/useListings';
@@ -17,6 +17,7 @@ import { PropertyMap } from '@/components/maps/PropertyMap';
 import { NeighborhoodInsights } from '@/components/maps/NeighborhoodInsights';
 import { CommuteCalculator } from '@/components/maps/CommuteCalculator';
 import { PortalPublishingPanel } from '@/components/listings/PortalPublishingPanel';
+import { ListingPipelineTab } from '@/components/listings/ListingPipelineTab';
 
 interface ListingDisplayData {
   id: string;
@@ -202,8 +203,12 @@ export function ListingDetailModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="pipeline">
+              <Users className="h-4 w-4 mr-1" />
+              Pipeline
+            </TabsTrigger>
             <TabsTrigger value="location">
               <Map className="h-4 w-4 mr-1" />
               Location
@@ -313,6 +318,10 @@ export function ListingDetailModal({
                 )}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="pipeline" className="mt-4">
+            <ListingPipelineTab listingId={listing.id} />
           </TabsContent>
 
           <TabsContent value="location" className="space-y-4 mt-4">
