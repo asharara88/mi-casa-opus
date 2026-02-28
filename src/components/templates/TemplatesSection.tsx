@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,9 +26,16 @@ import {
   AlertCircle,
   Info,
   RefreshCw,
-  Loader2
+  Loader2,
+  Printer,
+  Share2,
+  Mail,
+  MessageCircle
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { generateFilledPDF } from '@/lib/pdf-document-generator';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import {
   useDocumentTemplates,
   useComplianceRules,
@@ -413,7 +420,61 @@ export function TemplatesSection() {
             )}
           </ScrollArea>
 
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <div className="flex items-center gap-2 flex-1">
+              <Button
+                onClick={() => {
+                  if (selectedTemplate?.template_content) {
+                    const refNumber = `MC-${new Date().getFullYear()}-${selectedTemplate.template_id?.slice(0, 6).toUpperCase() || 'DRAFT'}`;
+                    generateFilledPDF(selectedTemplate.template_content, selectedTemplate.name, refNumber);
+                    toast.success('Opening branded letterhead for print/save');
+                  }
+                }}
+                disabled={!selectedTemplate?.template_content}
+                className="gap-2"
+              >
+                <Printer className="h-4 w-4" />
+                Print on Letterhead
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Share2 className="h-4 w-4" />
+                    Share
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={() => {
+                    if (selectedTemplate?.template_content) {
+                      const subject = encodeURIComponent(selectedTemplate.name);
+                      const body = encodeURIComponent(selectedTemplate.template_content.slice(0, 2000));
+                      window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+                    }
+                  }}>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Email
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    if (selectedTemplate?.template_content) {
+                      const text = encodeURIComponent(`${selectedTemplate.name}\n\n${selectedTemplate.template_content.slice(0, 1000)}`);
+                      window.open(`https://wa.me/?text=${text}`, '_blank');
+                    }
+                  }}>
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    WhatsApp
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    if (selectedTemplate?.template_content) {
+                      navigator.clipboard.writeText(selectedTemplate.template_content);
+                      toast.success('Template content copied to clipboard');
+                    }
+                  }}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy to Clipboard
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             <Button variant="outline" onClick={() => setShowPreviewDialog(false)}>
               Close
             </Button>
