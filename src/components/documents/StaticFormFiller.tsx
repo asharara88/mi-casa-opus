@@ -521,10 +521,18 @@ async function fillTemplate(
     const labelPatterns = [
       field.label,
       field.label.replace(/\s+/g, " "),
+      // Strip parenthetical suffixes like "(AED or %)" for matching
+      field.label.replace(/\s*\(.*?\)\s*$/, ''),
+      // Remove common prefixes for cooperating broker fields
+      field.label.replace(/^(Cooperating Broker|MiCasa|Offeror|Owner|Seller|Buyer)\s+/i, ''),
+      // Convert key to label format
       key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())
     ];
     
-    labelPatterns.forEach(label => {
+    // Deduplicate
+    const uniquePatterns = [...new Set(labelPatterns.filter(Boolean))];
+    
+    uniquePatterns.forEach(label => {
       // Pattern: "Label: ____" or "Label: __________________________"
       const pattern1 = new RegExp(`(${escapeRegex(label)}:\\s*)_+`, 'gi');
       content = content.replace(pattern1, `$1${displayValue}`);
@@ -532,7 +540,22 @@ async function fillTemplate(
       // Pattern: "Label ____" (without colon)
       const pattern2 = new RegExp(`(${escapeRegex(label)}\\s+)_+`, 'gi');
       content = content.replace(pattern2, `$1${displayValue}`);
+      
+      // Pattern: "Label: ____ (suffix)" - replace blanks before parenthetical text
+      const pattern3 = new RegExp(`(${escapeRegex(label)}:\\s*)_+(\\s*\\(.*?\\))`, 'gi');
+      content = content.replace(pattern3, `$1${displayValue} $2`);
     });
+    
+    // Handle enum fields for checkboxes: [  ] Option1  [  ] Option2
+    if (field.enum && value) {
+      field.enum.forEach(option => {
+        if (String(value) === option) {
+          // Check matching checkbox
+          const checkPattern = new RegExp(`\\[\\s*\\]\\s*${escapeRegex(option)}`, 'gi');
+          content = content.replace(checkPattern, `[X] ${option}`);
+        }
+      });
+    }
   });
   
   // Replace checkboxes based on boolean values
