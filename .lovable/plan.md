@@ -1,36 +1,27 @@
 
 
-## Plan: Listing Pipeline Tab (Leads, Viewings, Sales Status)
+## Plan: Add Fill-in-the-Blank Form to PDF Templates
 
-### What We're Building
-A new **"Pipeline"** tab in the `ListingDetailModal` that shows all activity tied to each listing: linked leads (via deals), viewings, and deal/sales status -- for both Sale and Lease listings.
+### Problem
+The PDF Templates tab only shows raw markdown with Preview/Download/Export. There is no way to fill in the blank fields (e.g., cooperating agency name in the Agent-to-Agent Agreement). The Official Forms tab already has this via `StaticFormFiller`, but the two tabs are disconnected.
 
-### Technical Approach
+### Approach
+Add a "Fill & Generate" button to each PDF template card and preview dialog in `PDFTemplatesSection.tsx`. When clicked, it opens the existing `StaticFormFiller` component (which already has schemas for all 18 forms) in a dialog. On completion, the filled document is shown with Print on Letterhead and Share options.
 
-**Data Sources (all already exist in the database):**
-- `deals` table -- has `listing_id` FK to listings; contains `deal_state`, `deal_type`, `side`
-- `deals.linked_lead_id` -- FK to `leads` table; gives us the lead info per deal
-- `viewing_bookings` table -- has `listing_id` FK; gives scheduled/completed viewings
-- `portal_inquiries` table -- has `listing_id` FK; gives portal lead inquiries
+### Files to Modify
 
-**Files to modify:**
+**`src/components/documents/PDFTemplatesSection.tsx`**
+- Import `StaticFormFiller` and `generateFilledPDF`
+- Add state for `fillingTemplateId` and `filledContent`
+- Map PDF template IDs (e.g., `'06'`) to `TEMPLATE_SCHEMAS` IDs (e.g., `'FORM_06_AGENT_AGREEMENT'`)
+- Add a "Fill & Generate" button on each template card (next to Preview/Download/Export)
+- Add a "Fill & Generate" button in the preview dialog
+- When `StaticFormFiller` completes, show the filled document with Print on Letterhead + Share buttons
+- Reuse the same letterhead/share pattern from `TemplatesSection.tsx`
 
-1. **`src/components/listings/ListingDetailModal.tsx`**
-   - Add a 6th tab "Pipeline" (with `Users` icon) to the TabsList
-   - Import and render a new `ListingPipelineTab` component
-   - Change grid-cols-5 to grid-cols-6
-
-2. **`src/components/listings/ListingPipelineTab.tsx`** (NEW)
-   - Accepts `listingId: string` prop
-   - Queries:
-     - `deals` where `listing_id = listingId`, joined with `leads` via `linked_lead_id`
-     - `viewing_bookings` where `listing_id = listingId`
-     - `portal_inquiries` where `listing_id = listingId`
-   - Renders 3 sections:
-     - **Leads** -- cards showing contact name, source, state, score from linked leads + portal inquiries
-     - **Viewings** -- list with date, status badge, agent, notes
-     - **Sales/Lease Status** -- deal cards with state badge, type (Sale/Rent), parties, agreed price, timeline
-
-### No Database Changes Required
-All foreign keys and indexes already exist.
+### Implementation Steps
+1. Add ID mapping from PDF template `id` to `FORM_*` schema IDs
+2. Add fill/preview state management
+3. Add fill dialog with `StaticFormFiller`
+4. Add post-fill result dialog with letterhead print and share actions
 
