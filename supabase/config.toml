@@ -92,3 +92,6 @@ verify_jwt = false
 
 [functions.invite-team-member]
 verify_jwt = false
+
+[functions.bos-llm-marketing-advisor]
+verify_jwt = false
