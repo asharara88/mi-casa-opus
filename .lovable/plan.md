@@ -1,50 +1,36 @@
 
 
-## Plan: Marketing Advisor AI — "Mi Marketing" Assistant
+## Plan: Dynamic Suggestion Chips for Marketing Advisor
 
-### What It Does
-A conversational AI marketing advisor embedded in the Marketing Hub that provides Abu Dhabi real estate marketing guidance. It has access to the user's actual campaign, ad, and event data to give contextual, actionable advice.
-
-### Capabilities & Effectiveness
-
-**High-value functions (leveraging existing data):**
-- Analyze campaign ROI using live `marketing_campaigns` metrics and suggest budget reallocation
-- Review ad compliance (DARI permit expiry warnings, copy review against ADREC rules)
-- Suggest optimal channel mix based on `source_attribution` data
-- Draft marketing copy for listings using the existing `bos-llm-marketing-copy` edge function
-- Recommend event timing based on `marketing_events` history and market seasonality
-- Generate campaign briefs and content calendars for Abu Dhabi market segments (Saadiyat, Yas, Reem)
-
-**Medium-value functions (AI reasoning):**
-- Competitive positioning advice based on market knowledge
-- Target audience segmentation suggestions for off-plan vs secondary
-- WhatsApp/SMS campaign timing recommendations
-- Price alert strategy (when to notify clients based on market movement patterns)
-
-**Limitations (honest assessment):**
-- Cannot execute campaigns or publish ads — advisory only, consistent with BOS "AI Advises" philosophy
-- Market data is limited to what's in the database (no live portal scraping in chat)
-- Generic marketing advice may not always be Abu Dhabi-specific without strong system prompt grounding
-
-### Technical Approach
-
-**New edge function: `supabase/functions/bos-llm-marketing-advisor/index.ts`**
-- System prompt grounding it as Abu Dhabi real estate marketing specialist
-- Tool-calling to fetch live campaign/ad/event data via Supabase queries
-- Uses `google/gemini-3-flash-preview` via Lovable AI gateway
-- Authenticated, rate-limit aware (429/402 handling)
-
-**New component: `src/components/marketing/MarketingAdvisorChat.tsx`**
-- Streaming chat panel embedded as a new "Advisor" tab in Marketing Hub
-- Shows campaign context chips (active campaigns count, budget utilization, upcoming events)
-- Suggestion chips: "Analyze my campaign ROI", "Draft ad copy for my top listing", "Suggest next month's strategy"
-
-**Modified files:**
-- `src/components/marketing/MarketingSection.tsx` — add "Advisor" tab with sparkle icon
-- `supabase/config.toml` — register new edge function with `verify_jwt = false`
+### Approach
+Replace the static `SUGGESTIONS` array with a `useMemo` that builds suggestions from live `stats` data. The hook `useMarketingStats` needs additional fields (DARI expiring ads count, zero-lead campaigns count, paused campaigns count) to drive richer suggestions.
 
 ### Implementation Steps
-1. Create the `bos-llm-marketing-advisor` edge function with Abu Dhabi marketing system prompt and data-fetching tools
-2. Build `MarketingAdvisorChat.tsx` with streaming chat, context display, and suggestion chips
-3. Add "Advisor" tab to `MarketingSection.tsx`
+
+**1. Extend `useMarketingStats` hook** — add 3 new computed fields:
+- `expiringPermits`: count of ads where `permit_valid_until` is within 14 days (requires fetching `permit_valid_until, permit_status` in the ads query)
+- `pausedCampaigns`: count of campaigns with status `'Paused'`
+- `zeroLeadCampaigns`: count of active campaigns where `metrics.leads === 0`
+
+**2. Extend `MarketingStats` type** — add `expiringPermits`, `pausedCampaigns`, `zeroLeadCampaigns` to the interface.
+
+**3. Rewrite suggestion logic in `MarketingAdvisorChat.tsx`** — replace static `SUGGESTIONS` with a `useMemo` that conditionally builds suggestions based on thresholds:
+
+| Condition | Suggestion |
+|---|---|
+| `budgetUtil > 80%` | "Review overspending campaigns" |
+| `expiringPermits > 0` | "Review {N} DARI permits expiring soon" |
+| `activeCampaigns === 0` | "Help me plan my first campaign" |
+| `zeroLeadCampaigns > 0` | "Why are {N} campaigns generating zero leads?" |
+| `upcomingEvents > 0` | "Maximize ROI for my {N} upcoming events" |
+| `pausedCampaigns > 0` | "Should I reactivate {N} paused campaigns?" |
+| `totalLeadsGenerated > 0` | "Analyze my lead source attribution" |
+| Always (fallback pool) | "Draft ad copy for a luxury listing", "Suggest next month's strategy", "Which channels are underperforming?" |
+
+Logic: build conditional suggestions first (max ~3), then fill remaining slots from the fallback pool up to 6 total. After first message, show only 3.
+
+### Files Modified
+- `src/types/marketing.ts` — add 3 fields to `MarketingStats`
+- `src/hooks/useMarketingStats.ts` — compute new fields from existing queries (expand ads select to include `permit_valid_until, permit_status`; expand campaigns select to include `status`)
+- `src/components/marketing/MarketingAdvisorChat.tsx` — replace static array with `useMemo`-driven dynamic suggestions
 
