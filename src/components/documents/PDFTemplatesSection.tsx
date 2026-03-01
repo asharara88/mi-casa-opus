@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { 
   FileText, 
   Download, 
@@ -19,11 +20,41 @@ import {
   AlertTriangle,
   Scale,
   Printer,
-  Loader2
+  Loader2,
+  PenLine,
+  Share2,
+  Mail,
+  MessageCircle,
+  Copy
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { generateProfessionalPDFHTML } from '@/lib/pdf-document-generator';
+import { generateProfessionalPDFHTML, generateFilledPDF } from '@/lib/pdf-document-generator';
+import { StaticFormFiller } from '@/components/documents/StaticFormFiller';
+import { useStaticFormFiller } from '@/hooks/useStaticFormFiller';
+import { TEMPLATE_SCHEMAS } from '@/lib/template-schemas';
+
+// Map PDF template numeric IDs to FORM_* schema IDs
+const PDF_TO_FORM_MAP: Record<string, string> = {
+  '01': 'FORM_01_SELLER_AUTH',
+  '02': 'FORM_02_BUYER_REP',
+  '03': 'FORM_03_MARKETING',
+  '04': 'FORM_04_AGENT_LICENSE',
+  '05': 'FORM_05_COMPANY_LICENSE',
+  '06': 'FORM_06_AGENT_AGREEMENT',
+  '07': 'FORM_07_OFFER',
+  '08': 'FORM_08_MOU',
+  '09': 'FORM_09_RESERVATION',
+  '10': 'FORM_10_CLOSING',
+  '11': 'FORM_11_NOC',
+  '12': 'FORM_12_INVOICE',
+  '13': 'FORM_13_SPLIT',
+  '14': 'FORM_14_REFUND',
+  '15': 'FORM_15_LEDGER',
+  '16': 'FORM_16_PRIVACY',
+  '17': 'FORM_17_COMPLAINT',
+  '18': 'FORM_18_GOVERNANCE',
+};
 
 // Define all PDF templates from docs/templates
 const PDF_TEMPLATES = [
@@ -229,6 +260,11 @@ export function PDFTemplatesSection() {
   const [previewContent, setPreviewContent] = useState<string>('');
   const [isExporting, setIsExporting] = useState<string | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  
+  // Fill & Generate state
+  const [fillingTemplateId, setFillingTemplateId] = useState<string | null>(null);
+  const [filledResult, setFilledResult] = useState<{ title: string; content: string; referenceNumber: string } | null>(null);
+  const { saveDocument, createFollowUpTask, isLoading: isSaving } = useStaticFormFiller();
 
   const categories = [...new Set(PDF_TEMPLATES.map(t => t.category))];
 
@@ -316,6 +352,51 @@ export function PDFTemplatesSection() {
       console.error('PDF export error:', error);
     } finally {
       setIsExporting(null);
+    }
+  };
+
+  const handleStartFill = (templateId: string) => {
+    const formId = PDF_TO_FORM_MAP[templateId];
+    if (!formId || !TEMPLATE_SCHEMAS[formId]) {
+      toast.error('Fill-in form not available for this template yet');
+      return;
+    }
+    setPreviewTemplate(null); // close preview if open
+    setFillingTemplateId(formId);
+  };
+
+  const handleFillComplete = async (formData: Record<string, unknown>, filledContent: string) => {
+    if (!fillingTemplateId) return;
+    
+    const result = await saveDocument(fillingTemplateId, formData, filledContent);
+    if (result) {
+      await createFollowUpTask(fillingTemplateId, result.documentId);
+      setFilledResult({
+        title: result.title,
+        content: result.body,
+        referenceNumber: result.referenceNumber,
+      });
+    }
+    setFillingTemplateId(null);
+  };
+
+  const handlePrintLetterhead = () => {
+    if (!filledResult) return;
+    generateFilledPDF(filledResult.content, filledResult.title, filledResult.referenceNumber);
+  };
+
+  const handleShare = (method: 'email' | 'whatsapp' | 'copy') => {
+    if (!filledResult) return;
+    const subject = encodeURIComponent(filledResult.title);
+    const body = encodeURIComponent(`${filledResult.title}\nRef: ${filledResult.referenceNumber}\n\n${filledResult.content.slice(0, 500)}...`);
+    
+    if (method === 'email') {
+      window.open(`mailto:?subject=${subject}&body=${body}`);
+    } else if (method === 'whatsapp') {
+      window.open(`https://wa.me/?text=${body}`);
+    } else {
+      navigator.clipboard.writeText(filledResult.content);
+      toast.success('Document copied to clipboard');
     }
   };
 
@@ -440,29 +521,40 @@ export function PDFTemplatesSection() {
                     )}
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2">
                     <Button 
                       size="sm" 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => handlePreview(template)}
+                      onClick={() => handleStartFill(template.id)}
+                      className="w-full"
                     >
-                      <Eye className="h-3.5 w-3.5 mr-1" />
-                      Preview
+                      <PenLine className="h-3.5 w-3.5 mr-1" />
+                      Fill & Generate
                     </Button>
-                    <Button 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => handleExportPDF(template)}
-                      disabled={isExporting === template.id}
-                    >
-                      {isExporting === template.id ? (
-                        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                      ) : (
-                        <Printer className="h-3.5 w-3.5 mr-1" />
-                      )}
-                      Export PDF
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={() => handlePreview(template)}
+                      >
+                        <Eye className="h-3.5 w-3.5 mr-1" />
+                        Preview
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => handleExportPDF(template)}
+                        disabled={isExporting === template.id}
+                      >
+                        {isExporting === template.id ? (
+                          <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                        ) : (
+                          <Printer className="h-3.5 w-3.5 mr-1" />
+                        )}
+                        Export
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -509,14 +601,92 @@ export function PDFTemplatesSection() {
               <>
                 <Button variant="outline" onClick={() => handleDownload(previewTemplate)}>
                   <Download className="h-4 w-4 mr-2" />
-                  Download MD
+                  Download
                 </Button>
-                <Button onClick={() => handleExportPDF(previewTemplate)}>
+                <Button variant="outline" onClick={() => handleExportPDF(previewTemplate)}>
                   <Printer className="h-4 w-4 mr-2" />
                   Export PDF
                 </Button>
+                <Button onClick={() => handleStartFill(previewTemplate.id)}>
+                  <PenLine className="h-4 w-4 mr-2" />
+                  Fill & Generate
+                </Button>
               </>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Fill & Generate Dialog */}
+      <Dialog open={!!fillingTemplateId} onOpenChange={() => setFillingTemplateId(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PenLine className="h-5 w-5 text-primary" />
+              Fill Document
+            </DialogTitle>
+            <DialogDescription>
+              Fill in the blanks to generate a ready-to-sign document on MiCasa letterhead.
+            </DialogDescription>
+          </DialogHeader>
+          {fillingTemplateId && (
+            <StaticFormFiller
+              templateId={fillingTemplateId}
+              onComplete={handleFillComplete}
+              onCancel={() => setFillingTemplateId(null)}
+              isProcessing={isSaving}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Filled Result Dialog */}
+      <Dialog open={!!filledResult} onOpenChange={() => setFilledResult(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileCheck className="h-5 w-5 text-primary" />
+              {filledResult?.title}
+            </DialogTitle>
+            <DialogDescription>
+              Reference: {filledResult?.referenceNumber}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[50vh] mt-2">
+            <pre className="whitespace-pre-wrap text-sm font-mono bg-muted/50 p-4 rounded-lg">
+              {filledResult?.content}
+            </pre>
+          </ScrollArea>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setFilledResult(null)}>
+              Close
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleShare('email')}>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Email
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleShare('whatsapp')}>
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  WhatsApp
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleShare('copy')}>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy to Clipboard
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button onClick={handlePrintLetterhead}>
+              <Printer className="h-4 w-4 mr-2" />
+              Print on Letterhead
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
