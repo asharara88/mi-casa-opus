@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { LayoutDashboard, Megaphone, Calendar, Users, BarChart3, Bell, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Megaphone, Calendar, Users, BarChart3, Bell, Sparkles, PenTool } from 'lucide-react';
 import { MarketingDashboard } from './MarketingDashboard';
 import { CampaignsList } from './CampaignsList';
 import { AdsManager } from './AdsManager';
@@ -9,6 +9,7 @@ import { EventsCalendar } from './EventsCalendar';
 import { NetworkDirectory } from './NetworkDirectory';
 import { PriceAlertsSection } from './PriceAlertsSection';
 import { MarketingAdvisorChat } from './MarketingAdvisorChat';
+import { MarketingCopyGenerator } from './MarketingCopyGenerator';
 import { useUnreadAlertCount } from '@/hooks/usePriceAlerts';
 
 export function MarketingSection() {
@@ -55,6 +56,10 @@ export function MarketingSection() {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="copy-gen" className="flex items-center gap-2">
+            <PenTool className="w-4 h-4" />
+            <span className="hidden sm:inline">Copy Gen</span>
+          </TabsTrigger>
           <TabsTrigger value="advisor" className="flex items-center gap-2">
             <Sparkles className="w-4 h-4" />
             <span className="hidden sm:inline">Advisor</span>
@@ -83,6 +88,10 @@ export function MarketingSection() {
 
         <TabsContent value="price-alerts" className="mt-4">
           <PriceAlertsSection />
+        </TabsContent>
+
+        <TabsContent value="copy-gen" className="mt-4">
+          <MarketingCopyGenerator />
         </TabsContent>
 
         <TabsContent value="advisor" className="mt-4">
