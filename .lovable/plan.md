@@ -1,27 +1,50 @@
 
 
-## Plan: Add Fill-in-the-Blank Form to PDF Templates
+## Plan: Marketing Advisor AI — "Mi Marketing" Assistant
 
-### Problem
-The PDF Templates tab only shows raw markdown with Preview/Download/Export. There is no way to fill in the blank fields (e.g., cooperating agency name in the Agent-to-Agent Agreement). The Official Forms tab already has this via `StaticFormFiller`, but the two tabs are disconnected.
+### What It Does
+A conversational AI marketing advisor embedded in the Marketing Hub that provides Abu Dhabi real estate marketing guidance. It has access to the user's actual campaign, ad, and event data to give contextual, actionable advice.
 
-### Approach
-Add a "Fill & Generate" button to each PDF template card and preview dialog in `PDFTemplatesSection.tsx`. When clicked, it opens the existing `StaticFormFiller` component (which already has schemas for all 18 forms) in a dialog. On completion, the filled document is shown with Print on Letterhead and Share options.
+### Capabilities & Effectiveness
 
-### Files to Modify
+**High-value functions (leveraging existing data):**
+- Analyze campaign ROI using live `marketing_campaigns` metrics and suggest budget reallocation
+- Review ad compliance (DARI permit expiry warnings, copy review against ADREC rules)
+- Suggest optimal channel mix based on `source_attribution` data
+- Draft marketing copy for listings using the existing `bos-llm-marketing-copy` edge function
+- Recommend event timing based on `marketing_events` history and market seasonality
+- Generate campaign briefs and content calendars for Abu Dhabi market segments (Saadiyat, Yas, Reem)
 
-**`src/components/documents/PDFTemplatesSection.tsx`**
-- Import `StaticFormFiller` and `generateFilledPDF`
-- Add state for `fillingTemplateId` and `filledContent`
-- Map PDF template IDs (e.g., `'06'`) to `TEMPLATE_SCHEMAS` IDs (e.g., `'FORM_06_AGENT_AGREEMENT'`)
-- Add a "Fill & Generate" button on each template card (next to Preview/Download/Export)
-- Add a "Fill & Generate" button in the preview dialog
-- When `StaticFormFiller` completes, show the filled document with Print on Letterhead + Share buttons
-- Reuse the same letterhead/share pattern from `TemplatesSection.tsx`
+**Medium-value functions (AI reasoning):**
+- Competitive positioning advice based on market knowledge
+- Target audience segmentation suggestions for off-plan vs secondary
+- WhatsApp/SMS campaign timing recommendations
+- Price alert strategy (when to notify clients based on market movement patterns)
+
+**Limitations (honest assessment):**
+- Cannot execute campaigns or publish ads — advisory only, consistent with BOS "AI Advises" philosophy
+- Market data is limited to what's in the database (no live portal scraping in chat)
+- Generic marketing advice may not always be Abu Dhabi-specific without strong system prompt grounding
+
+### Technical Approach
+
+**New edge function: `supabase/functions/bos-llm-marketing-advisor/index.ts`**
+- System prompt grounding it as Abu Dhabi real estate marketing specialist
+- Tool-calling to fetch live campaign/ad/event data via Supabase queries
+- Uses `google/gemini-3-flash-preview` via Lovable AI gateway
+- Authenticated, rate-limit aware (429/402 handling)
+
+**New component: `src/components/marketing/MarketingAdvisorChat.tsx`**
+- Streaming chat panel embedded as a new "Advisor" tab in Marketing Hub
+- Shows campaign context chips (active campaigns count, budget utilization, upcoming events)
+- Suggestion chips: "Analyze my campaign ROI", "Draft ad copy for my top listing", "Suggest next month's strategy"
+
+**Modified files:**
+- `src/components/marketing/MarketingSection.tsx` — add "Advisor" tab with sparkle icon
+- `supabase/config.toml` — register new edge function with `verify_jwt = false`
 
 ### Implementation Steps
-1. Add ID mapping from PDF template `id` to `FORM_*` schema IDs
-2. Add fill/preview state management
-3. Add fill dialog with `StaticFormFiller`
-4. Add post-fill result dialog with letterhead print and share actions
+1. Create the `bos-llm-marketing-advisor` edge function with Abu Dhabi marketing system prompt and data-fetching tools
+2. Build `MarketingAdvisorChat.tsx` with streaming chat, context display, and suggestion chips
+3. Add "Advisor" tab to `MarketingSection.tsx`
 
