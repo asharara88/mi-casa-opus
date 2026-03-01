@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,13 +12,10 @@ import { toast } from 'sonner';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
-const SUGGESTIONS = [
-  'Analyze my campaign ROI',
+const FALLBACK_SUGGESTIONS = [
   'Draft ad copy for a luxury listing',
   'Suggest next month\'s strategy',
   'Which channels are underperforming?',
-  'Review my DARI permit compliance',
-  'Plan an open house event',
 ];
 
 export function MarketingAdvisorChat() {
@@ -117,6 +114,22 @@ export function MarketingAdvisorChat() {
 
   const budgetUtil = stats.totalBudget > 0 ? Math.round((stats.totalSpend / stats.totalBudget) * 100) : 0;
 
+  const dynamicSuggestions = useMemo(() => {
+    const conditional: string[] = [];
+
+    if (budgetUtil > 80) conditional.push('Review overspending campaigns');
+    if (stats.expiringPermits > 0) conditional.push(`Review ${stats.expiringPermits} DARI permits expiring soon`);
+    if (stats.activeCampaigns === 0) conditional.push('Help me plan my first campaign');
+    if (stats.zeroLeadCampaigns > 0) conditional.push(`Why are ${stats.zeroLeadCampaigns} campaigns generating zero leads?`);
+    if (stats.upcomingEvents > 0) conditional.push(`Maximize ROI for my ${stats.upcomingEvents} upcoming events`);
+    if (stats.pausedCampaigns > 0) conditional.push(`Should I reactivate ${stats.pausedCampaigns} paused campaigns?`);
+    if (stats.totalLeadsGenerated > 0) conditional.push('Analyze my lead source attribution');
+
+    const prioritized = conditional.slice(0, 3);
+    const remaining = FALLBACK_SUGGESTIONS.filter(s => !prioritized.includes(s));
+    return [...prioritized, ...remaining].slice(0, 6);
+  }, [stats, budgetUtil]);
+
   return (
     <div className="space-y-4">
       {/* Context chips */}
@@ -197,7 +210,7 @@ export function MarketingAdvisorChat() {
           </ScrollArea>
 
           <SuggestionChips
-            suggestions={messages.length === 0 ? SUGGESTIONS : SUGGESTIONS.slice(0, 3)}
+            suggestions={messages.length === 0 ? dynamicSuggestions : dynamicSuggestions.slice(0, 3)}
             onSelect={(s) => send(s)}
             className="border-none bg-transparent px-0"
           />
