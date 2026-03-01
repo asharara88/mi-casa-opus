@@ -19,7 +19,7 @@ export function useMarketingStats() {
       // Fetch ads
       const { data: ads } = await supabase
         .from('marketing_ads')
-        .select('status, leads_generated');
+        .select('status, leads_generated, permit_valid_until, permit_status');
       
       // Fetch referral sources
       const { data: sources } = await supabase
@@ -58,6 +58,24 @@ export function useMarketingStats() {
 
       const activeAds = adsList.filter(a => a.status === 'Active').length;
 
+      // DARI permit expiry check (within 14 days)
+      const fourteenDaysFromNow = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+      const expiringPermits = adsList.filter(a => {
+        if (!a.permit_valid_until || a.permit_status === 'Expired') return false;
+        const expiry = new Date(a.permit_valid_until);
+        return expiry >= now && expiry <= fourteenDaysFromNow;
+      }).length;
+
+      // Paused campaigns
+      const pausedCampaigns = campaignsList.filter(c => c.status === 'Paused').length;
+
+      // Active campaigns with zero leads
+      const zeroLeadCampaigns = campaignsList.filter(c => {
+        if (c.status !== 'Active') return false;
+        const metrics = c.metrics as { leads?: number } | null;
+        return !metrics?.leads;
+      }).length;
+
       // Group prospects by source
       const sourceMap = new Map<string, number>();
       prospectsList.forEach(p => {
@@ -81,6 +99,9 @@ export function useMarketingStats() {
         activeAds,
         totalReferralSources: sourcesList.length,
         prospectsBySource,
+        expiringPermits,
+        pausedCampaigns,
+        zeroLeadCampaigns,
       };
     },
   });
@@ -98,6 +119,9 @@ export function useMarketingStats() {
       activeAds: 0,
       totalReferralSources: 0,
       prospectsBySource: [],
+      expiringPermits: 0,
+      pausedCampaigns: 0,
+      zeroLeadCampaigns: 0,
     },
     isLoading,
     error,

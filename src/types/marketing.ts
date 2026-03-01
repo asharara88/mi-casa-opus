@@ -119,4 +119,7 @@ export interface MarketingStats {
   activeAds: number;
   totalReferralSources: number;
   prospectsBySource: { source: string; count: number }[];
+  expiringPermits: number;
+  pausedCampaigns: number;
+  zeroLeadCampaigns: number;
 }
