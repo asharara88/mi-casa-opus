@@ -39,9 +39,8 @@ function generateDocRef(templateId: string): string {
 
 // Convert underscore patterns to form fields
 function convertUnderscoresToFormFields(html: string): string {
-  // Pattern: Label: _____ or Label:_____ 
-  // Match label followed by underscores
-  return html.replace(
+  // Pattern 1: Label: _____ or Label:_____
+  let result = html.replace(
     /([A-Za-z\s\/\(\)]+):\s*_{3,}/g,
     (match, label) => {
       const trimmedLabel = label.trim();
@@ -51,6 +50,23 @@ function convertUnderscoresToFormFields(html: string): string {
       </div>`;
     }
   );
+  
+  // Pattern 2: Date separators like ____ / ____ / ______ (convert to single date field)
+  result = result.replace(
+    /_{2,}\s*\/\s*_{2,}\s*\/\s*_{2,}/g,
+    `<div class="form-field">
+      <label class="field-label">Date</label>
+      <div class="field-box" style="max-width: 200px;"></div>
+    </div>`
+  );
+  
+  // Pattern 3: Standalone long underscores (catch-all)
+  result = result.replace(
+    /(?<![\/\w])_{5,}(?![\/\w])/g,
+    '<div class="field-box"></div>'
+  );
+  
+  return result;
 }
 
 // Convert standalone underscore lines to signature fields
@@ -175,134 +191,152 @@ export function generateProfessionalPDFHTML(
     /* Letterhead */
     .letterhead {
       display: flex;
-      align-items: flex-start;
-      gap: 20px;
-      padding-bottom: 15px;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 16px;
       border-bottom: 3px solid #0284C7;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     
     .logo-container {
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo-container svg {
+      display: block;
     }
     
     .company-details {
-      flex: 1;
+      flex-shrink: 0;
       text-align: right;
+      line-height: 1.6;
     }
     
     .company-name {
       font-size: 14px;
       font-weight: 700;
-      color: #1a1a1a;
-      margin-bottom: 2px;
+      color: #1a365d;
+      margin-bottom: 1px;
     }
     
     .company-name-arabic {
       font-size: 11px;
-      color: #666;
-      margin-bottom: 8px;
+      color: #64748b;
+      margin-bottom: 6px;
+      direction: rtl;
     }
     
     .company-info-line {
       font-size: 9px;
-      color: #444;
-      margin-bottom: 2px;
+      color: #475569;
+      margin-bottom: 1px;
+      line-height: 1.7;
     }
     
     .company-info-line strong {
       color: #0284C7;
+      font-weight: 600;
     }
     
     /* Document Header */
     .document-header {
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
       border: 1px solid #e2e8f0;
-      border-left: 4px solid #CA8A04;
-      padding: 15px 20px;
-      margin-bottom: 20px;
-      border-radius: 0 4px 4px 0;
+      border-left: 4px solid #d4a574;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      border-radius: 0 6px 6px 0;
     }
     
     .document-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: #1a365d;
       margin-bottom: 4px;
+      letter-spacing: -0.2px;
     }
     
     .document-subtitle {
-      font-size: 11px;
+      font-size: 10px;
       color: #64748b;
       margin-bottom: 10px;
     }
     
     .document-meta {
       display: flex;
-      gap: 20px;
+      gap: 24px;
       font-size: 9px;
       color: #64748b;
     }
     
     .document-meta span {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 4px;
     }
     
     .document-meta strong {
-      color: #1a1a1a;
+      color: #1a365d;
+      font-weight: 600;
     }
     
     /* Content Styles */
     .content {
-      padding: 0 5px;
+      padding: 0;
+    }
+    
+    .content > .document-title {
+      display: none; /* Avoid duplicate title from markdown H1 */
     }
     
     .paragraph {
-      margin: 10px 0;
+      margin: 8px 0;
       text-align: justify;
+      line-height: 1.65;
     }
     
     .section-header {
-      margin: 20px 0 10px 0;
-      padding-bottom: 5px;
+      margin: 24px 0 10px 0;
+      padding-bottom: 6px;
       border-bottom: 1px solid #e2e8f0;
     }
     
     .section-header.h2 {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: #0284C7;
+      letter-spacing: 0.1px;
     }
     
     .section-header.h3 {
       font-size: 12px;
       font-weight: 600;
-      color: #1a1a1a;
+      color: #1a365d;
     }
     
     /* Form Fields */
     .form-field {
-      margin: 12px 0;
+      margin: 14px 0;
     }
     
     .field-label {
       display: block;
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: 600;
       color: #64748b;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
+      letter-spacing: 0.6px;
+      margin-bottom: 5px;
     }
     
     .field-box {
       border: 1px solid #cbd5e1;
       border-radius: 4px;
-      min-height: 32px;
-      background: #f8fafc;
-      padding: 6px 10px;
+      min-height: 34px;
+      background: #fafbfc;
+      padding: 8px 10px;
     }
     
     .signature-line {
@@ -572,36 +606,39 @@ export function generateFilledPDF(
     .document-container { max-width: 210mm; margin: 0 auto; }
     .letterhead {
       display: flex;
-      align-items: flex-start;
-      gap: 20px;
-      padding-bottom: 15px;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 16px;
       border-bottom: 3px solid #0284C7;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
-    .company-details { flex: 1; text-align: right; }
-    .company-name { font-size: 14px; font-weight: 700; color: #1a1a1a; }
-    .company-name-arabic { font-size: 11px; color: #666; margin-bottom: 8px; }
-    .company-info-line { font-size: 9px; color: #444; margin-bottom: 2px; }
-    .company-info-line strong { color: #0284C7; }
+    .logo-container { flex-shrink: 0; display: flex; align-items: center; }
+    .logo-container svg { display: block; }
+    .company-details { flex-shrink: 0; text-align: right; line-height: 1.6; }
+    .company-name { font-size: 14px; font-weight: 700; color: #1a365d; margin-bottom: 1px; }
+    .company-name-arabic { font-size: 11px; color: #64748b; margin-bottom: 6px; direction: rtl; }
+    .company-info-line { font-size: 9px; color: #475569; margin-bottom: 1px; line-height: 1.7; }
+    .company-info-line strong { color: #0284C7; font-weight: 600; }
     .document-header {
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
       border: 1px solid #e2e8f0;
-      border-left: 4px solid #CA8A04;
-      padding: 15px 20px;
-      margin-bottom: 20px;
-      border-radius: 0 4px 4px 0;
+      border-left: 4px solid #d4a574;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      border-radius: 0 6px 6px 0;
     }
-    .document-title { font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
-    .document-meta { display: flex; gap: 20px; font-size: 9px; color: #64748b; }
-    .document-meta strong { color: #1a1a1a; }
-    .content { padding: 0 5px; }
+    .document-title { font-size: 17px; font-weight: 700; color: #1a365d; margin-bottom: 4px; }
+    .document-meta { display: flex; gap: 24px; font-size: 9px; color: #64748b; }
+    .document-meta strong { color: #1a365d; font-weight: 600; }
+    .content { padding: 0; }
+    .content > .document-title { display: none; }
     .content pre { white-space: pre-wrap; font-family: inherit; font-size: 11px; line-height: 1.6; }
-    .section-header { margin: 20px 0 10px 0; padding-bottom: 5px; border-bottom: 1px solid #e2e8f0; }
-    .section-header.h2 { font-size: 14px; font-weight: 600; color: #0284C7; }
-    .section-header.h3 { font-size: 12px; font-weight: 600; color: #1a1a1a; }
-    .form-field { margin: 12px 0; }
-    .field-label { display: block; font-size: 9px; font-weight: 600; color: #64748b; text-transform: uppercase; }
-    .field-box { border: 1px solid #cbd5e1; border-radius: 4px; min-height: 32px; background: #f8fafc; padding: 6px 10px; }
+    .section-header { margin: 24px 0 10px 0; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
+    .section-header.h2 { font-size: 13px; font-weight: 600; color: #0284C7; }
+    .section-header.h3 { font-size: 12px; font-weight: 600; color: #1a365d; }
+    .form-field { margin: 14px 0; }
+    .field-label { display: block; font-size: 8.5px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 5px; }
+    .field-box { border: 1px solid #cbd5e1; border-radius: 4px; min-height: 34px; background: #fafbfc; padding: 8px 10px; }
     .checkbox-item { display: flex; align-items: flex-start; gap: 10px; margin: 8px 0; padding: 8px 12px; background: #f8fafc; border-radius: 4px; }
     .checkbox { width: 16px; height: 16px; border: 2px solid #cbd5e1; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; }
     .checkbox.checked { background: #0284C7; border-color: #0284C7; color: white; }
