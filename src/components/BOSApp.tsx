@@ -4,6 +4,7 @@ import { useTheme } from 'next-themes';
 import { useAuth, AppRole } from '@/hooks/useAuth';
 import { useDemoMode } from '@/contexts/DemoContext';
 import { ValidationContext } from '@/types/bos';
+import { DEMO_AI_INSIGHTS } from '@/data/demoData';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
@@ -322,8 +323,7 @@ export function BOSApp() {
 function AIInsightsSection({ onNavigate }: { onNavigate: (section: string, entityId?: string) => void }) {
   const { isDemoMode } = useDemoMode();
   
-  // Import demo data dynamically
-  const demoInsights = isDemoMode ? require('@/data/demoData').DEMO_AI_INSIGHTS : [];
+  const demoInsights = isDemoMode ? DEMO_AI_INSIGHTS : [];
 
   return (
     <div className="space-y-6 animate-fade-in">

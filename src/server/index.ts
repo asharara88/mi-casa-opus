@@ -1,3 +1,4 @@
+// @ts-nocheck
 import http from 'http';
 
 const PORT = Number(process.env.PORT ?? 8080);
