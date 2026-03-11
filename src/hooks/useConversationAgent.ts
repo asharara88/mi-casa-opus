@@ -48,7 +48,7 @@ export function useConversationAgent({
   const [currentProspect, setCurrentProspect] = useState<ProspectContext | null>(null);
   const [callDuration, setCallDuration] = useState(0);
   const callStartRef = useRef<Date | null>(null);
-  const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const durationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const conversation = useConversation({
     onConnect: () => {

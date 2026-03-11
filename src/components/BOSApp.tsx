@@ -322,8 +322,7 @@ export function BOSApp() {
 function AIInsightsSection({ onNavigate }: { onNavigate: (section: string, entityId?: string) => void }) {
   const { isDemoMode } = useDemoMode();
   
-  // Import demo data dynamically
-  const demoInsights = isDemoMode ? require('@/data/demoData').DEMO_AI_INSIGHTS : [];
+  const demoInsights = isDemoMode ? DEMO_AI_INSIGHTS : [];
 
   return (
     <div className="space-y-6 animate-fade-in">
