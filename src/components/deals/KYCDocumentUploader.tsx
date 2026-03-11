@@ -42,11 +42,11 @@ export const KYCDocumentUploader: React.FC<KYCDocumentUploaderProps> = ({
           evidence_id: `KYC_${partyId}_${Date.now()}`,
           entity_type: 'deal_party',
           entity_id: partyId,
-          evidence_type: 'IdentityDocument',
+          evidence_type: 'Identity' as const,
           file_hash: result.hash,
           file_url: result.url,
           source: `kyc_uploader:${partyName}`,
-          immutability_class: 'System',
+          immutability_class: 'System' as const,
           metadata: { deal_id: dealId, party_name: partyName },
         })
         .select()
