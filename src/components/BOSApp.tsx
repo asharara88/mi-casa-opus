@@ -4,6 +4,7 @@ import { useTheme } from 'next-themes';
 import { useAuth, AppRole } from '@/hooks/useAuth';
 import { useDemoMode } from '@/contexts/DemoContext';
 import { ValidationContext } from '@/types/bos';
+import { DEMO_AI_INSIGHTS } from '@/data/demoData';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
