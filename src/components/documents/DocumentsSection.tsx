@@ -10,16 +10,17 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   Search, 
   Plus, 
   FileText, 
   FileCheck, 
   Filter,
-  FolderOpen,
   Loader2,
   Sparkles,
-  ClipboardList
+  ClipboardList,
+  PenLine
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { DocType } from '@/types/bos';
@@ -28,13 +29,12 @@ export function DocumentsSection() {
   const { data: rawTemplates, isLoading: templatesLoading } = useDocumentTemplates();
   const { data: rawDocuments, isLoading: documentsLoading } = useDocumentInstances();
   
-  const [activeTab, setActiveTab] = useState('templates');
+  const [activeTab, setActiveTab] = useState('official-forms');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [docTypeFilter, setDocTypeFilter] = useState<string>('all');
   const [previewTemplate, setPreviewTemplate] = useState<DocumentTemplateCardData | null>(null);
 
-  // Transform templates to expected format
   const templates: DocumentTemplateCardData[] = (rawTemplates || []).map(t => ({
     template_id: t.template_id,
     doc_type: t.doc_type as DocType,
@@ -48,7 +48,6 @@ export function DocumentsSection() {
     name: t.name,
   }));
 
-  // Transform documents to expected format
   const documents = (rawDocuments || []).map(d => ({
     document_id: d.document_id,
     template_ref: `${(d as any).document_templates?.doc_type || 'Unknown'}_v${(d as any).document_templates?.template_version || '1'}`,
@@ -101,113 +100,78 @@ export function DocumentsSection() {
     );
   }
 
+  const pendingCount = documents.filter(d => d.status === 'PendingSignature').length;
+  const executedCount = documents.filter(d => d.status === 'Executed').length;
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-4">
+      {/* Compact Header with inline stats */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Document Center</h1>
-          <p className="text-sm text-muted-foreground">
-            Templates and executed documents
-          </p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">Document Center</h1>
+            <p className="text-xs text-muted-foreground">
+              Fill, generate & manage official documents
+            </p>
+          </div>
+          <div className="hidden sm:flex items-center gap-3 ml-4 pl-4 border-l">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-primary" />
+              <span className="text-xs text-muted-foreground">{templates.length} templates</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-amber-500" />
+              <span className="text-xs text-muted-foreground">{pendingCount} pending</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="text-xs text-muted-foreground">{executedCount} executed</span>
+            </div>
+          </div>
         </div>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
+        <Button size="sm">
+          <Plus className="w-4 h-4 mr-1.5" />
           New Template
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{templates.length}</p>
-                <p className="text-xs text-muted-foreground">Templates</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                <FolderOpen className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{documents.length}</p>
-                <p className="text-xs text-muted-foreground">Documents</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                <FileCheck className="w-5 h-5 text-amber-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {documents.filter(d => d.status === 'PendingSignature').length}
-                </p>
-                <p className="text-xs text-muted-foreground">Pending Signature</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                <FileCheck className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {documents.filter(d => d.status === 'Executed').length}
-                </p>
-                <p className="text-xs text-muted-foreground">Executed</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between mb-4">
-          <TabsList>
-            <TabsTrigger value="instances">Documents</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
-            <TabsTrigger value="official-forms" className="gap-1.5">
-              <ClipboardList className="w-3.5 h-3.5" />
-              Official Forms
+        <div className="flex items-center justify-between gap-3">
+          <TabsList className="h-9">
+            <TabsTrigger value="official-forms" className="gap-1.5 text-xs">
+              <PenLine className="w-3.5 h-3.5" />
+              Fill & Generate
             </TabsTrigger>
-            <TabsTrigger value="generator" className="gap-1.5">
+            <TabsTrigger value="instances" className="text-xs">
+              <FileCheck className="w-3.5 h-3.5 mr-1" />
+              Documents
+              {documents.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">{documents.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="templates" className="text-xs">Templates</TabsTrigger>
+            <TabsTrigger value="generator" className="gap-1.5 text-xs">
               <Sparkles className="w-3.5 h-3.5" />
-              Generate
+              AI Generate
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
               <Input
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 w-64"
+                className="pl-8 w-48 h-9 text-sm"
               />
             </div>
             
             {activeTab === 'instances' && (
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
-                  <Filter className="w-4 h-4 mr-2" />
+                <SelectTrigger className="w-36 h-9 text-xs">
+                  <Filter className="w-3.5 h-3.5 mr-1.5" />
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -216,15 +180,14 @@ export function DocumentsSection() {
                   <SelectItem value="Generated">Generated</SelectItem>
                   <SelectItem value="PendingSignature">Pending Signature</SelectItem>
                   <SelectItem value="Executed">Executed</SelectItem>
-                  <SelectItem value="Voided">Voided</SelectItem>
                 </SelectContent>
               </Select>
             )}
 
             {activeTab === 'templates' && (
               <Select value={docTypeFilter} onValueChange={setDocTypeFilter}>
-                <SelectTrigger className="w-48">
-                  <Filter className="w-4 h-4 mr-2" />
+                <SelectTrigger className="w-40 h-9 text-xs">
+                  <Filter className="w-3.5 h-3.5 mr-1.5" />
                   <SelectValue placeholder="Doc Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -233,8 +196,6 @@ export function DocumentsSection() {
                   <SelectItem value="MOU">MOU</SelectItem>
                   <SelectItem value="SPA">SPA</SelectItem>
                   <SelectItem value="Reservation">Reservation</SelectItem>
-                  <SelectItem value="ICA">ICA</SelectItem>
-                  <SelectItem value="NDA">NDA</SelectItem>
                   <SelectItem value="CommissionInvoice">Commission Invoice</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
@@ -243,12 +204,17 @@ export function DocumentsSection() {
           </div>
         </div>
 
+        {/* Official Forms Tab - Primary, Fill & Generate */}
+        <TabsContent value="official-forms" className="mt-3">
+          <PDFTemplatesSection />
+        </TabsContent>
+
         {/* Documents Tab */}
-        <TabsContent value="instances" className="mt-0">
+        <TabsContent value="instances" className="mt-3">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Document Instances</CardTitle>
-              <CardDescription>
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-sm">Document Instances</CardTitle>
+              <CardDescription className="text-xs">
                 Generated documents linked to deals and entities
               </CardDescription>
             </CardHeader>
@@ -267,8 +233,8 @@ export function DocumentsSection() {
                 </div>
               ) : (
                 <div className="p-8 text-center">
-                  <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No documents found</p>
+                  <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">No documents found</p>
                 </div>
               )}
             </CardContent>
@@ -276,8 +242,8 @@ export function DocumentsSection() {
         </TabsContent>
 
         {/* Templates Tab */}
-        <TabsContent value="templates" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <TabsContent value="templates" className="mt-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {filteredTemplates.map((template) => (
               <DocumentTemplateCard
                 key={template.template_id}
@@ -290,14 +256,14 @@ export function DocumentsSection() {
           </div>
           {filteredTemplates.length === 0 && (
             <div className="p-8 text-center border rounded-lg">
-              <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No templates found</p>
+              <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">No templates found</p>
             </div>
           )}
         </TabsContent>
 
-        {/* Generate Documents Tab (Consolidated) */}
-        <TabsContent value="generator" className="mt-0">
+        {/* Generate Documents Tab */}
+        <TabsContent value="generator" className="mt-3">
           <DocumentGeneratorPanel
             onDocumentGenerated={(docId, title) => {
               toast.success(`Document created: ${title}`, {
@@ -306,14 +272,8 @@ export function DocumentsSection() {
             }}
           />
         </TabsContent>
-
-        {/* Official Forms Tab - Unified 18 Templates with Fill & Generate */}
-        <TabsContent value="official-forms" className="mt-0">
-          <PDFTemplatesSection />
-        </TabsContent>
       </Tabs>
 
-      {/* Template Preview Modal */}
       <DocumentTemplatePreviewModal
         template={previewTemplate}
         open={!!previewTemplate}
