@@ -103,6 +103,7 @@ function AppRoutes() {
         <Route path="/architecture" element={<Architecture />} />
         <Route path="/mortgage-calculator" element={<MortgageCalculator />} />
         <Route path="/developers" element={<DevelopersPortal />} />
+        <Route path="/production-readiness" element={<ProtectedRoute><ProductionReadiness /></ProtectedRoute>} />
         <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
