@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, Map, Upload, Phone, MessageCircle, Users } from 'lucide-react';
+import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, Map, Upload, Phone, MessageCircle, Users, Camera } from 'lucide-react';
 import { CompliancePanel } from '@/components/compliance/CompliancePanel';
 import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
 import { useUpdateListing } from '@/hooks/useListings';
