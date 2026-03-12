@@ -18,6 +18,7 @@ import { NeighborhoodInsights } from '@/components/maps/NeighborhoodInsights';
 import { CommuteCalculator } from '@/components/maps/CommuteCalculator';
 import { PortalPublishingPanel } from '@/components/listings/PortalPublishingPanel';
 import { ListingPipelineTab } from '@/components/listings/ListingPipelineTab';
+import { ListingPhotoGallery, type PhotoItem } from '@/components/listings/ListingPhotoGallery';
 
 interface ListingDisplayData {
   id: string;
