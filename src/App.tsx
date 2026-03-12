@@ -16,6 +16,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Architecture = lazy(() => import("./pages/Architecture"));
 const MortgageCalculator = lazy(() => import("./pages/MortgageCalculator"));
 const DevelopersPortal = lazy(() => import("./pages/DevelopersPortal"));
+const ProductionReadiness = lazy(() => import("./pages/ProductionReadiness"));
 
 // Minimal loading spinner for route transitions
 function RouteLoader() {
