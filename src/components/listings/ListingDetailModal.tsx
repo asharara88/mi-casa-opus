@@ -205,8 +205,12 @@ export function ListingDetailModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="photos">
+              <Camera className="h-4 w-4 mr-1" />
+              Photos
+            </TabsTrigger>
             <TabsTrigger value="pipeline">
               <Users className="h-4 w-4 mr-1" />
               Pipeline
