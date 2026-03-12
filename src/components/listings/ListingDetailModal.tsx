@@ -326,6 +326,14 @@ export function ListingDetailModal({
             )}
           </TabsContent>
 
+          <TabsContent value="photos" className="mt-4">
+            <ListingPhotoGallery
+              listingId={listing.id}
+              photos={photos}
+              onPhotosChange={setPhotos}
+            />
+          </TabsContent>
+
           <TabsContent value="pipeline" className="mt-4">
             <ListingPipelineTab listingId={listing.id} />
           </TabsContent>
