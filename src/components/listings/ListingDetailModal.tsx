@@ -65,7 +65,8 @@ export function ListingDetailModal({
   onPublishSuccess,
 }: ListingDetailModalProps) {
   const [activeTab, setActiveTab] = useState('details');
-  
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+
   const runCompliance = useRunCompliance();
   const submitOverride = useSubmitOverride();
   const updateListing = useUpdateListing();
