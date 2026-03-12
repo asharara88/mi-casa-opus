@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, Map, Upload, Phone, MessageCircle, Users } from 'lucide-react';
+import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, Map, Upload, Phone, MessageCircle, Users, Camera } from 'lucide-react';
 import { CompliancePanel } from '@/components/compliance/CompliancePanel';
 import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
 import { useUpdateListing } from '@/hooks/useListings';
@@ -18,6 +18,7 @@ import { NeighborhoodInsights } from '@/components/maps/NeighborhoodInsights';
 import { CommuteCalculator } from '@/components/maps/CommuteCalculator';
 import { PortalPublishingPanel } from '@/components/listings/PortalPublishingPanel';
 import { ListingPipelineTab } from '@/components/listings/ListingPipelineTab';
+import { ListingPhotoGallery, type PhotoItem } from '@/components/listings/ListingPhotoGallery';
 
 interface ListingDisplayData {
   id: string;
@@ -64,7 +65,8 @@ export function ListingDetailModal({
   onPublishSuccess,
 }: ListingDetailModalProps) {
   const [activeTab, setActiveTab] = useState('details');
-  
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+
   const runCompliance = useRunCompliance();
   const submitOverride = useSubmitOverride();
   const updateListing = useUpdateListing();
@@ -203,8 +205,12 @@ export function ListingDetailModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="photos">
+              <Camera className="h-4 w-4 mr-1" />
+              Photos
+            </TabsTrigger>
             <TabsTrigger value="pipeline">
               <Users className="h-4 w-4 mr-1" />
               Pipeline
@@ -318,6 +324,14 @@ export function ListingDetailModal({
                 )}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="photos" className="mt-4">
+            <ListingPhotoGallery
+              listingId={listing.id}
+              photos={photos}
+              onPhotosChange={setPhotos}
+            />
           </TabsContent>
 
           <TabsContent value="pipeline" className="mt-4">
