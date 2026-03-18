@@ -1,3 +1,4 @@
+import '@/styles/app-components.css';
 import { BOSApp } from '@/components/BOSApp';
 
 const Index = () => {
