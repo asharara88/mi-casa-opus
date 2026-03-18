@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, Map, Upload, Phone, MessageCircle, Users, Camera } from 'lucide-react';
+import { OnwaniAddressLookup } from '@/components/crm/OnwaniAddressLookup';
+import type { OnwaniAddress } from '@/types/onwani';
 import { CompliancePanel } from '@/components/compliance/CompliancePanel';
 import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
 import { useUpdateListing } from '@/hooks/useListings';
@@ -339,24 +341,29 @@ export function ListingDetailModal({
           </TabsContent>
 
           <TabsContent value="location" className="space-y-4 mt-4">
+            {/* Onwani Address Lookup */}
+            <OnwaniAddressLookup
+              entityType="listing"
+              entityId={listing.id}
+              onAddressResolved={(addr: OnwaniAddress) => {
+                toast.success(`Address resolved: ${addr.full_address_en || addr.district}`);
+              }}
+            />
+
             {/* Property Map */}
             <PropertyMap
               propertyName={listing.listing_id}
               address={listing.location ? `${listing.location.community}, ${listing.location.city}` : undefined}
-              // Demo coordinates for Dubai Marina area
               latitude={25.0808}
               longitude={55.1385}
               height="250px"
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Neighborhood Insights */}
               <NeighborhoodInsights
                 latitude={25.0808}
                 longitude={55.1385}
               />
-
-              {/* Commute Calculator */}
               <CommuteCalculator
                 originLatitude={25.0808}
                 originLongitude={55.1385}
