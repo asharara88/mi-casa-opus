@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Building2, MapPin, Bed, Bath, Maximize, Sparkles, Map, Upload, Phone, MessageCircle, Users, Camera } from 'lucide-react';
+import { OnwaniAddressLookup } from '@/components/crm/OnwaniAddressLookup';
+import type { OnwaniAddress } from '@/types/onwani';
 import { CompliancePanel } from '@/components/compliance/CompliancePanel';
 import { useRunCompliance, useComplianceResult, useSubmitOverride, useCanOverride } from '@/hooks/useCompliance';
 import { useUpdateListing } from '@/hooks/useListings';
