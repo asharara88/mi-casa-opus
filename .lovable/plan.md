@@ -1,36 +1,83 @@
 
 
-## Plan: Dynamic Suggestion Chips for Marketing Advisor
+# Mi Casa BOS ↔ Natoor Rent Protect Integration
 
-### Approach
-Replace the static `SUGGESTIONS` array with a `useMemo` that builds suggestions from live `stats` data. The hook `useMarketingStats` needs additional fields (DARI expiring ads count, zero-lead campaigns count, paused campaigns count) to drive richer suggestions.
+## What This Does
 
-### Implementation Steps
+Connects Mi Casa BOS (brokerage/sales) with Natoor Rent Protect (property/rental management) so that:
+- **BOS → Natoor**: When a lease deal closes in BOS, the property, unit, and tenant details are pushed to Natoor for ongoing rent collection and maintenance tracking.
+- **Natoor → BOS**: When a unit becomes vacant in Natoor (lease terminated / notice period), a new listing or lead is automatically created in BOS for the broker team to re-market.
 
-**1. Extend `useMarketingStats` hook** — add 3 new computed fields:
-- `expiringPermits`: count of ads where `permit_valid_until` is within 14 days (requires fetching `permit_valid_until, permit_status` in the ads query)
-- `pausedCampaigns`: count of campaigns with status `'Paused'`
-- `zeroLeadCampaigns`: count of active campaigns where `metrics.leads === 0`
+Both systems remain separate apps with separate backends. Integration happens via **cross-project edge functions** that call each other's APIs.
 
-**2. Extend `MarketingStats` type** — add `expiringPermits`, `pausedCampaigns`, `zeroLeadCampaigns` to the interface.
+## Architecture
 
-**3. Rewrite suggestion logic in `MarketingAdvisorChat.tsx`** — replace static `SUGGESTIONS` with a `useMemo` that conditionally builds suggestions based on thresholds:
+```text
+┌─────────────────────┐          ┌──────────────────────┐
+│   Mi Casa BOS       │          │  Natoor Rent Protect  │
+│  (zwdqpssjhpvv...)  │          │  (rfatfvhggxxh...)   │
+│                     │          │                       │
+│  Deal closes ──────────────────▶ Create building/unit  │
+│  (ClosedWon + Lease)│  HTTP    │ + tenant + lease      │
+│                     │          │                       │
+│  New listing ◀──────────────────── Vacancy signal      │
+│  or lead created    │  HTTP    │ (unit status=notice   │
+│                     │          │  or vacant)           │
+└─────────────────────┘          └──────────────────────┘
+```
 
-| Condition | Suggestion |
-|---|---|
-| `budgetUtil > 80%` | "Review overspending campaigns" |
-| `expiringPermits > 0` | "Review {N} DARI permits expiring soon" |
-| `activeCampaigns === 0` | "Help me plan my first campaign" |
-| `zeroLeadCampaigns > 0` | "Why are {N} campaigns generating zero leads?" |
-| `upcomingEvents > 0` | "Maximize ROI for my {N} upcoming events" |
-| `pausedCampaigns > 0` | "Should I reactivate {N} paused campaigns?" |
-| `totalLeadsGenerated > 0` | "Analyze my lead source attribution" |
-| Always (fallback pool) | "Draft ad copy for a luxury listing", "Suggest next month's strategy", "Which channels are underperforming?" |
+## Implementation Steps
 
-Logic: build conditional suggestions first (max ~3), then fill remaining slots from the fallback pool up to 6 total. After first message, show only 3.
+### 1. Store Natoor connection config in BOS
+- Add a secret `NATOOR_SUPABASE_URL` and `NATOOR_SERVICE_ROLE_KEY` to the BOS project so edge functions can write to Natoor's database.
+- Similarly, add `BOS_SUPABASE_URL` and `BOS_SERVICE_ROLE_KEY` as secrets in the Natoor project.
 
-### Files Modified
-- `src/types/marketing.ts` — add 3 fields to `MarketingStats`
-- `src/hooks/useMarketingStats.ts` — compute new fields from existing queries (expand ads select to include `permit_valid_until, permit_status`; expand campaigns select to include `status`)
-- `src/components/marketing/MarketingAdvisorChat.tsx` — replace static array with `useMemo`-driven dynamic suggestions
+### 2. Edge function: `natoor-deal-sync` (in BOS)
+Triggered when a deal transitions to `ClosedWon` with `deal_type = Lease`:
+- Reads deal parties, listing data, and broker info from BOS.
+- POSTs to Natoor's new `bos-deal-receive` edge function with building/unit/tenant payload.
+- Logs the sync result in BOS `event_log`.
+
+### 3. Edge function: `bos-deal-receive` (in Natoor)
+Receives the payload from BOS and:
+- Creates or updates a building record (from listing address/community).
+- Creates a unit (from listing bedrooms, floor, unit number).
+- Creates a tenant (from deal party buyer/tenant info).
+- Creates a lease (from deal economics — rent amount, start/end dates, cheque count).
+
+### 4. Edge function: `bos-vacancy-notify` (in Natoor)
+Triggered when a unit status changes to `vacant` or `notice`:
+- POSTs to BOS's new `natoor-vacancy-receive` edge function with unit/building details.
+
+### 5. Edge function: `natoor-vacancy-receive` (in BOS)
+Receives vacancy notification and:
+- Creates a new listing in BOS (status: Draft) with the property details pre-filled.
+- Optionally creates a lead tagged with source `Natoor_Vacancy`.
+- Sends a notification to the assigned broker or manager.
+
+### 6. UI: "Natoor Rent" link in BOS sidebar
+- Add a navigation item under the Owner role that deep-links to the Natoor Rent Protect app URL.
+- Show a small badge/indicator when there are recent vacancy signals from Natoor.
+
+### 7. UI: Deal close confirmation enhancement
+- When closing a lease deal, show a checkbox: "Push to Natoor Rent Protect for rental management".
+- If checked, triggers the `natoor-deal-sync` edge function after the deal closes.
+
+## Security
+- Cross-project calls use service role keys transmitted via `Authorization: Bearer` headers.
+- Both edge functions validate a shared `x-integration-secret` header for mutual authentication.
+- All synced data is logged in the event log for audit trail.
+
+## What Changes in BOS Codebase
+1. New edge function: `supabase/functions/natoor-deal-sync/index.ts`
+2. New edge function: `supabase/functions/natoor-vacancy-receive/index.ts`
+3. Update `DealCloseConfirmation.tsx` — add "Push to Natoor" checkbox
+4. Update `Sidebar.tsx` — add Natoor deep-link for Owner role
+5. New secrets: `NATOOR_SUPABASE_URL`, `NATOOR_SERVICE_ROLE_KEY`, `INTEGRATION_SECRET`
+6. Config update: `supabase/config.toml` — register new functions
+
+## What Changes in Natoor Codebase (separate project)
+1. New edge function: `bos-deal-receive`
+2. New edge function: `bos-vacancy-notify`
+3. New secrets: `BOS_SUPABASE_URL`, `BOS_SERVICE_ROLE_KEY`, `INTEGRATION_SECRET`
 
