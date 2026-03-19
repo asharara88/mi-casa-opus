@@ -356,6 +356,3 @@ export function DashboardView({ role, onNavigate }: DashboardViewProps) {
       </div>
     );
   }
- 
- // Import type for Deal
- import type { Deal } from '@/hooks/useDeals';
