@@ -1,34 +1,36 @@
 
 
-# Mi Casa BOS — Internal Product Overview Deck
+## Plan: Dynamic Suggestion Chips for Marketing Advisor
 
-## Reframing
+### Approach
+Replace the static `SUGGESTIONS` array with a `useMemo` that builds suggestions from live `stats` data. The hook `useMarketingStats` needs additional fields (DARI expiring ads count, zero-lead campaigns count, paused campaigns count) to drive richer suggestions.
 
-The previous deck was pitched as an investor/sales deck (TAM, competitive matrix, fundraising). This deck should instead be an **internal team onboarding and reference deck** — "here's the system we built, here's how it works, here's how you use it."
+### Implementation Steps
 
-## Design Philosophy
+**1. Extend `useMarketingStats` hook** — add 3 new computed fields:
+- `expiringPermits`: count of ads where `permit_valid_until` is within 14 days (requires fetching `permit_valid_until, permit_status` in the ads query)
+- `pausedCampaigns`: count of campaigns with status `'Paused'`
+- `zeroLeadCampaigns`: count of active campaigns where `metrics.leads === 0`
 
-Same MiCasa branding (Navy `#1A365D`, Gold `#D4A574`, Georgia/Calibri). Professional but practical — no sales language, no market sizing, no competitive positioning.
+**2. Extend `MarketingStats` type** — add `expiringPermits`, `pausedCampaigns`, `zeroLeadCampaigns` to the interface.
 
-## Proposed 10-Slide Structure
+**3. Rewrite suggestion logic in `MarketingAdvisorChat.tsx`** — replace static `SUGGESTIONS` with a `useMemo` that conditionally builds suggestions based on thresholds:
 
-1. **Title Slide** — "Mi Casa BOS — Brokerage Operating System" / Internal Product Guide / MiCasa logo
-2. **What is BOS?** — One-liner definition: a single system replacing spreadsheets, WhatsApp groups, and disconnected tools. Role-based workspaces (Operator, Broker, Owner, Investor).
-3. **System Overview** — The 4-layer architecture diagram (Lead Acquisition → Regulatory Verification → Automation & Intelligence → Execution & Analytics) adapted from InvestorArchitectureDiagram.
-4. **Daily Operations — Pipeline & CRM** — Prospects → Leads → Deals workflow. Pipeline views, lead scoring, deal state rail, aging alerts.
-5. **Listings & Marketing** — Listing management, portal publishing (Property Finder, Bayut), campaign builder, ads manager, marketing copy AI.
-6. **Documents & Compliance** — 18 document templates, form wizard, signature tracking, KYC/AML checks, compliance gates (DARI, Madmoun, ADREC).
-7. **Commissions & Finance** — Commission ledger, payout batch builder, VAT invoicing, broker split management.
-8. **AI Capabilities** — Mi AI assistant: lead qualification, property matching, listing FAQ, marketing copy, follow-up drafting. "AI drafts, humans approve" principle.
-9. **Team & Communication** — Team directory, meetings, WhatsApp (WABA), SMS, email campaigns, viewing scheduler.
-10. **Roles & Navigation Guide** — What each role sees: Operator (full control room), Broker (my-day, my-leads, my-deals, my-earnings), Owner (oversight), Investor (profile, shortlists, deal room).
+| Condition | Suggestion |
+|---|---|
+| `budgetUtil > 80%` | "Review overspending campaigns" |
+| `expiringPermits > 0` | "Review {N} DARI permits expiring soon" |
+| `activeCampaigns === 0` | "Help me plan my first campaign" |
+| `zeroLeadCampaigns > 0` | "Why are {N} campaigns generating zero leads?" |
+| `upcomingEvents > 0` | "Maximize ROI for my {N} upcoming events" |
+| `pausedCampaigns > 0` | "Should I reactivate {N} paused campaigns?" |
+| `totalLeadsGenerated > 0` | "Analyze my lead source attribution" |
+| Always (fallback pool) | "Draft ad copy for a luxury listing", "Suggest next month's strategy", "Which channels are underperforming?" |
 
-## Technical Approach
+Logic: build conditional suggestions first (max ~3), then fill remaining slots from the fallback pool up to 6 total. After first message, show only 3.
 
-- Generate `.pptx` using `pptxgenjs` via script
-- Navy/Gold palette, Georgia headers, Calibri body
-- Embed MiCasa logo from `src/assets/micasa-logo.png`
-- Each slide uses icons/diagrams rather than bullet walls
-- QA via LibreOffice PDF conversion + `pdftoppm` inspection
-- Output to `/mnt/documents/Mi_Casa_BOS_Internal_Deck.pptx`
+### Files Modified
+- `src/types/marketing.ts` — add 3 fields to `MarketingStats`
+- `src/hooks/useMarketingStats.ts` — compute new fields from existing queries (expand ads select to include `permit_valid_until, permit_status`; expand campaigns select to include `status`)
+- `src/components/marketing/MarketingAdvisorChat.tsx` — replace static array with `useMemo`-driven dynamic suggestions
 
