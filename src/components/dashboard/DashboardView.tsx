@@ -1,5 +1,6 @@
- import { useState } from 'react';
- import { UserRole } from '@/types/bos';
+import { useState } from 'react';
+import { UserRole } from '@/types/bos';
+import type { Deal } from '@/hooks/useDeals';
 import { MetricCard } from './MetricCard';
 import { StateBadge } from './StateBadge';
 import { ForecastWidget } from './ForecastWidget';
