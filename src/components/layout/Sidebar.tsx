@@ -48,6 +48,7 @@ interface NavItem {
   icon: React.ElementType;
   roles: AppRole[];
   group: string;
+  external?: string; // external URL opens in new tab
 }
 
 // Simplified navigation: 6 groups
