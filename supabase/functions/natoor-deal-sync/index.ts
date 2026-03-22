@@ -12,12 +12,11 @@ Deno.serve(async (req) => {
 
   try {
     const natoorUrl = Deno.env.get('NATOOR_SUPABASE_URL');
-    const natoorKey = Deno.env.get('NATOOR_SERVICE_ROLE_KEY');
     const integrationSecret = Deno.env.get('INTEGRATION_SECRET');
 
-    if (!natoorUrl || !natoorKey || !integrationSecret) {
+    if (!natoorUrl || !integrationSecret) {
       return new Response(
-        JSON.stringify({ error: 'Natoor integration secrets not configured. Add NATOOR_SUPABASE_URL, NATOOR_SERVICE_ROLE_KEY, and INTEGRATION_SECRET.' }),
+        JSON.stringify({ error: 'Natoor integration secrets not configured. Add NATOOR_SUPABASE_URL and INTEGRATION_SECRET.' }),
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -60,46 +59,32 @@ Deno.serve(async (req) => {
     const attrs = (listing?.listing_attributes as Record<string, unknown>) || {};
     const economics = (deal.deal_economics as Record<string, unknown>) || {};
 
-    // Build payload for Natoor
+    // Build payload for Natoor's integration-sync endpoint
     const payload = {
-      source: 'mi-casa-bos',
-      deal_id: deal.deal_id,
-      building: {
-        name: (attrs.building_name as string) || (attrs.community as string) || 'Unknown Building',
-        community: (attrs.community as string) || '',
-        city: (attrs.city as string) || 'Abu Dhabi',
-        address: (attrs.address as string) || '',
-      },
-      unit: {
-        unit_number: (attrs.unit_number as string) || '',
-        bedrooms: attrs.bedrooms ?? null,
-        bathrooms: attrs.bathrooms ?? null,
-        area_sqft: attrs.area_sqft ?? null,
-        floor: (attrs.floor as string) || '',
-        property_type: listing?.listing_type || 'Residential',
-      },
+      action: 'close_deal',
+      external_id: deal.deal_id,
+      building_name: (attrs.building_name as string) || (attrs.community as string) || 'Unknown Building',
       tenant: tenant ? {
         name: tenant.party_name,
         email: tenant.party_email || '',
         phone: tenant.party_phone || '',
-        identity_document_id: tenant.identity_document_id || '',
       } : null,
       lease: {
-        annual_rent: transactionValue || (economics.transaction_value as number) || 0,
+        unit_id: (attrs.unit_number as string) || '',
         start_date: (economics.lease_start as string) || new Date().toISOString().split('T')[0],
         end_date: (economics.lease_end as string) || '',
+        annual_rent: transactionValue || (economics.transaction_value as number) || 0,
         cheque_count: (economics.cheque_count as number) || 1,
         security_deposit: (economics.security_deposit as number) || 0,
       },
     };
 
-    // POST to Natoor's bos-deal-receive edge function
-    const natoorResponse = await fetch(`${natoorUrl}/functions/v1/bos-deal-receive`, {
+    // POST to Natoor's integration-sync edge function
+    const natoorResponse = await fetch(`${natoorUrl}/functions/v1/integration-sync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${natoorKey}`,
-        'x-integration-secret': integrationSecret,
+        'Authorization': `Bearer ${integrationSecret}`,
       },
       body: JSON.stringify(payload),
     });
@@ -116,8 +101,8 @@ Deno.serve(async (req) => {
         natoor_status: natoorResponse.ok ? 'success' : 'failed',
         natoor_response: natoorResult,
         payload_summary: {
-          building: payload.building.name,
-          unit: payload.unit.unit_number,
+          building: payload.building_name,
+          unit: payload.lease.unit_id,
           tenant: payload.tenant?.name,
           annual_rent: payload.lease.annual_rent,
         },
