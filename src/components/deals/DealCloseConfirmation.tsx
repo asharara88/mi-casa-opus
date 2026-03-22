@@ -57,6 +57,7 @@ export function DealCloseConfirmation({
   const [transactionValue, setTransactionValue] = useState('');
   const [commissionPercent, setCommissionPercent] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
+  const [pushToNatoor, setPushToNatoor] = useState(true);
 
   const { data: preview, isLoading: previewLoading } = useCommissionPreview(deal?.id || null);
   const calculateBreakdown = useCalculateCommissionBreakdown();
