@@ -93,7 +93,8 @@ export function useBosLlmOps() {
   const askOps = useCallback(async (
     userIntent: string,
     bosPayload?: Record<string, unknown>,
-    complianceResult?: Record<string, unknown>
+    complianceResult?: Record<string, unknown>,
+    conversationHistory?: Array<{ role: string; content: string }>
   ) => {
     setIsStreaming(true);
     setResponse('');
@@ -115,7 +116,6 @@ export function useBosLlmOps() {
       if (accessToken) {
         headers['Authorization'] = `Bearer ${accessToken}`;
       } else if (apiKey) {
-        // Fallback only if function is public (verify_jwt=false)
         headers['Authorization'] = `Bearer ${apiKey}`;
       }
 
@@ -124,7 +124,7 @@ export function useBosLlmOps() {
         {
           method: 'POST',
           headers,
-          body: JSON.stringify({ userIntent, bosPayload, complianceResult }),
+          body: JSON.stringify({ userIntent, bosPayload, complianceResult, conversationHistory }),
         }
       );
 

@@ -112,7 +112,13 @@ export function AiAssistantPanel({
       { id: opsMsgId, role: 'assistant', mode: 'OPS', content: '' },
     ]);
 
-    await askOps(text, bosPayload, complianceResult);
+    // Build conversation history (exclude the pending assistant msg)
+    const historyForApi = messages
+      .filter(m => m.content && m.content.trim())
+      .slice(-20)
+      .map(m => ({ role: m.role, content: m.content }));
+
+    await askOps(text, bosPayload, complianceResult, historyForApi);
     setActiveOpsMsgId(null);
   };
 
