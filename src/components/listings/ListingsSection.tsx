@@ -44,6 +44,7 @@ import {
   Newspaper,
   Home,
   Loader2,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ListingDetailModal } from './ListingDetailModal';
