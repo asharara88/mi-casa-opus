@@ -108,19 +108,22 @@ Deno.serve(async (req) => {
     // Read body as text first for signature verification
     const bodyText = await req.text();
 
-    // Verify DocuSign HMAC signature if secret is configured
-    if (DOCUSIGN_WEBHOOK_SECRET) {
-      const signature = req.headers.get('X-DocuSign-Signature-1');
-      const isValid = await verifyDocuSignSignature(bodyText, signature, DOCUSIGN_WEBHOOK_SECRET);
-      if (!isValid) {
-        console.error('Invalid DocuSign webhook signature');
-        return new Response(
-          JSON.stringify({ error: 'Invalid signature' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    } else {
-      console.warn('DOCUSIGN_WEBHOOK_SECRET not configured — skipping signature verification');
+    if (!DOCUSIGN_WEBHOOK_SECRET) {
+      console.error('DOCUSIGN_WEBHOOK_SECRET not configured');
+      return new Response(
+        JSON.stringify({ error: 'Webhook not configured' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const signature = req.headers.get('X-DocuSign-Signature-1');
+    const isValid = await verifyDocuSignSignature(bodyText, signature, DOCUSIGN_WEBHOOK_SECRET);
+    if (!isValid) {
+      console.error('Invalid DocuSign webhook signature');
+      return new Response(
+        JSON.stringify({ error: 'Invalid signature' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);

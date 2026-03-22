@@ -78,19 +78,22 @@ Deno.serve(async (req) => {
     // Read body as text for signature verification
     const bodyText = await req.text();
 
-    // Verify Cal.com signature if secret is configured
-    if (CAL_API_KEY) {
-      const signature = req.headers.get('X-Cal-Signature-256');
-      const isValid = await verifyCalSignature(bodyText, signature, CAL_API_KEY);
-      if (!isValid) {
-        console.error('Invalid Cal.com webhook signature');
-        return new Response(
-          JSON.stringify({ error: 'Invalid signature' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    } else {
-      console.warn('CAL_API_KEY not configured — skipping signature verification');
+    if (!CAL_API_KEY) {
+      console.error('CAL_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'Webhook not configured' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const signature = req.headers.get('X-Cal-Signature-256');
+    const isValid = await verifyCalSignature(bodyText, signature, CAL_API_KEY);
+    if (!isValid) {
+      console.error('Invalid Cal.com webhook signature');
+      return new Response(
+        JSON.stringify({ error: 'Invalid signature' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
