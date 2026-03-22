@@ -104,6 +104,7 @@ export function ListingsSection() {
   const [addListingModalOpen, setAddListingModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
+  const [syncingVacancies, setSyncingVacancies] = useState(false);
   
   // Fetch real listings from database
   const { data: dbListings, refetch: refetchListings, isLoading } = useListings();
