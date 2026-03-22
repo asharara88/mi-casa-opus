@@ -129,8 +129,8 @@ export const WORKFLOW_CARDS: WorkflowCard[] = [
     icon: FileText,
     description: "Generate a filled document from an official template",
     entityTypes: ["lead", "deal", "listing"],
-    toneOptions: ["Formal", "Professional", "Friendly"],
-    defaultTone: "Formal",
+    toneOptions: [],
+    defaultTone: "Formal & Professional",
     showTemplateSelector: true,
   },
   {
