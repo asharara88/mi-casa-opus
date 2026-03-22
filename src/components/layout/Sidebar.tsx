@@ -20,6 +20,8 @@ import {
   FileSignature,
   Play,
   Calculator,
+  ExternalLink,
+  Home,
 } from 'lucide-react';
 import {
   Collapsible,
