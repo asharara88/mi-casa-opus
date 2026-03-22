@@ -5,6 +5,7 @@ import { Bot, User, Loader2 } from "lucide-react";
 import { parseActionBlocks, DocumentAction } from "@/lib/document-intent";
 import { DocumentActionList } from "./DocumentActionCard";
 import { FollowUpActionCard, parseFollowUpActions, type FollowUpAction } from "@/components/communication/FollowUpActionCard";
+import { DraftedDocumentCard, parseDraftedDocuments, type DraftedDocument } from "./DraftedDocumentCard";
 
 interface Message {
   id: string;
@@ -21,19 +22,22 @@ interface ChatMessageRendererProps {
 
 export function ChatMessageRenderer({ message, onOpenTemplate }: ChatMessageRendererProps) {
   // Parse action blocks from assistant messages
-  const { text, actions, followUpActions } = useMemo(() => {
+  const { text, actions, followUpActions, draftedDocuments } = useMemo(() => {
     if (message.role === 'assistant' && message.content) {
-      // First parse follow-up actions
-      const followUpResult = parseFollowUpActions(message.content);
+      // Parse drafted documents first
+      const draftResult = parseDraftedDocuments(message.content);
+      // Then parse follow-up actions
+      const followUpResult = parseFollowUpActions(draftResult.text);
       // Then parse document actions from remaining text
       const docResult = parseActionBlocks(followUpResult.text);
       return { 
         text: docResult.text, 
         actions: docResult.actions,
-        followUpActions: followUpResult.actions 
+        followUpActions: followUpResult.actions,
+        draftedDocuments: draftResult.documents,
       };
     }
-    return { text: message.content, actions: [] as DocumentAction[], followUpActions: [] as FollowUpAction[] };
+    return { text: message.content, actions: [] as DocumentAction[], followUpActions: [] as FollowUpAction[], draftedDocuments: [] as DraftedDocument[] };
   }, [message.content, message.role]);
   
   const isUser = message.role === 'user';
