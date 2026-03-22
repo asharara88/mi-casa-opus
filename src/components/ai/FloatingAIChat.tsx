@@ -284,6 +284,19 @@ export function FloatingAIChat() {
             />
           )}
 
+          {/* Prompt Builder Cards */}
+          {showPromptBuilder && (
+            <div className="px-3 pt-2 border-t border-border">
+              <PromptBuilderCards
+                onSendPrompt={(prompt) => {
+                  setShowPromptBuilder(false);
+                  handleSend(prompt);
+                }}
+                disabled={isStreaming}
+              />
+            </div>
+          )}
+
           {/* Attachments Preview */}
           {attachments.length > 0 && (
             <div className="px-3 pt-2 flex gap-2 flex-wrap">
