@@ -139,6 +139,7 @@ export function DealCloseConfirmation({
     if (!open) {
       setTransactionValue('');
       setCommissionPercent('');
+      setPushToNatoor(true);
     }
     onOpenChange(open);
   };
