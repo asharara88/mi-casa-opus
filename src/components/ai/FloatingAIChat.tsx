@@ -5,13 +5,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Send, Loader2, Trash2, Sparkles, MessageCircle, Paperclip, X, FileText, Image as ImageIcon } from 'lucide-react';
+import { Bot, Send, Loader2, Trash2, Sparkles, MessageCircle, Paperclip, X, FileText, Image as ImageIcon, Wand2 } from 'lucide-react';
 import { useBosLlmOps, useBosLlmRouter } from '@/hooks/useBosLlm';
 import { cn } from '@/lib/utils';
 import { generateSuggestions, INITIAL_SUGGESTIONS } from '@/lib/chat-suggestions';
 import { SuggestionChips } from './SuggestionChips';
 import { ChatMessageRenderer } from './ChatMessageRenderer';
 import { useConversationContext } from '@/hooks/useConversationContext';
+import { PromptBuilderCards } from './PromptBuilderCards';
 import { toast } from 'sonner';
 
 interface Attachment {
