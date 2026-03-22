@@ -9,8 +9,103 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   FileText, Users, TrendingUp, MessageCircle, Search, Shield,
   Megaphone, Send, ChevronDown, ChevronUp, Sparkles, X, Loader2,
+  HelpCircle, BookOpen,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
+// ── All 18 official templates ──────────────────────────────────────────────────
+
+export const TEMPLATE_OPTIONS = [
+  { key: "01_seller_landlord_authorization", label: "Form A – Seller/Landlord Authorization", group: "Onboarding" },
+  { key: "02_buyer_tenant_representation_agreement", label: "Form B – Buyer/Tenant Representation", group: "Onboarding" },
+  { key: "03_property_listing_authorization_marketing_consent", label: "Listing Authorization & Marketing Consent", group: "Marketing" },
+  { key: "04_agent_license_registration_record", label: "Agent License & Registration Record", group: "Compliance" },
+  { key: "05_company_trade_license_regulatory_record", label: "Company Trade License & Regulatory Record", group: "Compliance" },
+  { key: "06_agent_to_agent_agency_agreement", label: "Agent-to-Agent Agency Agreement", group: "Transactional" },
+  { key: "07_offer_letter_expression_of_interest", label: "Offer Letter / Expression of Interest", group: "Transactional" },
+  { key: "08_memorandum_of_understanding_pre_spa", label: "MOU / Pre-SPA Agreement", group: "Transactional" },
+  { key: "09_reservation_booking_form", label: "Reservation / Booking Form", group: "Transactional" },
+  { key: "10_deal_completion_closing_checklist", label: "Deal Completion & Closing Checklist", group: "Closing" },
+  { key: "11_noc_request_clearance_tracker", label: "NOC Request & Clearance Tracker", group: "Closing" },
+  { key: "12_commission_vat_invoice", label: "Commission & VAT Invoice", group: "Financial" },
+  { key: "13_commission_authorization_split_sheet", label: "Commission Authorization & Split Sheet", group: "Financial" },
+  { key: "14_refund_cancellation_approval_form", label: "Refund / Cancellation Approval Form", group: "Financial" },
+  { key: "15_financial_reconciliation_deal_ledger", label: "Financial Reconciliation & Deal Ledger", group: "Financial" },
+  { key: "16_client_data_consent_privacy_acknowledgment", label: "Client Data Consent & Privacy Acknowledgment", group: "Governance" },
+  { key: "17_complaint_dispute_incident_register", label: "Complaint / Dispute Incident Register", group: "Governance" },
+  { key: "18_internal_agent_governance_pack", label: "Internal Agent Governance Pack", group: "Governance" },
+] as const;
+
+// ── Ready-made FAQ answers ─────────────────────────────────────────────────────
+
+export const FAQ_CATEGORIES = [
+  {
+    category: "Deals & Pipeline",
+    icon: TrendingUp,
+    faqs: [
+      "What are the required documents to close a sale deal?",
+      "What is the difference between an MOU and an SPA?",
+      "When is a NOC required and how do I track it?",
+      "How do I move a deal from EOI to closing?",
+      "What happens when a deal is marked as Lost?",
+    ],
+  },
+  {
+    category: "Compliance & Regulation",
+    icon: Shield,
+    faqs: [
+      "What are the DARI/ADM compliance requirements for a new listing?",
+      "When do I need AML checks on a client?",
+      "What documents does a buyer need for KYC?",
+      "How do I handle a compliance BLOCK status?",
+      "What are the RERA registration requirements for agents?",
+    ],
+  },
+  {
+    category: "Commissions & Finance",
+    icon: FileText,
+    faqs: [
+      "How is commission calculated on a secondary sale?",
+      "What is the standard commission split between agents?",
+      "When should I issue a VAT invoice?",
+      "How do I process a refund or cancellation?",
+      "What goes into the financial reconciliation ledger?",
+    ],
+  },
+  {
+    category: "Leads & Prospects",
+    icon: Users,
+    faqs: [
+      "How do I qualify a lead for a luxury property?",
+      "What lead sources have the best conversion rate?",
+      "How do I handle a portal inquiry from Bayut or Property Finder?",
+      "What is the lead aging policy and escalation rules?",
+      "How do I convert a prospect to a qualified lead?",
+    ],
+  },
+  {
+    category: "Documents & Templates",
+    icon: BookOpen,
+    faqs: [
+      "Which template do I use for a seller mandate?",
+      "How do I fill out an Offer Letter / EOI?",
+      "What is the difference between Form A and Form B?",
+      "How do I send a document for e-signature?",
+      "Can I create a new version of a published template?",
+    ],
+  },
+  {
+    category: "Marketing & Portals",
+    icon: Megaphone,
+    faqs: [
+      "How do I publish a listing to Bayut and Property Finder?",
+      "What are the ADREC ad compliance requirements?",
+      "How do I generate portal-optimized listing copy?",
+      "What marketing channels work best for off-plan properties?",
+      "How do I track campaign ROI and lead attribution?",
+    ],
+  },
+];
 
 // ── Workflow definitions ───────────────────────────────────────────────────────
 
@@ -22,6 +117,7 @@ export interface WorkflowCard {
   entityTypes: EntityType[];
   toneOptions: string[];
   defaultTone: string;
+  showTemplateSelector?: boolean;
 }
 
 type EntityType = "lead" | "deal" | "prospect" | "listing" | "none";
@@ -35,6 +131,7 @@ export const WORKFLOW_CARDS: WorkflowCard[] = [
     entityTypes: ["lead", "deal", "listing"],
     toneOptions: ["Formal", "Professional", "Friendly"],
     defaultTone: "Formal",
+    showTemplateSelector: true,
   },
   {
     id: "qualify_lead",
@@ -80,6 +177,15 @@ export const WORKFLOW_CARDS: WorkflowCard[] = [
     entityTypes: ["listing"],
     toneOptions: ["Luxury", "Professional", "Social media", "Portal-optimized"],
     defaultTone: "Professional",
+  },
+  {
+    id: "faq",
+    label: "Quick FAQ",
+    icon: HelpCircle,
+    description: "Get instant answers to common real estate questions",
+    entityTypes: [],
+    toneOptions: [],
+    defaultTone: "",
   },
 ];
 
@@ -173,8 +279,8 @@ export function PromptBuilderCards({ onSendPrompt, disabled }: PromptBuilderCard
 
   return (
     <div className="space-y-2">
-      {/* Compact card grid */}
-      <div className="grid grid-cols-3 gap-1.5">
+      {/* Compact card grid — 4 cols to fit FAQ card */}
+      <div className="grid grid-cols-4 gap-1.5">
         {WORKFLOW_CARDS.map((card) => {
           const Icon = card.icon;
           const isActive = activeCard === card.id;
@@ -199,8 +305,13 @@ export function PromptBuilderCards({ onSendPrompt, disabled }: PromptBuilderCard
         })}
       </div>
 
-      {/* Expanded form for active card */}
-      {activeCard && (
+      {/* FAQ panel */}
+      {activeCard === "faq" && (
+        <FAQPanel onSelect={onSendPrompt} onClose={() => setActiveCard(null)} disabled={disabled} />
+      )}
+
+      {/* Expanded form for other active cards */}
+      {activeCard && activeCard !== "faq" && (
         <PromptBuilderForm
           card={WORKFLOW_CARDS.find((c) => c.id === activeCard)!}
           onSend={onSendPrompt}
@@ -209,6 +320,72 @@ export function PromptBuilderCards({ onSendPrompt, disabled }: PromptBuilderCard
         />
       )}
     </div>
+  );
+}
+
+// ── FAQ Panel ──────────────────────────────────────────────────────────────────
+
+interface FAQPanelProps {
+  onSelect: (prompt: string) => void;
+  onClose: () => void;
+  disabled?: boolean;
+}
+
+function FAQPanel({ onSelect, onClose, disabled }: FAQPanelProps) {
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(FAQ_CATEGORIES[0].category);
+
+  return (
+    <Card className="p-3 space-y-2 border-primary/20 bg-primary/5 animate-in slide-in-from-top-2 duration-200">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <HelpCircle className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium">Quick FAQ</span>
+          <Badge variant="secondary" className="text-[9px] h-4">30 ready answers</Badge>
+        </div>
+        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={onClose}>
+          <X className="w-3.5 h-3.5" />
+        </Button>
+      </div>
+
+      <ScrollArea className="max-h-[280px]">
+        <div className="space-y-1">
+          {FAQ_CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
+            const isOpen = expandedCategory === cat.category;
+            return (
+              <div key={cat.category}>
+                <button
+                  onClick={() => setExpandedCategory(isOpen ? null : cat.category)}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent transition-colors text-left"
+                >
+                  <Icon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                  <span className="text-xs font-medium flex-1">{cat.category}</span>
+                  <Badge variant="outline" className="text-[9px] h-4 px-1.5">{cat.faqs.length}</Badge>
+                  {isOpen ? <ChevronUp className="w-3 h-3 text-muted-foreground" /> : <ChevronDown className="w-3 h-3 text-muted-foreground" />}
+                </button>
+                {isOpen && (
+                  <div className="ml-6 space-y-0.5 pb-1">
+                    {cat.faqs.map((faq) => (
+                      <button
+                        key={faq}
+                        disabled={disabled}
+                        onClick={() => {
+                          onSelect(faq);
+                          onClose();
+                        }}
+                        className="w-full text-left text-[11px] text-muted-foreground hover:text-foreground hover:bg-accent/50 px-2 py-1.5 rounded transition-colors disabled:opacity-50"
+                      >
+                        {faq}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </ScrollArea>
+    </Card>
   );
 }
 
@@ -224,6 +401,7 @@ interface PromptBuilderFormProps {
 function PromptBuilderForm({ card, onSend, onClose, disabled }: PromptBuilderFormProps) {
   const [entityType, setEntityType] = useState<EntityType>(card.entityTypes[0] || "none");
   const [selectedEntity, setSelectedEntity] = useState<EntityResult | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [tone, setTone] = useState(card.defaultTone);
   const [notes, setNotes] = useState("");
   const { query, setQuery, results, isSearching } = useEntitySearch(entityType);
@@ -232,11 +410,16 @@ function PromptBuilderForm({ card, onSend, onClose, disabled }: PromptBuilderFor
   const buildPrompt = useCallback(() => {
     const parts: string[] = [];
 
-    // Task instruction
     switch (card.id) {
-      case "draft_document":
-        parts.push("Draft a document for my client.");
+      case "draft_document": {
+        const tpl = TEMPLATE_OPTIONS.find((t) => t.key === selectedTemplate);
+        if (tpl) {
+          parts.push(`Draft the "${tpl.label}" template for my client. Use the official template content from the database and fill in all blanks with the data available.`);
+        } else {
+          parts.push("Draft a document for my client.");
+        }
         break;
+      }
       case "qualify_lead":
         parts.push("Qualify this lead and provide a scoring assessment.");
         break;
@@ -254,27 +437,30 @@ function PromptBuilderForm({ card, onSend, onClose, disabled }: PromptBuilderFor
         break;
     }
 
-    // Entity reference
     if (selectedEntity) {
       parts.push(`Reference: ${selectedEntity.label} (${selectedEntity.type} ${selectedEntity.crmId})`);
     }
 
-    // Tone
-    parts.push(`Tone/format: ${tone}.`);
-
-    // Custom notes
-    if (notes.trim()) {
-      parts.push(`Additional context: ${notes.trim()}`);
-    }
+    if (tone) parts.push(`Tone/format: ${tone}.`);
+    if (notes.trim()) parts.push(`Additional context: ${notes.trim()}`);
 
     return parts.join(" ");
-  }, [card.id, selectedEntity, tone, notes]);
+  }, [card.id, selectedEntity, selectedTemplate, tone, notes]);
 
   const handleSend = () => {
     const prompt = buildPrompt();
     onSend(prompt);
     onClose();
   };
+
+  // Group templates by group for nicer display
+  const templateGroups = card.showTemplateSelector
+    ? TEMPLATE_OPTIONS.reduce((acc, t) => {
+        if (!acc[t.group]) acc[t.group] = [];
+        acc[t.group].push(t);
+        return acc;
+      }, {} as Record<string, typeof TEMPLATE_OPTIONS[number][]>)
+    : {};
 
   return (
     <Card className="p-3 space-y-3 border-primary/20 bg-primary/5 animate-in slide-in-from-top-2 duration-200">
@@ -291,6 +477,32 @@ function PromptBuilderForm({ card, onSend, onClose, disabled }: PromptBuilderFor
       </div>
 
       <p className="text-[11px] text-muted-foreground">{card.description}</p>
+
+      {/* Template selector for Draft Document */}
+      {card.showTemplateSelector && (
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-medium text-muted-foreground">Select template</label>
+          <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue placeholder="Choose an official template…" />
+            </SelectTrigger>
+            <SelectContent className="max-h-[240px]">
+              {Object.entries(templateGroups).map(([group, templates]) => (
+                <div key={group}>
+                  <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    {group}
+                  </div>
+                  {templates.map((t) => (
+                    <SelectItem key={t.key} value={t.key} className="text-xs">
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </div>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Entity type + search */}
       {card.entityTypes.length > 0 && card.entityTypes[0] !== "none" && (
@@ -351,7 +563,6 @@ function PromptBuilderForm({ card, onSend, onClose, disabled }: PromptBuilderFor
                 </>
               )}
 
-              {/* Search results dropdown */}
               {showResults && results.length > 0 && !selectedEntity && (
                 <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-md max-h-32 overflow-auto">
                   {results.map((r) => (
@@ -374,26 +585,28 @@ function PromptBuilderForm({ card, onSend, onClose, disabled }: PromptBuilderFor
       )}
 
       {/* Tone selection */}
-      <div className="space-y-1.5">
-        <label className="text-[11px] font-medium text-muted-foreground">Tone / Format</label>
-        <div className="flex flex-wrap gap-1">
-          {card.toneOptions.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTone(t)}
-              className={`
-                text-[10px] px-2 py-1 rounded-full border transition-colors
-                ${tone === t
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border hover:border-primary/40"
-                }
-              `}
-            >
-              {t}
-            </button>
-          ))}
+      {card.toneOptions.length > 0 && (
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-medium text-muted-foreground">Tone / Format</label>
+          <div className="flex flex-wrap gap-1">
+            {card.toneOptions.map((t) => (
+              <button
+                key={t}
+                onClick={() => setTone(t)}
+                className={`
+                  text-[10px] px-2 py-1 rounded-full border transition-colors
+                  ${tone === t
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border hover:border-primary/40"
+                  }
+                `}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Custom notes */}
       <div className="space-y-1.5">
