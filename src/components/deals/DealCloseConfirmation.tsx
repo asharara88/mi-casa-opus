@@ -108,6 +108,22 @@ export function DealCloseConfirmation({
         pipeline: deal.pipeline as 'OffPlan' | 'Secondary',
       });
 
+      // Push to Natoor if lease deal and checkbox is checked
+      if (dealType === 'Rent' && pushToNatoor) {
+        try {
+          const { error: syncError } = await supabase.functions.invoke('natoor-deal-sync', {
+            body: { dealId: deal.id, transactionValue: txValue, commissionPercent: commPct, dealType },
+          });
+          if (syncError) {
+            toast.warning('Deal closed but Natoor sync failed. You can retry later.');
+          } else {
+            toast.success('Deal synced to Natoor Rent Protect');
+          }
+        } catch {
+          toast.warning('Deal closed but Natoor sync failed. You can retry later.');
+        }
+      }
+
       setShowConfetti(true);
       setTimeout(() => {
         setShowConfetti(false);
