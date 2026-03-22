@@ -157,7 +157,11 @@ export function Sidebar({
     setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
   };
 
-  const handleSectionChange = (sectionId: string) => {
+  const handleSectionChange = (sectionId: string, externalUrl?: string) => {
+    if (externalUrl) {
+      window.open(externalUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
     onSectionChange(sectionId);
     if (onClose && window.innerWidth < 1024) {
       onClose();
