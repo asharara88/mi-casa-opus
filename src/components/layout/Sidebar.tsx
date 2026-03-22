@@ -256,7 +256,7 @@ export function Sidebar({
                       return (
                         <button
                           key={item.id}
-                          onClick={() => handleSectionChange(item.id)}
+                          onClick={() => handleSectionChange(item.id, item.external)}
                           className={cn(
                             'w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200',
                             isActive
@@ -267,6 +267,7 @@ export function Sidebar({
                         >
                           <Icon className="w-5 h-5 flex-shrink-0" />
                           {!collapsed && <span className="truncate">{item.label}</span>}
+                          {!collapsed && item.external && <ExternalLink className="w-3 h-3 ml-auto opacity-50" />}
                         </button>
                       );
                     })}
