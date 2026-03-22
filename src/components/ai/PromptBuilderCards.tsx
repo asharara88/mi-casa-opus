@@ -148,7 +148,7 @@ export const WORKFLOW_CARDS: WorkflowCard[] = [
     icon: MessageCircle,
     description: "Compose a personalized follow-up message",
     entityTypes: ["lead", "prospect", "deal"],
-    toneOptions: ["Warm", "Professional", "Urgent", "Casual"],
+    toneOptions: ["Warm", "Professional", "Friendly", "Urgent", "Casual"],
     defaultTone: "Warm",
   },
   {
