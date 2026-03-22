@@ -331,6 +331,16 @@ export function FloatingAIChat() {
             />
             <div className="flex gap-2 items-end">
               <Button
+                variant={showPromptBuilder ? "default" : "ghost"}
+                size="icon"
+                className="h-10 w-10 flex-shrink-0"
+                onClick={() => setShowPromptBuilder(!showPromptBuilder)}
+                disabled={isStreaming}
+                title="Prompt Builder"
+              >
+                <Wand2 className="w-4 h-4" />
+              </Button>
+              <Button
                 variant="ghost"
                 size="icon"
                 className="h-10 w-10 flex-shrink-0"
