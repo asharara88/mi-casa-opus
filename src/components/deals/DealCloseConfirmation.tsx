@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DollarSign,
   Users,
@@ -54,6 +57,7 @@ export function DealCloseConfirmation({
   const [transactionValue, setTransactionValue] = useState('');
   const [commissionPercent, setCommissionPercent] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
+  const [pushToNatoor, setPushToNatoor] = useState(true);
 
   const { data: preview, isLoading: previewLoading } = useCommissionPreview(deal?.id || null);
   const calculateBreakdown = useCalculateCommissionBreakdown();
@@ -104,6 +108,22 @@ export function DealCloseConfirmation({
         pipeline: deal.pipeline as 'OffPlan' | 'Secondary',
       });
 
+      // Push to Natoor if lease deal and checkbox is checked
+      if (dealType === 'Rent' && pushToNatoor) {
+        try {
+          const { error: syncError } = await supabase.functions.invoke('natoor-deal-sync', {
+            body: { dealId: deal.id, transactionValue: txValue, commissionPercent: commPct, dealType },
+          });
+          if (syncError) {
+            toast.warning('Deal closed but Natoor sync failed. You can retry later.');
+          } else {
+            toast.success('Deal synced to Natoor Rent Protect');
+          }
+        } catch {
+          toast.warning('Deal closed but Natoor sync failed. You can retry later.');
+        }
+      }
+
       setShowConfetti(true);
       setTimeout(() => {
         setShowConfetti(false);
@@ -119,6 +139,7 @@ export function DealCloseConfirmation({
     if (!open) {
       setTransactionValue('');
       setCommissionPercent('');
+      setPushToNatoor(true);
     }
     onOpenChange(open);
   };
@@ -329,6 +350,30 @@ export function DealCloseConfirmation({
                 )}
               </div>
 
+              {/* Natoor Rent Protect sync (lease deals only) */}
+              {dealType === 'Rent' && (
+                <Card className="border-primary/30 bg-primary/5">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="push-to-natoor"
+                        checked={pushToNatoor}
+                        onCheckedChange={(checked) => setPushToNatoor(checked === true)}
+                        className="mt-0.5"
+                      />
+                      <div>
+                        <label htmlFor="push-to-natoor" className="text-sm font-medium text-foreground cursor-pointer">
+                          Push to Natoor Rent Protect
+                        </label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Automatically create building, unit, tenant, and lease records in the rental management system.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* What will happen */}
               <Card className="bg-muted/30">
                 <CardContent className="p-4">
@@ -342,6 +387,9 @@ export function DealCloseConfirmation({
                     <li>• Calculation trace stored for audit</li>
                     <li>• Event log entry recorded</li>
                     <li>• Evidence object created for compliance</li>
+                    {dealType === 'Rent' && pushToNatoor && (
+                      <li className="text-primary">• Synced to Natoor Rent Protect</li>
+                    )}
                   </ul>
                 </CardContent>
               </Card>

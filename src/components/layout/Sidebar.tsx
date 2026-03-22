@@ -20,6 +20,8 @@ import {
   FileSignature,
   Play,
   Calculator,
+  ExternalLink,
+  Home,
 } from 'lucide-react';
 import {
   Collapsible,
@@ -46,6 +48,7 @@ interface NavItem {
   icon: React.ElementType;
   roles: AppRole[];
   group: string;
+  external?: string; // external URL opens in new tab
 }
 
 // Simplified navigation: 6 groups
@@ -69,6 +72,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'documents', label: 'Documents', icon: FileText, roles: ['Manager'], group: 'operations' },
   
   { id: 'commissions', label: 'Commissions', icon: DollarSign, roles: ['Manager'], group: 'operations' },
+  { id: 'natoor-rent', label: 'Rent Protect', icon: Home, roles: ['Manager', 'Owner'], group: 'operations', external: 'https://natoor-rent.lovable.app' },
   { id: 'mortgage-calc', label: 'Mortgage Calculator', icon: Calculator, roles: ['Manager', 'Broker'], group: 'operations' },
   
   // Teams (Internal collaboration)
@@ -153,7 +157,11 @@ export function Sidebar({
     setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
   };
 
-  const handleSectionChange = (sectionId: string) => {
+  const handleSectionChange = (sectionId: string, externalUrl?: string) => {
+    if (externalUrl) {
+      window.open(externalUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
     onSectionChange(sectionId);
     if (onClose && window.innerWidth < 1024) {
       onClose();
@@ -248,7 +256,7 @@ export function Sidebar({
                       return (
                         <button
                           key={item.id}
-                          onClick={() => handleSectionChange(item.id)}
+                          onClick={() => handleSectionChange(item.id, item.external)}
                           className={cn(
                             'w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200',
                             isActive
@@ -259,6 +267,7 @@ export function Sidebar({
                         >
                           <Icon className="w-5 h-5 flex-shrink-0" />
                           {!collapsed && <span className="truncate">{item.label}</span>}
+                          {!collapsed && item.external && <ExternalLink className="w-3 h-3 ml-auto opacity-50" />}
                         </button>
                       );
                     })}
@@ -299,7 +308,7 @@ export function Sidebar({
                     return (
                       <button
                         key={item.id}
-                        onClick={() => handleSectionChange(item.id)}
+                        onClick={() => handleSectionChange(item.id, item.external)}
                         className={cn(
                           'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200',
                           isActive
@@ -310,6 +319,7 @@ export function Sidebar({
                       >
                         <Icon className="w-4 h-4 flex-shrink-0" />
                         {!collapsed && <span className="truncate">{item.label}</span>}
+                        {!collapsed && item.external && <ExternalLink className="w-3 h-3 ml-auto opacity-50" />}
                       </button>
                     );
                   })}

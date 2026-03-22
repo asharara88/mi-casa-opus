@@ -95,3 +95,9 @@ verify_jwt = false
 
 [functions.bos-llm-marketing-advisor]
 verify_jwt = false
+
+[functions.natoor-deal-sync]
+verify_jwt = false
+
+[functions.natoor-vacancy-receive]
+verify_jwt = false
