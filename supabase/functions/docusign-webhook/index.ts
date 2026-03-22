@@ -51,10 +51,6 @@ interface DocuSignWebhookEvent {
   };
 }
 
-/**
- * Maps template IDs to deal state changes when documents are executed.
- * This enables automatic funnel stage advancement on signature completion.
- */
 const TEMPLATE_STAGE_AUTOMATION: Record<string, {
   secondaryState?: string;
   offplanState?: string;
@@ -75,6 +71,30 @@ const TEMPLATE_STAGE_AUTOMATION: Record<string, {
   },
 };
 
+/**
+ * Verify DocuSign HMAC signature.
+ * See: https://developers.docusign.com/platform/webhooks/connect/hmac/
+ */
+async function verifyDocuSignSignature(
+  body: string,
+  signature: string | null,
+  secret: string
+): Promise<boolean> {
+  if (!signature) return false;
+
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const hmac = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+  const computedSignature = btoa(String.fromCharCode(...new Uint8Array(hmac)));
+  return computedSignature === signature;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -83,14 +103,33 @@ Deno.serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const DOCUSIGN_WEBHOOK_SECRET = Deno.env.get('DOCUSIGN_WEBHOOK_SECRET');
+
+    // Read body as text first for signature verification
+    const bodyText = await req.text();
+
+    // Verify DocuSign HMAC signature if secret is configured
+    if (DOCUSIGN_WEBHOOK_SECRET) {
+      const signature = req.headers.get('X-DocuSign-Signature-1');
+      const isValid = await verifyDocuSignSignature(bodyText, signature, DOCUSIGN_WEBHOOK_SECRET);
+      if (!isValid) {
+        console.error('Invalid DocuSign webhook signature');
+        return new Response(
+          JSON.stringify({ error: 'Invalid signature' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      console.warn('DOCUSIGN_WEBHOOK_SECRET not configured — skipping signature verification');
+    }
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    const webhookEvent: DocuSignWebhookEvent = await req.json();
+    const webhookEvent: DocuSignWebhookEvent = JSON.parse(bodyText);
     const { event, data } = webhookEvent;
     const { envelopeId, envelopeSummary } = data;
 
-    console.log('DocuSign webhook received:', event, envelopeId);
+    console.log('DocuSign webhook verified:', event, envelopeId);
 
     // Find the envelope in our database
     const { data: envelope, error: findError } = await supabase
@@ -107,7 +146,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Map DocuSign status to our status
     const statusMap: Record<string, string> = {
       'sent': 'Pending',
       'delivered': 'Pending',
@@ -117,12 +155,10 @@ Deno.serve(async (req) => {
       'voided': 'Voided',
     };
 
-    // Update signer statuses
     const updatedSigners = (envelope.signers as any[]).map(signer => {
       const docuSignSigner = envelopeSummary.recipients?.signers?.find(
         s => s.email.toLowerCase() === signer.email.toLowerCase()
       );
-      
       if (docuSignSigner) {
         return {
           ...signer,
@@ -134,7 +170,6 @@ Deno.serve(async (req) => {
       return signer;
     });
 
-    // Prepare update
     const updateData: Record<string, any> = {
       docusign_status: envelopeSummary.status,
       signers: updatedSigners,
@@ -144,13 +179,11 @@ Deno.serve(async (req) => {
     if (envelopeSummary.completedDateTime) {
       updateData.completed_at = envelopeSummary.completedDateTime;
     }
-
     if (envelopeSummary.voidedDateTime) {
       updateData.voided_at = envelopeSummary.voidedDateTime;
       updateData.void_reason = envelopeSummary.voidedReason;
     }
 
-    // Update envelope
     const { error: updateError } = await supabase
       .from('signature_envelopes')
       .update(updateData)
@@ -163,7 +196,6 @@ Deno.serve(async (req) => {
 
     // If completed, update document instance and trigger deal stage automation
     if (envelopeSummary.status === 'completed' && envelope.document_instance_id) {
-      // Update document instance status
       await supabase
         .from('document_instances')
         .update({
@@ -172,7 +204,6 @@ Deno.serve(async (req) => {
         })
         .eq('id', envelope.document_instance_id);
 
-      // Get the document instance to find the deal and template
       const { data: docInstance } = await supabase
         .from('document_instances')
         .select('entity_type, entity_id, data_snapshot')
@@ -180,15 +211,11 @@ Deno.serve(async (req) => {
         .single();
 
       if (docInstance?.entity_type === 'deal' && docInstance.entity_id) {
-        // Check if template triggers stage automation
         const dataSnapshot = docInstance.data_snapshot as Record<string, any>;
         const templateId = dataSnapshot?.template_id || '';
-        
         const automation = TEMPLATE_STAGE_AUTOMATION[templateId];
         if (automation) {
           console.log(`Triggering stage automation for deal ${docInstance.entity_id}:`, automation);
-          
-          // Get current deal to determine pipeline type
           const { data: deal } = await supabase
             .from('deals')
             .select('pipeline, deal_type')
@@ -197,24 +224,16 @@ Deno.serve(async (req) => {
 
           if (deal) {
             const dealUpdate: Record<string, any> = {};
-            
-            // Apply stage change based on pipeline type
             if (deal.pipeline === 'secondary' && automation.secondaryState) {
               dealUpdate.secondary_state = automation.secondaryState;
             } else if (deal.pipeline === 'offplan' && automation.offplanState) {
               dealUpdate.offplan_state = automation.offplanState;
             }
-            
             if (automation.nextAction) {
               dealUpdate.next_action = automation.nextAction;
             }
-
             if (Object.keys(dealUpdate).length > 0) {
-              await supabase
-                .from('deals')
-                .update(dealUpdate)
-                .eq('id', docInstance.entity_id);
-
+              await supabase.from('deals').update(dealUpdate).eq('id', docInstance.entity_id);
               console.log(`Deal ${docInstance.entity_id} advanced:`, dealUpdate);
             }
           }
@@ -223,11 +242,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        envelopeId, 
-        newStatus: envelopeSummary.status 
-      }),
+      JSON.stringify({ success: true, envelopeId, newStatus: envelopeSummary.status }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
@@ -235,10 +250,7 @@ Deno.serve(async (req) => {
     console.error('Error in docusign-webhook:', error);
     return new Response(
       JSON.stringify({ error: 'Webhook processing failed', details: error instanceof Error ? error.message : 'Unknown error' }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

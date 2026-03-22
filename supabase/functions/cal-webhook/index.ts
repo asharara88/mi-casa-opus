@@ -39,6 +39,32 @@ interface CalWebhookPayload {
   };
 }
 
+/**
+ * Verify Cal.com webhook signature using the CAL_API_KEY as shared secret.
+ * Cal.com signs webhooks with HMAC-SHA256 in the X-Cal-Signature-256 header.
+ */
+async function verifyCalSignature(
+  body: string,
+  signature: string | null,
+  secret: string
+): Promise<boolean> {
+  if (!signature) return false;
+
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const hmac = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+  const hexDigest = Array.from(new Uint8Array(hmac))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  return hexDigest === signature;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -47,22 +73,39 @@ Deno.serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const CAL_API_KEY = Deno.env.get('CAL_API_KEY');
+
+    // Read body as text for signature verification
+    const bodyText = await req.text();
+
+    // Verify Cal.com signature if secret is configured
+    if (CAL_API_KEY) {
+      const signature = req.headers.get('X-Cal-Signature-256');
+      const isValid = await verifyCalSignature(bodyText, signature, CAL_API_KEY);
+      if (!isValid) {
+        console.error('Invalid Cal.com webhook signature');
+        return new Response(
+          JSON.stringify({ error: 'Invalid signature' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      console.warn('CAL_API_KEY not configured — skipping signature verification');
+    }
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    const webhookPayload: CalWebhookPayload = await req.json();
+    const webhookPayload: CalWebhookPayload = JSON.parse(bodyText);
     const { triggerEvent, payload } = webhookPayload;
 
-    console.log('Cal.com webhook received:', triggerEvent, payload.uid);
+    console.log('Cal.com webhook verified:', triggerEvent, payload.uid);
 
     switch (triggerEvent) {
       case 'BOOKING_CREATED': {
-        // Calculate duration in minutes
         const start = new Date(payload.startTime);
         const end = new Date(payload.endTime);
         const durationMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
 
-        // Create viewing booking record
         const { data: booking, error: bookingError } = await supabase
           .from('viewing_bookings')
           .insert({
@@ -86,11 +129,8 @@ Deno.serve(async (req) => {
 
         console.log('Created viewing booking:', booking.id);
 
-        // If there's a prospect, send confirmation
         if (payload.metadata?.prospectId && payload.attendees.length > 0) {
           const attendee = payload.attendees[0];
-          
-          // Trigger confirmation email via SendGrid
           try {
             await fetch(`${SUPABASE_URL}/functions/v1/sendgrid-email`, {
               method: 'POST',
@@ -127,7 +167,6 @@ Deno.serve(async (req) => {
       }
 
       case 'BOOKING_RESCHEDULED': {
-        // Update existing booking
         const { error: updateError } = await supabase
           .from('viewing_bookings')
           .update({
@@ -151,7 +190,6 @@ Deno.serve(async (req) => {
       }
 
       case 'BOOKING_CANCELLED': {
-        // Update booking status to cancelled
         const { error: cancelError } = await supabase
           .from('viewing_bookings')
           .update({
@@ -184,10 +222,7 @@ Deno.serve(async (req) => {
     console.error('Error in cal-webhook:', error);
     return new Response(
       JSON.stringify({ error: 'Webhook processing failed', details: error instanceof Error ? error.message : 'Unknown error' }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
