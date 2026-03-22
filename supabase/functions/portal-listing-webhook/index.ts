@@ -34,16 +34,19 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const PORTAL_WEBHOOK_SECRET = Deno.env.get("PORTAL_WEBHOOK_SECRET");
 
-    // Verify authentication
-    if (PORTAL_WEBHOOK_SECRET) {
-      if (!verifyPortalSecret(req, PORTAL_WEBHOOK_SECRET)) {
-        return new Response(
-          JSON.stringify({ error: "Unauthorized" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-    } else {
-      console.warn("PORTAL_WEBHOOK_SECRET not configured — skipping auth");
+    if (!PORTAL_WEBHOOK_SECRET) {
+      console.error('PORTAL_WEBHOOK_SECRET not configured');
+      return new Response(
+        JSON.stringify({ error: 'Webhook not configured' }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!verifyPortalSecret(req, PORTAL_WEBHOOK_SECRET)) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
