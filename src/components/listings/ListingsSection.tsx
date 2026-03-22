@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +42,8 @@ import {
   TrendingUp,
   Landmark,
   Newspaper,
+  Home,
+  Loader2,
   Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -101,6 +105,7 @@ export function ListingsSection() {
   const [addListingModalOpen, setAddListingModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
+  const [syncingVacancies, setSyncingVacancies] = useState(false);
   
   // Fetch real listings from database
   const { data: dbListings, refetch: refetchListings, isLoading } = useListings();
@@ -236,6 +241,36 @@ export function ListingsSection() {
             <Newspaper className="h-4 w-4 md:mr-2 shrink-0" />
             <span className="hidden sm:inline">Market Insights</span>
             <span className="sm:hidden">Insights</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={async () => {
+              setSyncingVacancies(true);
+              try {
+                const { data, error } = await supabase.functions.invoke('natoor-vacancy-receive');
+                if (error) {
+                  toast.error('Vacancy sync failed', { description: error.message });
+                } else {
+                  toast.success(data?.message || 'Vacancy sync complete');
+                  refetchListings();
+                }
+              } catch {
+                toast.error('Vacancy sync failed');
+              } finally {
+                setSyncingVacancies(false);
+              }
+            }}
+            disabled={syncingVacancies}
+            className="h-9 text-xs md:text-sm px-2 md:px-4"
+          >
+            {syncingVacancies ? (
+              <Loader2 className="h-4 w-4 md:mr-2 shrink-0 animate-spin" />
+            ) : (
+              <Home className="h-4 w-4 md:mr-2 shrink-0" />
+            )}
+            <span className="hidden sm:inline">Sync Vacancies</span>
+            <span className="sm:hidden">Natoor</span>
           </Button>
         </div>
       </div>
