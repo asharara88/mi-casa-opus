@@ -10,6 +10,7 @@ const corsHeaders = {
 const SYSTEM_PROMPT = `SYSTEM — MiCasa BOS Operations Assistant
 
 You are an AI assistant embedded in MiCasa's Brokerage Operating System (BOS).
+You have full conversation memory — you can reference anything discussed earlier in the chat.
 
 Your role:
 - Help brokers and operators with day-to-day operations
@@ -19,6 +20,7 @@ Your role:
 - Look up CRM records by ID, name, email, or phone when asked
 - Report on pipeline metrics and entity counts when asked
 - Help agents prepare documents and forms by identifying the right template
+- Draft and amend documents from official templates when template content is provided
 
 When database records are provided in the context:
 - Reference them accurately with their CRM IDs
@@ -103,6 +105,23 @@ prefill: {"buyer_full_name": "Ahmed", "property_address": "Dubai Marina"}
 
 Click 'Open Template' above to start filling in the details. Would you like help with anything else?"
 
+=== DOCUMENT DRAFTING FROM TEMPLATES ===
+
+When TEMPLATE CONTENT is provided in the context (under === TEMPLATE CONTENT ===), you MUST:
+1. Use the EXACT template structure — do NOT invent legal language
+2. Fill in ALL blanks (marked with ______ or placeholder text) using data from the conversation
+3. Where data is not available from the conversation, leave blanks as "_______________"
+4. Wrap the completed document in [DRAFTED_DOCUMENT] and [/DRAFTED_DOCUMENT] tags
+5. The first line inside the block should be the document title
+
+Example:
+[DRAFTED_DOCUMENT]
+Memorandum of Understanding (Pre-SPA)
+... filled document content ...
+[/DRAFTED_DOCUMENT]
+
+CRITICAL: Never fabricate legal clauses. Only use the exact template text with blanks filled from conversation data.
+
 === FOLLOW-UP MESSAGE ASSISTANCE ===
 
 When users want to follow up with a client, re-engage a lead, send a check-in, or remind someone:
@@ -162,23 +181,99 @@ interface OpsRequest {
   bosPayload?: Record<string, unknown>;
   complianceResult?: Record<string, unknown>;
   databaseContext?: Record<string, unknown>;
+  conversationHistory?: Array<{ role: string; content: string }>;
+}
+
+// Template ID to document_templates template_id mapping
+const TEMPLATE_KEY_MAP: Record<string, string> = {
+  'FORM_01_SELLER_AUTH': 'FORM_01',
+  'FORM_02_BUYER_REP': 'FORM_02',
+  'FORM_03_MARKETING': 'FORM_03',
+  'FORM_04_AGENT_LICENSE': 'FORM_04',
+  'FORM_05_COMPANY_LICENSE': 'FORM_05',
+  'FORM_06_AGENT_AGREEMENT': 'FORM_06',
+  'FORM_07_OFFER': 'FORM_07',
+  'FORM_08_MOU': 'FORM_08',
+  'FORM_09_RESERVATION': 'FORM_09',
+  'FORM_10_CLOSING': 'FORM_10',
+  'FORM_11_NOC': 'FORM_11',
+  'FORM_12_INVOICE': 'FORM_12',
+  'FORM_13_SPLIT': 'FORM_13',
+  'FORM_14_REFUND': 'FORM_14',
+  'FORM_15_LEDGER': 'FORM_15',
+  'FORM_16_PRIVACY': 'FORM_16',
+  'FORM_17_COMPLAINT': 'FORM_17',
+  'FORM_18_GOVERNANCE': 'FORM_18',
+};
+
+// Detect document-related intent and identify which template
+function detectDocumentIntent(message: string): string | null {
+  const lower = message.toLowerCase();
+  
+  const patterns: Array<{ keywords: string[]; templateKey: string }> = [
+    { keywords: ['mou', 'memorandum of understanding', 'pre-spa'], templateKey: 'FORM_08_MOU' },
+    { keywords: ['offer letter', 'eoi', 'expression of interest'], templateKey: 'FORM_07_OFFER' },
+    { keywords: ['reservation', 'booking form', 'book the unit'], templateKey: 'FORM_09_RESERVATION' },
+    { keywords: ['seller auth', 'landlord auth', 'listing authorization', 'form a', 'mandate'], templateKey: 'FORM_01_SELLER_AUTH' },
+    { keywords: ['buyer rep', 'tenant rep', 'representation agreement', 'form b'], templateKey: 'FORM_02_BUYER_REP' },
+    { keywords: ['marketing consent', 'advertising auth'], templateKey: 'FORM_03_MARKETING' },
+    { keywords: ['invoice', 'commission invoice', 'vat invoice'], templateKey: 'FORM_12_INVOICE' },
+    { keywords: ['commission split', 'split sheet', 'co-broker split'], templateKey: 'FORM_13_SPLIT' },
+    { keywords: ['refund', 'cancellation form'], templateKey: 'FORM_14_REFUND' },
+    { keywords: ['ledger', 'financial reconciliation', 'deal ledger'], templateKey: 'FORM_15_LEDGER' },
+    { keywords: ['closing checklist', 'deal completion', 'close the deal checklist'], templateKey: 'FORM_10_CLOSING' },
+    { keywords: ['noc', 'no objection', 'clearance'], templateKey: 'FORM_11_NOC' },
+    { keywords: ['privacy', 'data consent', 'gdpr'], templateKey: 'FORM_16_PRIVACY' },
+    { keywords: ['agent agreement', 'agent-to-agent', 'co-broker agreement'], templateKey: 'FORM_06_AGENT_AGREEMENT' },
+    { keywords: ['complaint', 'incident', 'dispute'], templateKey: 'FORM_17_COMPLAINT' },
+    { keywords: ['agent license', 'license record'], templateKey: 'FORM_04_AGENT_LICENSE' },
+    { keywords: ['company license', 'trade license'], templateKey: 'FORM_05_COMPANY_LICENSE' },
+    { keywords: ['governance', 'governance pack'], templateKey: 'FORM_18_GOVERNANCE' },
+  ];
+
+  // Must also have a "draft" / "prepare" / "fill" / "amend" / "generate" trigger
+  const draftTriggers = /\b(draft|prepare|fill|amend|generate|write|create|complete|produce|make)\b/i;
+  if (!draftTriggers.test(lower)) return null;
+
+  for (const p of patterns) {
+    if (p.keywords.some(k => lower.includes(k))) {
+      return p.templateKey;
+    }
+  }
+  return null;
+}
+
+// Fetch template content from document_templates table
+async function fetchTemplateContent(supabase: any, templateKey: string): Promise<string | null> {
+  // Try matching by template_id prefix
+  const formNumber = TEMPLATE_KEY_MAP[templateKey];
+  if (!formNumber) return null;
+
+  const { data } = await supabase
+    .from('document_templates')
+    .select('template_content, name')
+    .ilike('template_id', `${formNumber}%`)
+    .limit(1)
+    .single();
+
+  if (data?.template_content) {
+    return `=== TEMPLATE CONTENT: ${data.name} ===\n${data.template_content}`;
+  }
+  return null;
 }
 
 // Extract entities from user message for database lookup
 function extractEntities(message: string) {
   const entities: Record<string, string[]> = {};
   
-  // CRM IDs: PR-XXX, LD-XXX, CRM-XXX, DL-XXX
   const crmPattern = /\b(PR|LD|CRM|DL)-[A-Z0-9]{4,12}\b/gi;
   const crmMatches = message.match(crmPattern);
   if (crmMatches) entities.crmIds = [...new Set(crmMatches.map(m => m.toUpperCase()))];
   
-  // Email patterns
   const emailPattern = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
   const emailMatches = message.match(emailPattern);
   if (emailMatches) entities.emails = [...new Set(emailMatches.map(e => e.toLowerCase()))];
   
-  // Phone patterns (UAE format)
   const phonePattern = /\+?971[0-9]{8,9}|05[0-9]{8}/g;
   const phoneMatches = message.match(phonePattern);
   if (phoneMatches) entities.phones = [...new Set(phoneMatches)];
@@ -186,74 +281,42 @@ function extractEntities(message: string) {
   return entities;
 }
 
-// Detect intent patterns for smarter data fetching
 function detectIntentPatterns(message: string) {
   const lower = message.toLowerCase();
   
   return {
-    // Count/aggregate questions
     wantsCount: /\b(how many|total|count|number of|all|give me|show me|list)\b/i.test(lower),
-    
-    // Entity-specific questions
     wantsLeads: /\b(leads?)\b/i.test(lower),
     wantsProspects: /\b(prospects?|customers?|contacts?)\b/i.test(lower),
     wantsDeals: /\b(deals?|transactions?|sales?)\b/i.test(lower),
     wantsListings: /\b(listings?|properties|inventory|units?)\b/i.test(lower),
-    
-    // Pipeline/overview questions
     wantsPipeline: /\b(pipeline|overview|summary|status|dashboard|report|metrics|kpis?)\b/i.test(lower),
-    
-    // Time-based questions
     wantsToday: /\b(today|priorities|urgent|due|overdue|pending)\b/i.test(lower),
     wantsRecent: /\b(recent|latest|new|this week|this month|yesterday)\b/i.test(lower),
-    
-    // Quality/tier questions
     wantsHot: /\b(hot|warm|cold|qualified|high.?value|priority)\b/i.test(lower),
-    
-    // Breakdown questions
     wantsBreakdown: /\b(breakdown|by stage|by state|by status|distribution|split)\b/i.test(lower),
   };
 }
 
-// Query database for relevant records
 async function fetchDatabaseContext(supabase: any, userIntent: string) {
   const results: Record<string, unknown> = {};
   const entities = extractEntities(userIntent);
   const intent = detectIntentPatterns(userIntent);
   
-  // Always fetch entity counts for count/aggregate or pipeline questions
   if (intent.wantsCount || intent.wantsPipeline || intent.wantsBreakdown) {
     try {
       const { data: entityCounts } = await supabase.rpc('get_entity_counts');
-      if (entityCounts?.length) {
-        results.entityCounts = entityCounts;
-      }
+      if (entityCounts?.length) results.entityCounts = entityCounts;
     } catch (e) {
-      console.log("[BOS OPS] get_entity_counts not available, using fallback queries");
+      console.log("[BOS OPS] get_entity_counts not available");
     }
   }
   
-  // Query by specific identifiers (CRM IDs, emails, phones)
   if (entities.crmIds?.length || entities.emails?.length || entities.phones?.length) {
-    // Query prospects
     let prospectConditions: string[] = [];
-    
-    if (entities.crmIds?.length) {
-      entities.crmIds.forEach(id => {
-        prospectConditions.push(`crm_customer_id.ilike.%${id}%`);
-      });
-    }
-    if (entities.emails?.length) {
-      entities.emails.forEach(email => {
-        prospectConditions.push(`email.ilike.%${email}%`);
-      });
-    }
-    if (entities.phones?.length) {
-      entities.phones.forEach(phone => {
-        const cleanPhone = phone.replace(/\D/g, '');
-        prospectConditions.push(`phone.ilike.%${cleanPhone}%`);
-      });
-    }
+    if (entities.crmIds?.length) entities.crmIds.forEach(id => prospectConditions.push(`crm_customer_id.ilike.%${id}%`));
+    if (entities.emails?.length) entities.emails.forEach(email => prospectConditions.push(`email.ilike.%${email}%`));
+    if (entities.phones?.length) entities.phones.forEach(phone => prospectConditions.push(`phone.ilike.%${phone.replace(/\D/g, '')}%`));
     
     if (prospectConditions.length > 0) {
       const { data: prospects } = await supabase
@@ -264,25 +327,10 @@ async function fetchDatabaseContext(supabase: any, userIntent: string) {
       if (prospects?.length) results.prospects = prospects;
     }
     
-    // Query leads
     let leadConditions: string[] = [];
-    
-    if (entities.crmIds?.length) {
-      entities.crmIds.forEach(id => {
-        leadConditions.push(`lead_id.ilike.%${id}%`);
-      });
-    }
-    if (entities.emails?.length) {
-      entities.emails.forEach(email => {
-        leadConditions.push(`contact_email.ilike.%${email}%`);
-      });
-    }
-    if (entities.phones?.length) {
-      entities.phones.forEach(phone => {
-        const cleanPhone = phone.replace(/\D/g, '');
-        leadConditions.push(`contact_phone.ilike.%${cleanPhone}%`);
-      });
-    }
+    if (entities.crmIds?.length) entities.crmIds.forEach(id => leadConditions.push(`lead_id.ilike.%${id}%`));
+    if (entities.emails?.length) entities.emails.forEach(email => leadConditions.push(`contact_email.ilike.%${email}%`));
+    if (entities.phones?.length) entities.phones.forEach(phone => leadConditions.push(`contact_phone.ilike.%${phone.replace(/\D/g, '')}%`));
     
     if (leadConditions.length > 0) {
       const { data: leads } = await supabase
@@ -293,12 +341,8 @@ async function fetchDatabaseContext(supabase: any, userIntent: string) {
       if (leads?.length) results.leads = leads;
     }
     
-    // Query deals
     if (entities.crmIds?.some(id => id.startsWith('DL-'))) {
-      const dealConditions = entities.crmIds
-        .filter(id => id.startsWith('DL-'))
-        .map(id => `deal_id.ilike.%${id}%`);
-      
+      const dealConditions = entities.crmIds.filter(id => id.startsWith('DL-')).map(id => `deal_id.ilike.%${id}%`);
       if (dealConditions.length > 0) {
         const { data: deals } = await supabase
           .from('deals')
@@ -310,127 +354,81 @@ async function fetchDatabaseContext(supabase: any, userIntent: string) {
     }
   }
   
-  // Fetch specific entity data based on intent
   if (intent.wantsLeads && !results.leads) {
-    const { count: leadCount } = await supabase
-      .from('leads')
-      .select('*', { count: 'exact', head: true });
+    const { count: leadCount } = await supabase.from('leads').select('*', { count: 'exact', head: true });
     results.totalLeads = leadCount;
-    
-    // Get sample recent leads
-    const { data: recentLeads } = await supabase
-      .from('leads')
+    const { data: recentLeads } = await supabase.from('leads')
       .select('id, lead_id, contact_name, lead_state, next_action, created_at')
-      .order('created_at', { ascending: false })
-      .limit(5);
+      .order('created_at', { ascending: false }).limit(5);
     if (recentLeads?.length) results.recentLeads = recentLeads;
   }
   
   if (intent.wantsProspects && !results.prospects) {
-    const { count: prospectCount } = await supabase
-      .from('prospects')
-      .select('*', { count: 'exact', head: true });
+    const { count: prospectCount } = await supabase.from('prospects').select('*', { count: 'exact', head: true });
     results.totalProspects = prospectCount;
-    
-    // Get sample recent prospects
-    const { data: recentProspects } = await supabase
-      .from('prospects')
+    const { data: recentProspects } = await supabase.from('prospects')
       .select('id, full_name, crm_customer_id, crm_stage, outreach_status, created_at')
-      .order('created_at', { ascending: false })
-      .limit(5);
+      .order('created_at', { ascending: false }).limit(5);
     if (recentProspects?.length) results.recentProspects = recentProspects;
   }
   
   if (intent.wantsDeals && !results.deals) {
-    const { count: dealCount } = await supabase
-      .from('deals')
-      .select('*', { count: 'exact', head: true });
+    const { count: dealCount } = await supabase.from('deals').select('*', { count: 'exact', head: true });
     results.totalDeals = dealCount;
-    
-    // Get sample recent deals
-    const { data: recentDeals } = await supabase
-      .from('deals')
+    const { data: recentDeals } = await supabase.from('deals')
       .select('id, deal_id, deal_type, deal_state, pipeline, created_at')
-      .order('created_at', { ascending: false })
-      .limit(5);
+      .order('created_at', { ascending: false }).limit(5);
     if (recentDeals?.length) results.recentDeals = recentDeals;
   }
   
   if (intent.wantsListings) {
-    const { count: listingCount } = await supabase
-      .from('listings')
-      .select('*', { count: 'exact', head: true });
+    const { count: listingCount } = await supabase.from('listings').select('*', { count: 'exact', head: true });
     results.totalListings = listingCount;
-    
-    // Get sample recent listings
-    const { data: recentListings } = await supabase
-      .from('listings')
+    const { data: recentListings } = await supabase.from('listings')
       .select('id, listing_id, listing_type, status, created_at')
-      .order('created_at', { ascending: false })
-      .limit(5);
+      .order('created_at', { ascending: false }).limit(5);
     if (recentListings?.length) results.recentListings = recentListings;
   }
   
-  // Search by name patterns
   const nameKeywords = userIntent.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g);
   if (nameKeywords?.length && !results.prospects && !results.leads) {
     const excludeWords = ['Pipeline', 'Status', 'Show', 'Find', 'Get', 'What', 'Who', 'How', 'Tell', 'About', 'Many', 'Total', 'Count', 'Give', 'List'];
     for (const name of nameKeywords.slice(0, 2)) {
       if (name.length > 2 && !excludeWords.includes(name)) {
-        const { data: prospectsByName } = await supabase
-          .from('prospects')
+        const { data: prospectsByName } = await supabase.from('prospects')
           .select('id, full_name, email, phone, crm_customer_id, crm_stage, crm_confidence_level, outreach_status, city, notes')
-          .ilike('full_name', `%${name}%`)
-          .limit(5);
+          .ilike('full_name', `%${name}%`).limit(5);
+        if (prospectsByName?.length) results.prospects = [...(results.prospects as any[] || []), ...prospectsByName];
         
-        if (prospectsByName?.length) {
-          results.prospects = [...(results.prospects as any[] || []), ...prospectsByName];
-        }
-        
-        const { data: leadsByName } = await supabase
-          .from('leads')
+        const { data: leadsByName } = await supabase.from('leads')
           .select('id, lead_id, contact_name, contact_email, contact_phone, lead_state, source, next_action, notes')
-          .ilike('contact_name', `%${name}%`)
-          .limit(5);
-        
-        if (leadsByName?.length) {
-          results.leads = [...(results.leads as any[] || []), ...leadsByName];
-        }
+          .ilike('contact_name', `%${name}%`).limit(5);
+        if (leadsByName?.length) results.leads = [...(results.leads as any[] || []), ...leadsByName];
       }
     }
   }
   
-  // Pipeline/summary queries - use entity counts (pipeline_kpis table doesn't exist)
   if (intent.wantsPipeline && !results.entityCounts) {
     try {
       const { data: entityCounts } = await supabase.rpc('get_entity_counts');
       if (entityCounts?.length) results.entityCounts = entityCounts;
-    } catch (e) {
-      console.log("[BOS OPS] Pipeline query fallback - get_entity_counts not available");
-    }
+    } catch (e) { /* fallback */ }
   }
   
-  // Today's priorities
   if (intent.wantsToday) {
     const today = new Date().toISOString().split('T')[0];
     const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
     
-    const { data: dueLeads } = await supabase
-      .from('leads')
+    const { data: dueLeads } = await supabase.from('leads')
       .select('id, lead_id, contact_name, lead_state, next_action, next_action_due')
-      .gte('next_action_due', today)
-      .lt('next_action_due', tomorrow)
-      .order('next_action_due')
-      .limit(10);
+      .gte('next_action_due', today).lt('next_action_due', tomorrow)
+      .order('next_action_due').limit(10);
     if (dueLeads?.length) results.leadsDueToday = dueLeads;
     
-    const { data: dueDeals } = await supabase
-      .from('deals')
+    const { data: dueDeals } = await supabase.from('deals')
       .select('id, deal_id, deal_state, pipeline, next_action, next_action_due')
-      .gte('next_action_due', today)
-      .lt('next_action_due', tomorrow)
-      .order('next_action_due')
-      .limit(10);
+      .gte('next_action_due', today).lt('next_action_due', tomorrow)
+      .order('next_action_due').limit(10);
     if (dueDeals?.length) results.dealsDueToday = dueDeals;
   }
   
@@ -462,7 +460,6 @@ serve(async (req) => {
       );
     }
 
-    // Verify the user's token
     const userClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -483,14 +480,12 @@ serve(async (req) => {
     // SECURITY: Use user's client for database queries (respects RLS)
     let databaseContext: Record<string, unknown> = {};
     if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-      // Use user-scoped client that respects RLS policies
       databaseContext = await fetchDatabaseContext(userClient, request.userIntent);
     }
 
     // Build context message from payload
     let contextMessage = "";
     
-    // Add database context first (most relevant)
     if (Object.keys(databaseContext).length > 0) {
       contextMessage += `\n\n=== DATABASE RECORDS (Real-time from BOS) ===\n${JSON.stringify(databaseContext, null, 2)}`;
     }
@@ -502,6 +497,34 @@ serve(async (req) => {
       contextMessage += `\n\n=== Compliance Status ===\n${JSON.stringify(request.complianceResult, null, 2)}`;
     }
 
+    // Check for document drafting intent and fetch template content
+    const detectedTemplate = detectDocumentIntent(request.userIntent);
+    if (detectedTemplate) {
+      const templateContent = await fetchTemplateContent(userClient, detectedTemplate);
+      if (templateContent) {
+        contextMessage += `\n\n${templateContent}`;
+        console.log(`[BOS OPS] Injected template content for: ${detectedTemplate}`);
+      }
+    }
+
+    // Build messages array with conversation history
+    const aiMessages: Array<{ role: string; content: string }> = [
+      { role: "system", content: SYSTEM_PROMPT },
+    ];
+
+    // Add conversation history (cap at last 20 messages = ~10 turns)
+    if (request.conversationHistory?.length) {
+      const history = request.conversationHistory.slice(-20);
+      for (const msg of history) {
+        if (msg.role === 'user' || msg.role === 'assistant') {
+          aiMessages.push({ role: msg.role, content: msg.content });
+        }
+      }
+    }
+
+    // Add current user message with context
+    aiMessages.push({ role: "user", content: request.userIntent + contextMessage });
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -510,16 +533,13 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: AI_MODELS.REASONING,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: request.userIntent + contextMessage },
-        ],
+        messages: aiMessages,
         stream: true,
       }),
     });
 
     const latency = Date.now() - startTime;
-    console.log(`[BOS OPS] Model: ${AI_MODELS.REASONING}, Latency: ${latency}ms, Context keys: ${Object.keys(databaseContext).join(', ') || 'none'}`);
+    console.log(`[BOS OPS] Model: ${AI_MODELS.REASONING}, Latency: ${latency}ms, History: ${request.conversationHistory?.length || 0} msgs, Template: ${detectedTemplate || 'none'}, Context keys: ${Object.keys(databaseContext).join(', ') || 'none'}`);
 
     if (!response.ok) {
       if (response.status === 429) {

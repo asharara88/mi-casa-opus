@@ -93,6 +93,15 @@ export function ChatMessageRenderer({ message, onOpenTemplate }: ChatMessageRend
             ))}
           </div>
         )}
+
+        {/* Drafted document cards */}
+        {!isUser && draftedDocuments.length > 0 && (
+          <div className="space-y-2">
+            {draftedDocuments.map((doc, idx) => (
+              <DraftedDocumentCard key={idx} document={doc} onOpenTemplate={onOpenTemplate} />
+            ))}
+          </div>
+        )}
       </div>
       
       {/* User avatar */}

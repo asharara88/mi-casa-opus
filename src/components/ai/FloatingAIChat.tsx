@@ -139,6 +139,13 @@ export function FloatingAIChat() {
     };
     setMessages(prev => [...prev, userMsg]);
 
+    // Build conversation history for the AI (exclude current message)
+    const allMessages = [...messages, userMsg];
+    const conversationHistory = allMessages
+      .filter(m => m.content && m.content.trim())
+      .slice(-20) // Cap at 20 messages
+      .map(m => ({ role: m.role, content: m.content }));
+
     // Route the request
     const mode = await routeRequest({
       userIntent: messageText || 'Analyze the attached file(s)',
@@ -158,7 +165,9 @@ export function FloatingAIChat() {
     setMessages(prev => [...prev, assistantMsg]);
     setActiveMessageId(assistantId);
 
-    await askOps(messageText || 'Analyze the attached file(s)', {}, undefined);
+    // Pass conversation history (exclude the last user msg since it's sent as userIntent)
+    const historyForApi = conversationHistory.slice(0, -1);
+    await askOps(messageText || 'Analyze the attached file(s)', {}, undefined, historyForApi);
     setActiveMessageId(null);
   };
 
