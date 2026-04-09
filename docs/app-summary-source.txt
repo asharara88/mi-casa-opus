@@ -1,0 +1,30 @@
+Mi Casa BOS — One-Page App Summary
+
+What it is
+- Mi Casa BOS is a role-based brokerage operating system web app for managing real-estate workflows.
+- It combines CRM/pipeline operations, documents, communications, and AI-assisted tools in one interface.
+
+Who it's for
+- Primary persona: Real-estate brokerage operators and brokers (with additional LegalOwner and Investor role views).
+
+What it does
+- Runs role-based workspaces (Operator, LegalOwner, Broker, Investor) with tailored navigation.
+- Manages prospect-to-lead-to-deal workflows and pipeline stages.
+- Handles listings, document center, signatures, and evidence/export workflows.
+- Supports commissions, payout management, and user/settings administration.
+- Includes marketing hub and outreach functions (campaigns/prospects + templates).
+- Provides AI assistant and AI routing modes for ops, lead qualification, listing FAQ, and marketing copy.
+- Includes mortgage calculator guidance for Abu Dhabi use cases.
+
+How it works (repo-evidenced architecture)
+- Frontend: React + Vite SPA with routed pages (/login, /register, /, /architecture, /mortgage-calculator), React Query state, and role-protected routes.
+- UI composition: BOSApp lazy-loads feature sections (Leads, Deals, Documents, Commissions, Marketing, Teams, AI, Mortgage, etc.) and fetches brokerage/leads/deals/commissions/event data.
+- Data/auth layer: Supabase JS client uses browser localStorage session persistence and token auto-refresh.
+- Backend services: Supabase Edge Functions implement AI routing, portal lead ingestion/parsing, Twilio messaging, SendGrid email templates, and DocuSign envelope flow (currently mock envelope path; full JWT signing marked as not implemented).
+- Integrations/API notes: A small Node server includes placeholder AECB credit-bureau endpoints returning "Not implemented".
+
+How to run (minimal)
+- Install dependencies: npm i
+- Start development app: npm run dev
+- Build production bundle: npm run build
+- Environment variables required for live integrations (Supabase/Twilio/SendGrid/DocuSign): Not found in repo.

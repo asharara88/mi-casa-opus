@@ -1,1 +1,106 @@
 project_id = "zwdqpssjhpvvsvvwmgqf"
+
+[functions.bos-llm-router]
+verify_jwt = false
+
+[functions.bos-llm-ops]
+verify_jwt = false
+
+[functions.bos-llm-lead-qualify]
+verify_jwt = false
+
+[functions.bos-llm-listing-faq]
+verify_jwt = false
+
+[functions.bos-llm-marketing-copy]
+verify_jwt = false
+
+[functions.bos-llm-property-match]
+verify_jwt = false
+
+[functions.evaluate-compliance]
+verify_jwt = false
+
+[functions.import-prospects-csv]
+verify_jwt = false
+
+[functions.firecrawl-scrape]
+verify_jwt = false
+
+[functions.competitor-analyze]
+verify_jwt = false
+
+[functions.elevenlabs-tts]
+verify_jwt = false
+
+[functions.elevenlabs-scribe-token]
+verify_jwt = false
+
+[functions.elevenlabs-conversation-token]
+verify_jwt = false
+
+[functions.twilio-messaging]
+verify_jwt = false
+
+[functions.twilio-webhook]
+verify_jwt = false
+
+[functions.sendgrid-email]
+verify_jwt = false
+
+[functions.cal-webhook]
+verify_jwt = false
+
+[functions.docusign-envelope]
+verify_jwt = false
+
+[functions.docusign-webhook]
+verify_jwt = false
+
+[functions.blog-insights-extract]
+verify_jwt = false
+
+[functions.generate-portal-xml]
+verify_jwt = false
+
+[functions.portal-status-sync]
+verify_jwt = false
+
+[functions.price-watch-check]
+verify_jwt = false
+
+[functions.portal-lead-sync]
+verify_jwt = false
+
+[functions.portal-listing-feed]
+verify_jwt = false
+
+[functions.portal-listing-webhook]
+verify_jwt = false
+
+[functions.portal-inquiry-receive]
+verify_jwt = false
+
+[functions.bos-manifest-executor]
+verify_jwt = false
+
+[functions.bos-llm-followup]
+verify_jwt = false
+
+[functions.mortgage-rate-extract]
+verify_jwt = false
+
+[functions.invite-team-member]
+verify_jwt = false
+
+[functions.bos-llm-marketing-advisor]
+verify_jwt = false
+
+[functions.natoor-deal-sync]
+verify_jwt = false
+
+[functions.natoor-vacancy-receive]
+verify_jwt = false
+
+[functions.upload-media]
+verify_jwt = false

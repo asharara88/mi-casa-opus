@@ -1,0 +1,374 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Header } from '@/components/layout/Header';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useProspects, useProspectStats, useUpdateProspect, useCreateProspect } from '@/hooks/useProspects';
+import { useCreateLead } from '@/hooks/useLeads';
+import { ProspectImportModal } from './ProspectImportModal';
+import { ProspectDetailSheet } from './ProspectDetailSheet';
+import { AddProspectModal } from './AddProspectModal';
+import { ProspectStatusChart } from './ProspectStatusChart';
+import { Search, Upload, Users, Phone, Mail, CheckCircle, Clock, XCircle, Plus, UserCheck } from 'lucide-react';
+import { toast } from 'sonner';
+import type { Prospect } from '@/hooks/useProspects';
+
+const outreachStatuses = [
+  { value: 'all', label: 'All Statuses' },
+  { value: 'not_contacted', label: 'Not Contacted' },
+  { value: 'contacted', label: 'Contacted' },
+  { value: 'follow_up', label: 'Follow Up' },
+  { value: 'interested', label: 'Interested' },
+  { value: 'qualified', label: 'Qualified' },
+  { value: 'not_interested', label: 'Not Interested' },
+  { value: 'converted', label: 'Converted to Lead' },
+];
+
+const confidenceLevels = [
+  { value: 'all', label: 'All Confidence' },
+  { value: 'High', label: 'High' },
+  { value: 'Medium', label: 'Medium' },
+  { value: 'Low', label: 'Low' },
+];
+
+export function ProspectsSection() {
+  const [search, setSearch] = useState('');
+  const [outreachStatus, setOutreachStatus] = useState('all');
+  const [confidenceLevel, setConfidenceLevel] = useState('all');
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
+
+  const { data: prospects = [], isLoading } = useProspects({
+    search: search || undefined,
+    outreach_status: outreachStatus,
+    confidence_level: confidenceLevel,
+  });
+
+  const { data: stats } = useProspectStats();
+  const updateProspect = useUpdateProspect();
+  const createProspect = useCreateProspect();
+  const createLead = useCreateLead();
+
+  // Generate Lead ID
+  const generateLeadId = () => {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `LD-${timestamp}-${random}`;
+  };
+
+  // Handle prospect to lead conversion
+  const handleConvertToLead = async (prospect: Prospect) => {
+    try {
+      await createLead.mutateAsync({
+        lead_id: generateLeadId(),
+        contact_name: prospect.full_name,
+        contact_email: prospect.email,
+        contact_phone: prospect.phone,
+        source: (prospect.source as any) || 'Other',
+        lead_state: 'New',
+        notes: `Converted from prospect ${prospect.crm_customer_id || prospect.id}. ${prospect.notes || ''}`.trim(),
+        qualification_data: {
+          confidence_level: prospect.crm_confidence_level,
+          city: prospect.city,
+          original_prospect_id: prospect.id,
+        },
+      });
+      
+      // Update prospect status to converted
+      await updateProspect.mutateAsync({ 
+        id: prospect.id, 
+        updates: { outreach_status: 'converted' } 
+      });
+      
+      setSelectedProspect(null);
+      toast.success('Prospect converted to lead', {
+        description: `${prospect.full_name} is now in your leads pipeline`,
+      });
+    } catch (error) {
+      toast.error('Failed to convert prospect', {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'contacted':
+      case 'interested':
+      case 'converted':
+        return <CheckCircle className="h-3 w-3" />;
+      case 'follow_up':
+        return <Clock className="h-3 w-3" />;
+      case 'not_interested':
+        return <XCircle className="h-3 w-3" />;
+      default:
+        return null;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'converted':
+        return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'interested':
+        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'contacted':
+        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+      case 'follow_up':
+        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'not_interested':
+        return 'bg-red-500/20 text-red-400 border-red-500/30';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const getConfidenceColor = (level: string | null) => {
+    switch (level) {
+      case 'High':
+        return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+      case 'Medium':
+        return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+      case 'Low':
+        return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0">
+      <Header title="Prospects" subtitle="Cold outreach and engagement tracking" />
+
+      <div className="flex-1 overflow-auto p-6 space-y-6">
+        {/* Stats Cards Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          {/* Left: Key Stats */}
+          <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="bg-card/50 border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Total Prospects
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-foreground">{stats?.total?.toLocaleString() || 0}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card/50 border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Not Contacted</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-foreground">{stats?.byStatus?.not_contacted?.toLocaleString() || 0}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card/50 border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Follow Up
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-yellow-400">{stats?.byStatus?.follow_up?.toLocaleString() || 0}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card/50 border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <UserCheck className="h-4 w-4" />
+                  Converted
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-emerald-400">{stats?.byStatus?.converted?.toLocaleString() || 0}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right: Status Distribution Chart */}
+          {stats?.byStatus && (
+            <div className="lg:col-span-1">
+              <ProspectStatusChart byStatus={stats.byStatus} />
+            </div>
+          )}
+        </div>
+
+        {/* Filters and Actions */}
+        <div className="flex flex-wrap items-center gap-4" data-testid="prospects-filters">
+          <div className="relative flex-1 min-w-[200px] max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name, email, or phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 bg-background/50"
+              data-testid="prospects-search-input"
+            />
+          </div>
+
+          <Select value={outreachStatus} onValueChange={setOutreachStatus}>
+            <SelectTrigger className="w-[160px] bg-background/50" data-testid="prospects-status-filter">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {outreachStatuses.map((s) => (
+                <SelectItem key={s.value} value={s.value} data-testid={`status-option-${s.value}`}>{s.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={confidenceLevel} onValueChange={setConfidenceLevel}>
+            <SelectTrigger className="w-[160px] bg-background/50" data-testid="prospects-confidence-filter">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {confidenceLevels.map((c) => (
+                <SelectItem key={c.value} value={c.value} data-testid={`confidence-option-${c.value}`}>{c.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Button onClick={() => setShowAddModal(true)} className="gap-2" data-testid="add-prospect-btn">
+            <Plus className="h-4 w-4" />
+            Add Prospect
+          </Button>
+
+          <Button onClick={() => setShowImportModal(true)} variant="outline" className="gap-2" data-testid="import-csv-btn">
+            <Upload className="h-4 w-4" />
+            Import CSV
+          </Button>
+        </div>
+
+        {/* Prospects Table */}
+        <Card className="bg-card/50 border-border/50" data-testid="prospects-table-card">
+          <CardContent className="p-0">
+            <Table data-testid="prospects-table">
+              <TableHeader>
+                <TableRow className="border-border/50 hover:bg-transparent">
+                  <TableHead className="text-muted-foreground">Name</TableHead>
+                  <TableHead className="text-muted-foreground">Contact</TableHead>
+                  <TableHead className="text-muted-foreground">Source</TableHead>
+                  <TableHead className="text-muted-foreground">City</TableHead>
+                  <TableHead className="text-muted-foreground">Confidence</TableHead>
+                  <TableHead className="text-muted-foreground">Status</TableHead>
+                  <TableHead className="text-muted-foreground">Attempts</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody data-testid="prospects-table-body">
+                {isLoading ? (
+                  <TableRow data-testid="prospects-loading-row">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      Loading prospects...
+                    </TableCell>
+                  </TableRow>
+                ) : prospects.length === 0 ? (
+                  <TableRow data-testid="prospects-empty-row">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      No prospects found. Import a CSV to get started.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  prospects.map((prospect, index) => (
+                    <TableRow 
+                      key={prospect.id}
+                      data-testid={`prospect-row-${index}`}
+                      data-prospect-id={prospect.id}
+                      data-prospect-name={prospect.full_name}
+                      role="button"
+                      tabIndex={0}
+                      className="border-border/50 cursor-pointer hover:bg-muted/30 focus:bg-muted/40 focus:outline-none"
+                      onClick={() => setSelectedProspect(prospect)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedProspect(prospect);
+                        }
+                      }}
+                    >
+                      <TableCell data-testid={`prospect-row-${index}-name`}>
+                        <div className="font-medium text-foreground">{prospect.full_name}</div>
+                        <div className="text-xs text-muted-foreground">{prospect.crm_customer_id}</div>
+                      </TableCell>
+                      <TableCell data-testid={`prospect-row-${index}-contact`}>
+                        <div className="flex flex-col gap-1">
+                          {prospect.phone && (
+                            <div className="flex items-center gap-1 text-sm">
+                              <Phone className="h-3 w-3 text-muted-foreground" />
+                              <span>{prospect.phone}</span>
+                            </div>
+                          )}
+                          {prospect.email && (
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Mail className="h-3 w-3" />
+                              <span className="truncate max-w-[180px]">{prospect.email}</span>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{prospect.source || '-'}</TableCell>
+                      <TableCell className="text-muted-foreground">{prospect.city || '-'}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={getConfidenceColor(prospect.crm_confidence_level)} data-testid={`prospect-row-${index}-confidence`}>
+                          {prospect.crm_confidence_level || 'Unknown'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={`flex items-center gap-1 w-fit ${getStatusColor(prospect.outreach_status)}`} data-testid={`prospect-row-${index}-status`}>
+                          {getStatusIcon(prospect.outreach_status)}
+                          {prospect.outreach_status.replace('_', ' ')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center text-muted-foreground">
+                        {prospect.contact_attempts}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {prospects.length > 0 && (
+          <p className="text-sm text-muted-foreground text-center">
+            Showing {prospects.length} of {stats?.total?.toLocaleString() || 0} prospects
+          </p>
+        )}
+      </div>
+
+      <ProspectImportModal open={showImportModal} onOpenChange={setShowImportModal} />
+      
+      <AddProspectModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        onSubmit={async (data) => {
+          await createProspect.mutateAsync(data);
+          setShowAddModal(false);
+        }}
+        isLoading={createProspect.isPending}
+      />
+      
+      <ProspectDetailSheet 
+        prospect={selectedProspect} 
+        onClose={() => setSelectedProspect(null)}
+        onUpdate={(updates) => {
+          if (selectedProspect) {
+            updateProspect.mutate({ id: selectedProspect.id, updates });
+          }
+        }}
+        onConvertToLead={handleConvertToLead}
+      />
+    </div>
+  );
+}

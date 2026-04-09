@@ -1,0 +1,344 @@
+/* Fonts loaded asynchronously via index.html - no @imports to avoid render blocking */
+/* System font stack used as fallback for instant text rendering */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   MI CASA PROPERTY SOLUTIONS
+   Design System - Premium Dark Theme
+    Design System - Premium Dark Theme
+    ============================================ */
+
+@layer base {
+  :root {
+    /* Dark theme as default - Premium real estate aesthetic */
+    --background: 220 20% 8%;
+    --foreground: 210 20% 98%;
+
+    /* Card surfaces - Elevated with subtle distinction */
+    --card: 220 18% 12%;
+    --card-foreground: 210 20% 98%;
+
+    /* Popover/Dropdown surfaces */
+    --popover: 220 18% 14%;
+    --popover-foreground: 210 20% 98%;
+
+    /* Primary - Cyan/Teal for professional tech feel */
+    --primary: 190 95% 45%;
+    --primary-foreground: 220 20% 8%;
+
+    /* Secondary - Subtle slate */
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 210 20% 90%;
+
+    /* Muted elements */
+    --muted: 220 15% 22%;
+    --muted-foreground: 215 15% 60%;
+
+    /* Accent - Gold for luxury highlights */
+    --accent: 45 95% 55%;
+    --accent-foreground: 220 20% 8%;
+
+    /* Destructive - Vibrant red */
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders and inputs */
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 190 95% 45%;
+
+    --radius: 0.5rem;
+
+    /* Sidebar - Darker for depth */
+    --sidebar-background: 220 22% 6%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 190 95% 45%;
+    --sidebar-primary-foreground: 220 20% 8%;
+    --sidebar-accent: 220 15% 14%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 220 15% 15%;
+    --sidebar-ring: 190 95% 45%;
+
+    /* Mobile Bottom Nav */
+    --mobile-nav-background: 220 22% 6%;
+    --mobile-nav-foreground: 215 15% 55%;
+    --mobile-nav-foreground-active: 190 95% 45%;
+    --mobile-nav-border: 220 15% 15%;
+
+    /* Custom semantic colors */
+    --gold: 45 95% 55%;
+    --gold-muted: 45 70% 40%;
+    --emerald: 160 85% 40%;
+    --emerald-muted: 160 50% 30%;
+    --coral: 0 80% 55%;
+    --coral-muted: 0 50% 40%;
+    --cyan: 190 95% 50%;
+    --purple: 270 80% 60%;
+
+    /* State colors */
+    --state-new: 210 90% 60%;
+    --state-active: 160 85% 45%;
+    --state-pending: 45 95% 55%;
+    --state-blocked: 0 85% 55%;
+    --state-closed: 220 15% 45%;
+
+    /* Warning color */
+    --warning: 45 95% 55%;
+    --warning-foreground: 220 20% 8%;
+
+    /* Chart colors - High contrast palette */
+    --chart-1: 190 95% 50%;
+    --chart-2: 160 85% 45%;
+    --chart-3: 45 95% 55%;
+    --chart-4: 270 80% 60%;
+    --chart-5: 0 80% 55%;
+
+    /* Gradients */
+    --gradient-gold: linear-gradient(135deg, hsl(45 95% 55%) 0%, hsl(35 100% 45%) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(220 20% 10%) 0%, hsl(220 22% 6%) 100%);
+    --gradient-surface: linear-gradient(135deg, hsl(220 18% 14%) 0%, hsl(220 18% 10%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(190 95% 45%) 0%, hsl(200 95% 40%) 100%);
+
+    /* Shadows */
+    --shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
+    --shadow-xs: 0 1px 3px 0 hsl(0 0% 0% / 0.35);
+    --shadow-sm: 0 2px 4px 0 hsl(0 0% 0% / 0.4);
+    --shadow: 0 2px 6px 0 hsl(0 0% 0% / 0.4);
+    --shadow-md: 0 4px 8px 0 hsl(0 0% 0% / 0.45);
+    --shadow-lg: 0 8px 16px 0 hsl(0 0% 0% / 0.5);
+    --shadow-xl: 0 12px 24px 0 hsl(0 0% 0% / 0.5);
+    --shadow-2xl: 0 24px 48px 0 hsl(0 0% 0% / 0.55);
+    --shadow-gold: 0 4px 14px 0 hsl(45 95% 55% / 0.25);
+    --shadow-primary: 0 4px 14px 0 hsl(190 95% 45% / 0.25);
+
+    --sidebar: 220 18% 12%;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-serif: 'Lora', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --tracking-normal: 0em;
+    --spacing: 0.25rem;
+  }
+
+  /* Light mode override (optional) */
+  .light {
+    --background: 210 20% 98%;
+    --foreground: 220 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+    --primary: 190 95% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 220 20% 15%;
+    --muted: 210 15% 92%;
+    --muted-foreground: 220 15% 40%;
+    --accent: 45 95% 45%;
+    --accent-foreground: 220 20% 10%;
+    --destructive: 0 85% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 190 95% 35%;
+
+    --sidebar-background: 220 18% 96%;
+    --sidebar-foreground: 220 20% 15%;
+    --sidebar-primary: 190 95% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 15% 92%;
+    --sidebar-accent-foreground: 220 20% 15%;
+    --sidebar-border: 220 15% 88%;
+
+    --mobile-nav-background: 0 0% 100%;
+    --mobile-nav-foreground: 220 15% 45%;
+    --mobile-nav-foreground-active: 190 95% 35%;
+    --mobile-nav-border: 220 15% 90%;
+  }
+
+  /* Dark mode class (same as root for dark-first) */
+  .dark {
+    --background: 220 20% 8%;
+    --foreground: 210 20% 98%;
+    --card: 220 18% 12%;
+    --card-foreground: 210 20% 98%;
+    --popover: 220 18% 14%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 190 95% 45%;
+    --primary-foreground: 220 20% 8%;
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 210 20% 90%;
+    --muted: 220 15% 22%;
+    --muted-foreground: 215 15% 60%;
+    --accent: 45 95% 55%;
+    --accent-foreground: 220 20% 8%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 190 95% 45%;
+    --chart-1: 190 95% 50%;
+    --chart-2: 160 85% 45%;
+    --chart-3: 45 95% 55%;
+    --chart-4: 270 80% 60%;
+    --chart-5: 0 80% 55%;
+    --sidebar: 220 18% 12%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 190 95% 45%;
+    --sidebar-primary-foreground: 220 20% 8%;
+    --sidebar-accent: 220 15% 14%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 220 15% 15%;
+    --sidebar-ring: 190 95% 45%;
+
+    --mobile-nav-background: 220 22% 6%;
+    --mobile-nav-foreground: 215 15% 55%;
+    --mobile-nav-foreground-active: 190 95% 45%;
+    --mobile-nav-border: 220 15% 15%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  /* Monospace for IDs, hashes, codes */
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  code, .code {
+    @apply font-mono text-sm bg-muted px-1.5 py-0.5 rounded;
+  }
+}
+
+/* Login page CSS animations - replaces framer-motion for lighter initial bundle */
+@keyframes loginFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes loginSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes loginGlow {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.2); opacity: 0.5; }
+}
+.login-fade-in {
+  animation: loginFadeIn 0.5s ease-out both;
+}
+.login-slide-up {
+  animation: loginSlideUp 0.5s ease-out both;
+}
+.login-glow {
+  animation: loginGlow 4s ease-in-out infinite;
+}
+.login-glow-delay-1 { animation-delay: 1s; }
+.login-glow-delay-2 { animation-delay: 2s; }
+.login-delay-1 { animation-delay: 0.2s; }
+.login-delay-2 { animation-delay: 0.4s; }
+
+/* ============================================
+   App Component & Utility Styles
+   ============================================ */
+
+@layer components {
+  .card-surface {
+    @apply bg-card border border-border rounded-lg;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-elevated {
+    @apply bg-card border border-border rounded-lg;
+    box-shadow: var(--shadow-md);
+  }
+  .card-gold {
+    @apply bg-card border border-primary/30 rounded-lg;
+    box-shadow: var(--shadow-gold);
+  }
+  .state-badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border;
+  }
+  .state-new { @apply bg-blue-500/20 text-blue-400 border-blue-500/50; }
+  .state-active { @apply bg-emerald-500/20 text-emerald-400 border-emerald-500/50; }
+  .state-pending { @apply bg-amber-500/20 text-amber-400 border-amber-500/50; }
+  .state-blocked { @apply bg-destructive/20 text-destructive border-destructive/50; }
+  .state-closed { @apply bg-slate-500/20 text-slate-400 border-slate-500/50; }
+  .state-won { @apply bg-primary/20 text-primary border-primary/50; }
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200;
+    @apply text-muted-foreground hover:text-foreground hover:bg-secondary;
+  }
+  .nav-item-active { @apply bg-primary/10 text-primary border-l-2 border-primary; }
+  .data-table { @apply w-full text-sm; }
+  .data-table th { @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted/50; }
+  .data-table td { @apply px-4 py-3 border-t border-border; }
+  .data-table tr:hover td { @apply bg-muted/30; }
+  .pipeline-column { @apply flex-1 min-w-[280px] max-w-[320px] bg-muted/30 rounded-lg p-3; }
+  .pipeline-card {
+    @apply bg-card border border-border rounded-lg p-3 mb-2 cursor-pointer transition-all duration-200;
+    @apply hover:border-primary/50 hover:shadow-md;
+  }
+  .metric-card { @apply bg-card border border-border rounded-lg p-4; }
+  .metric-value { @apply text-2xl font-bold text-foreground; }
+  .metric-label { @apply text-sm text-muted-foreground; }
+  .event-log-entry { @apply flex gap-4 py-3 border-b border-border last:border-0; }
+  .event-allowed { @apply border-l-2 border-emerald-500 pl-3; }
+  .event-blocked { @apply border-l-2 border-destructive pl-3; }
+  .block-reason { @apply flex items-start gap-2 text-sm text-destructive bg-destructive/10 px-3 py-2 rounded border border-destructive/30; }
+  .btn-gold {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 font-semibold;
+    box-shadow: var(--shadow-gold);
+  }
+  .btn-ghost-dark { @apply text-muted-foreground hover:text-foreground hover:bg-secondary; }
+}
+
+@layer utilities {
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-gold);
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground/50; }
+  .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-slide-in { animation: slideIn 0.3s ease-out; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @media (max-width: 768px) {
+    .touch-manipulation { -webkit-tap-highlight-color: transparent; }
+    .scroll-smooth-mobile { -webkit-overflow-scrolling: touch; }
+    nav button { -webkit-user-select: none; user-select: none; }
+  }
+  .glass-surface { @apply bg-card/80 backdrop-blur-xl border border-border/50; }
+  .shadow-elevated {
+    box-shadow:
+      0 4px 6px -1px hsl(0 0% 0% / 0.2),
+      0 10px 15px -3px hsl(0 0% 0% / 0.15),
+      0 -1px 2px 0 hsl(0 0% 100% / 0.05) inset;
+  }
+}
