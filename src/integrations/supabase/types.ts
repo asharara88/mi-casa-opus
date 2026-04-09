@@ -632,6 +632,110 @@ export type Database = {
           },
         ]
       }
+      crm_enquiries: {
+        Row: {
+          assigned_to: string | null
+          bedrooms_max: number | null
+          bedrooms_min: number | null
+          budget_max: number | null
+          budget_min: number | null
+          client_email: string | null
+          client_name: string
+          client_phone: string | null
+          company: string | null
+          created_at: string
+          id: string
+          key_requirements: string | null
+          notes: string | null
+          preferred_location: string | null
+          property_type: string | null
+          source: string | null
+          status: string
+          updated_at: string
+          urgency: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          bedrooms_max?: number | null
+          bedrooms_min?: number | null
+          budget_max?: number | null
+          budget_min?: number | null
+          client_email?: string | null
+          client_name: string
+          client_phone?: string | null
+          company?: string | null
+          created_at?: string
+          id?: string
+          key_requirements?: string | null
+          notes?: string | null
+          preferred_location?: string | null
+          property_type?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+          urgency?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          bedrooms_max?: number | null
+          bedrooms_min?: number | null
+          budget_max?: number | null
+          budget_min?: number | null
+          client_email?: string | null
+          client_name?: string
+          client_phone?: string | null
+          company?: string | null
+          created_at?: string
+          id?: string
+          key_requirements?: string | null
+          notes?: string | null
+          preferred_location?: string | null
+          property_type?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+          urgency?: string | null
+        }
+        Relationships: []
+      }
+      crm_enquiry_followups: {
+        Row: {
+          body: string
+          completed: boolean
+          created_at: string
+          enquiry_id: string
+          follow_up_date: string | null
+          follow_up_type: string
+          id: string
+        }
+        Insert: {
+          body: string
+          completed?: boolean
+          created_at?: string
+          enquiry_id: string
+          follow_up_date?: string | null
+          follow_up_type: string
+          id?: string
+        }
+        Update: {
+          body?: string
+          completed?: boolean
+          created_at?: string
+          enquiry_id?: string
+          follow_up_date?: string | null
+          follow_up_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_enquiry_followups_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "crm_enquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_brokers: {
         Row: {
           assigned_at: string
