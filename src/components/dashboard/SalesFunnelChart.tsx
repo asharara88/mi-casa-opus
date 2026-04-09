@@ -1,10 +1,10 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useProspectStats } from '@/hooks/useProspects';
 import { useLeads } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingDown, Users, UserCheck, Handshake, Trophy } from 'lucide-react';
+import { TrendingDown, Users, UserCheck, Handshake, Trophy, ChevronDown } from 'lucide-react';
 import { FunnelStage } from './funnel/FunnelStage';
 import { ConversionBadge } from './funnel/ConversionBadge';
 import { FunnelGradients } from './funnel/FunnelGradients';
@@ -23,6 +23,7 @@ interface FunnelStageData {
 }
 
 export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const { data: prospectStats, isLoading: isLoadingProspects } = useProspectStats();
   const { data: dbLeads, isLoading: isLoadingLeads } = useLeads();
   const { data: dbDeals, isLoading: isLoadingDeals } = useDeals();
@@ -169,52 +170,69 @@ export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
         </motion.div>
       </div>
 
-      {/* SVG Funnel */}
-      <svg
-        viewBox="0 0 400 310"
-        className="w-full h-auto"
-        preserveAspectRatio="xMidYMid meet"
-        style={{ maxHeight: '320px', minHeight: '200px' }}
+      {/* Toggle button */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
-        <FunnelGradients />
-        
-        {funnelData.map((stage, index) => {
-          const topWidth = maxWidth - (widthStep * index);
-          const bottomWidth = maxWidth - (widthStep * (index + 1));
-          const yOffset = index * (stageHeight + stageGap);
-          
-          return (
-            <FunnelStage
-              key={stage.id}
-              label={stage.label}
-              count={stage.count}
-              icon={stage.icon}
-              gradientId={stage.gradientId}
-              topWidth={topWidth}
-              bottomWidth={bottomWidth}
-              height={stageHeight}
-              yOffset={yOffset}
-              index={index}
-              isClickable={!!onNavigate}
-              onClick={() => handleStageClick(stage.section)}
-            />
-          );
-        })}
+        <span>{isExpanded ? 'Hide Funnel' : 'Show Funnel'}</span>
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+      </button>
 
-        {/* Conversion badges between stages */}
-        {conversionRates.map((rate, index) => {
-          const yPosition = (index + 1) * (stageHeight + stageGap) - stageGap / 2 - 12;
-          
-          return (
-            <ConversionBadge
-              key={`${rate.from}-${rate.to}`}
-              rate={rate.rate}
-              yPosition={yPosition}
-              index={index}
-            />
-          );
-        })}
-      </svg>
+      {/* SVG Funnel — collapsible */}
+      {isExpanded && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <svg
+            viewBox="0 0 400 310"
+            className="w-full h-auto"
+            preserveAspectRatio="xMidYMid meet"
+            style={{ maxHeight: '320px', minHeight: '200px' }}
+          >
+            <FunnelGradients />
+            
+            {funnelData.map((stage, index) => {
+              const topWidth = maxWidth - (widthStep * index);
+              const bottomWidth = maxWidth - (widthStep * (index + 1));
+              const yOffset = index * (stageHeight + stageGap);
+              
+              return (
+                <FunnelStage
+                  key={stage.id}
+                  label={stage.label}
+                  count={stage.count}
+                  icon={stage.icon}
+                  gradientId={stage.gradientId}
+                  topWidth={topWidth}
+                  bottomWidth={bottomWidth}
+                  height={stageHeight}
+                  yOffset={yOffset}
+                  index={index}
+                  isClickable={!!onNavigate}
+                  onClick={() => handleStageClick(stage.section)}
+                />
+              );
+            })}
+
+            {conversionRates.map((rate, index) => {
+              const yPosition = (index + 1) * (stageHeight + stageGap) - stageGap / 2 - 12;
+              
+              return (
+                <ConversionBadge
+                  key={`${rate.from}-${rate.to}`}
+                  rate={rate.rate}
+                  yPosition={yPosition}
+                  index={index}
+                />
+              );
+            })}
+          </svg>
+        </motion.div>
+      )}
     </motion.div>
   );
 }
