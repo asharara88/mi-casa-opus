@@ -23,6 +23,7 @@ interface FunnelStageData {
 }
 
 export function SalesFunnelChart({ onNavigate }: SalesFunnelChartProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const { data: prospectStats, isLoading: isLoadingProspects } = useProspectStats();
   const { data: dbLeads, isLoading: isLoadingLeads } = useLeads();
   const { data: dbDeals, isLoading: isLoadingDeals } = useDeals();
