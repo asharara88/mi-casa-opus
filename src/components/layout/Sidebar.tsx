@@ -55,6 +55,9 @@ interface NavItem {
 // Dashboard | Marketing | Sales | Operations | Teams | Settings
 const NAV_ITEMS: NavItem[] = [
   // === MANAGER ===
+  // Listings (Property CRM — top of nav)
+  { id: 'crm-external', label: 'Listings', icon: Building2, roles: ['Manager'], group: 'listings' , external: '/crm' },
+
   // Dashboard
   { id: 'dashboard', label: 'Control Room', icon: LayoutDashboard, roles: ['Manager'], group: 'dashboard' },
   { id: 'ai-agent', label: 'Mi Ai', icon: Bot, roles: ['Manager'], group: 'dashboard' },
@@ -67,14 +70,13 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'leads', label: 'Leads', icon: Users, roles: ['Manager'], group: 'sales' },
   { id: 'deals', label: 'Deals', icon: Handshake, roles: ['Manager'], group: 'sales' },
   
-  // Operations (Listings, Documents, Commissions)
-  { id: 'listings', label: 'Listings', icon: Building2, roles: ['Manager'], group: 'operations' },
+  // Operations (Market Listings, Documents, Commissions)
+  { id: 'listings', label: 'Market Listings', icon: Building2, roles: ['Manager'], group: 'operations' },
   { id: 'documents', label: 'Documents', icon: FileText, roles: ['Manager'], group: 'operations' },
   
   { id: 'commissions', label: 'Commissions', icon: DollarSign, roles: ['Manager'], group: 'operations' },
   { id: 'natoor-rent', label: 'Rent Protect', icon: Home, roles: ['Manager', 'Owner'], group: 'operations', external: 'https://natoor-rent.lovable.app' },
   { id: 'mortgage-calc', label: 'Mortgage Calculator', icon: Calculator, roles: ['Manager', 'Broker'], group: 'operations' },
-  { id: 'crm-external', label: 'Property CRM', icon: Building2, roles: ['Manager'], group: 'operations', external: '/crm' },
   
   // Teams (Internal collaboration)
   { id: 'meetings', label: 'Meetings', icon: Users, roles: ['Manager', 'Owner', 'Broker'], group: 'teams' },
