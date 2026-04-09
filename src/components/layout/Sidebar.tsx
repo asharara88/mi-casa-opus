@@ -190,7 +190,7 @@ export function Sidebar({
   const roleBadge = getRoleBadge(currentRole);
 
   // Order groups consistently
-  const groupOrder = ['dashboard', 'marketing', 'sales', 'operations', 'teams', 'customers', 'settings'];
+  const groupOrder = ['listings', 'dashboard', 'marketing', 'sales', 'operations', 'teams', 'customers', 'settings'];
   const orderedGroups = groupOrder.filter(g => groupedItems[g]?.length > 0);
 
   return (
