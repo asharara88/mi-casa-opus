@@ -74,6 +74,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'commissions', label: 'Commissions', icon: DollarSign, roles: ['Manager'], group: 'operations' },
   { id: 'natoor-rent', label: 'Rent Protect', icon: Home, roles: ['Manager', 'Owner'], group: 'operations', external: 'https://natoor-rent.lovable.app' },
   { id: 'mortgage-calc', label: 'Mortgage Calculator', icon: Calculator, roles: ['Manager', 'Broker'], group: 'operations' },
+  { id: 'crm-external', label: 'Property CRM', icon: Building2, roles: ['Manager'], group: 'operations', external: '/crm' },
   
   // Teams (Internal collaboration)
   { id: 'meetings', label: 'Meetings', icon: Users, roles: ['Manager', 'Owner', 'Broker'], group: 'teams' },
