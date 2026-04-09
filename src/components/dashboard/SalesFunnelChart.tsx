@@ -4,7 +4,7 @@ import { useProspectStats } from '@/hooks/useProspects';
 import { useLeads } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingDown, Users, UserCheck, Handshake, Trophy } from 'lucide-react';
+import { TrendingDown, Users, UserCheck, Handshake, Trophy, ChevronDown } from 'lucide-react';
 import { FunnelStage } from './funnel/FunnelStage';
 import { ConversionBadge } from './funnel/ConversionBadge';
 import { FunnelGradients } from './funnel/FunnelGradients';
