@@ -1384,6 +1384,50 @@ export type Database = {
           },
         ]
       }
+      listing_media: {
+        Row: {
+          caption: string | null
+          created_at: string
+          display_order: number
+          file_hash: string | null
+          id: string
+          is_primary: boolean
+          listing_id: string
+          public_url: string
+          storage_path: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number
+          file_hash?: string | null
+          id?: string
+          is_primary?: boolean
+          listing_id: string
+          public_url: string
+          storage_path: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number
+          file_hash?: string | null
+          id?: string
+          is_primary?: boolean
+          listing_id?: string
+          public_url?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_media_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           approved_faqs: Json | null
