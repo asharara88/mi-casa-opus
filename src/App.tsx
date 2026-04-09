@@ -17,6 +17,7 @@ const Architecture = lazy(() => import("./pages/Architecture"));
 const MortgageCalculator = lazy(() => import("./pages/MortgageCalculator"));
 const DevelopersPortal = lazy(() => import("./pages/DevelopersPortal"));
 const ProductionReadiness = lazy(() => import("./pages/ProductionReadiness"));
+const CRM = lazy(() => import("./pages/CRM"));
 
 // Minimal loading spinner for route transitions
 function RouteLoader() {
@@ -104,6 +105,7 @@ function AppRoutes() {
         <Route path="/mortgage-calculator" element={<MortgageCalculator />} />
         <Route path="/developers" element={<DevelopersPortal />} />
         <Route path="/production-readiness" element={<ProtectedRoute><ProductionReadiness /></ProtectedRoute>} />
+        <Route path="/crm" element={<ProtectedRoute><CRM /></ProtectedRoute>} />
         <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>

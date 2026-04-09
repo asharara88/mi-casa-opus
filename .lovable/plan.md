@@ -1,92 +1,74 @@
 
 
-# Mi Casa Real Estate CRM — External Database Integration
+# Mi Ai: Conversation Memory + Template-Aware Document Drafting
 
-## Important Note
+## Problem
+1. **No memory**: Each message is sent to the AI as a standalone request. The edge function only sends `[system_prompt, single_user_message]` — no prior conversation turns. The AI cannot reference anything said earlier.
+2. **No template content**: The AI knows template names but cannot read or amend the actual template markdown files. It can only suggest opening a form — it cannot draft documents inline.
 
-This project runs on **Lovable Cloud**, which provides its own backend. The Supabase client at `src/integrations/supabase/client.ts` is auto-generated and cannot be edited — it points to the Lovable Cloud project (`zwdqpssjhpvvsvvwmgqf`).
+## Solution
 
-Your external Supabase project (`dhwppkevuquwtavvqaan`) has the real estate data. The solution is to create a **secondary Supabase client** specifically for your external project, and build the CRM screens using that client.
+### 1. Pass full conversation history to the edge function
 
-## Plan
+**Frontend (`useBosLlm.ts` → `askOps`)**: Accept a `conversationHistory` parameter containing all prior messages. Send it alongside `userIntent`.
 
-### 1. Create external Supabase client
+**Frontend (`FloatingAIChat.tsx`)**: Pass the full `messages` array when calling `askOps`, formatted as `{role, content}` pairs.
 
-New file: `src/lib/external-supabase.ts`
+**Edge function (`bos-llm-ops/index.ts`)**: Accept `conversationHistory` array in the request body. Build the AI messages array as:
+```
+[system_prompt, ...history, current_user_message_with_context]
+```
+Cap history to last 20 messages to stay within token limits.
 
-A standalone `createClient` instance pointing to `https://dhwppkevuquwtavvqaan.supabase.co` with the provided anon key. The key is publishable (anon), so it can be stored in code.
+### 2. Fetch template content on demand in the edge function
 
-### 2. Create data hooks for external tables
+When the AI detects a document intent (user says "draft an MOU", "prepare an offer letter"), the edge function will:
 
-New file: `src/hooks/useMiCasaCRM.ts`
+1. Read the relevant template markdown from the `document_templates` table (already synced from the 18 markdown files)
+2. Inject the template content into the system context for that turn
+3. Instruct the AI to populate template blanks with conversation-extracted data and return the amended document
 
-Hooks using the external client:
-- `useExternalListings(type: 'rent' | 'sale')` — fetches listings filtered by `listing_type`, joins first media item (display_order=0) for thumbnail
-- `useExternalListing(id)` — single listing with all media and documents
-- `useUpdateListingStatus(id, status)` — update status
-- `useUploadListingMedia(listingId)` — upload to `listing-media` bucket on external project, insert into `listing_media`
-- `useExternalClients()` / `useExternalClient(id)` — client data with portfolio stats
-- `useActivityLog()` — all entries joined with listing name
-- `useCreateActivity()` — insert new activity log entry
+**Edge function changes**:
+- Add a `fetchTemplateContent` helper that queries `document_templates` by template key
+- When intent patterns match document-related keywords AND a template is identified, append the raw template markdown to the context
+- Add instructions to the system prompt: "When template content is provided, fill in the blanks using conversation context and return the completed document within a `[DRAFTED_DOCUMENT]` block"
 
-### 3. Build CRM pages
+### 3. Render drafted documents in chat
 
-**New file: `src/pages/CRM.tsx`**
-Tab-based layout with 4 sections: Listings, Listing Detail, Client, Activity Log.
+**New component**: `DraftedDocumentCard` — renders `[DRAFTED_DOCUMENT]` blocks from AI responses as a card with:
+- Document title
+- Preview of the filled content (collapsible)
+- "Copy to Clipboard" button
+- "Open in Form Wizard" button (with all fields pre-filled)
 
-**New file: `src/components/crm/CRMListingsTab.tsx`**
-- Sub-tabs: "For Rent" / "For Sale"
-- Card grid showing thumbnail, name, unit, formatted price (AED X.XXM or AED XXXK/yr), location, colour-coded status badge
-- Tap card → opens detail view
+**`ChatMessageRenderer.tsx`**: Add parsing for `[DRAFTED_DOCUMENT]...[/DRAFTED_DOCUMENT]` blocks alongside existing `[DOCUMENT_ACTION]` and `[FOLLOWUP_ACTION]` parsing.
 
-**New file: `src/components/crm/CRMListingDetail.tsx`**
-- All listing fields displayed
-- Photo/video gallery from `listing_media`
-- Documents list from `listing_documents`
-- Internal notes section
-- Status picker dropdown to update status
-- Photo upload button (uploads to external Supabase storage, inserts row)
+### 4. Persist conversations (optional but recommended)
 
-**New file: `src/components/crm/CRMClientView.tsx`**
-- Shows Makarem LLC info
-- Portfolio stats: total listings, available count, total rental value, total sale value
-- Notes section
+Create a `ai_conversations` table to store chat sessions:
+- `id`, `user_id`, `title` (auto-generated from first message), `created_at`, `updated_at`
 
-**New file: `src/components/crm/CRMActivityLog.tsx`**
-- Chronological list of activity_log entries with listing name
-- "Add Entry" form: type selector (note/call/viewing/offer/update/document), optional listing picker, body text, save button
+Create an `ai_messages` table:
+- `id`, `conversation_id`, `role`, `content`, `mode`, `created_at`
 
-### 4. Add route
+This enables resuming conversations across sessions. RLS: users can only access their own conversations.
 
-Add `/crm` route to `App.tsx` (protected) and a nav link in the sidebar.
+## Files Modified
 
-### 5. Price formatting
-
-Utility function:
-- Sale: `AED 1.2M`, `AED 850K`
-- Rent: `AED 120K/yr`, `AED 85K/yr`
-
-### 6. Status badge colours
-
-| Status | Colour |
-|--------|--------|
-| available | Green |
-| booked | Grey |
-| sold | Red |
-| june2026 | Amber |
-| off_market | Dark/Slate |
-
-## Files Created/Modified
-
-| File | Action |
+| File | Change |
 |------|--------|
-| `src/lib/external-supabase.ts` | New — secondary Supabase client |
-| `src/hooks/useMiCasaCRM.ts` | New — all data hooks |
-| `src/pages/CRM.tsx` | New — CRM page |
-| `src/components/crm/CRMListingsTab.tsx` | New — listings grid |
-| `src/components/crm/CRMListingDetail.tsx` | New — listing detail view |
-| `src/components/crm/CRMClientView.tsx` | New — client portfolio |
-| `src/components/crm/CRMActivityLog.tsx` | New — activity log |
-| `src/App.tsx` | Modified — add `/crm` route |
-| `src/components/layout/Sidebar.tsx` | Modified — add CRM nav link |
+| `supabase/functions/bos-llm-ops/index.ts` | Accept `conversationHistory`, build multi-turn messages array, add `fetchTemplateContent` helper, update system prompt for document drafting |
+| `src/hooks/useBosLlm.ts` | `askOps` accepts conversation history parameter |
+| `src/components/ai/FloatingAIChat.tsx` | Pass message history to `askOps` |
+| `src/components/ai/AiAssistantPanel.tsx` | Pass message history to `askOps` |
+| `src/components/ai/ChatMessageRenderer.tsx` | Parse `[DRAFTED_DOCUMENT]` blocks |
+| `src/components/ai/DraftedDocumentCard.tsx` | New — renders drafted documents with copy/open actions |
+| `supabase/migrations/` | New — `ai_conversations` + `ai_messages` tables with RLS |
+
+## Technical Notes
+
+- Conversation history is capped at 20 messages (last 10 turns) to manage token costs
+- Template content is only fetched when document-intent keywords are detected, not on every message
+- The AI model remains `google/gemini-3-flash-preview` (fast enough for multi-turn with template context)
+- Database persistence is optional — in-memory history works immediately, DB persistence adds cross-session resume
 
