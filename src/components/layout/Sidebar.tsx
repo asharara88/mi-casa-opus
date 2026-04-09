@@ -56,7 +56,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   // === MANAGER ===
   // Listings (Property CRM — top of nav)
-  { id: 'crm-external', label: 'Listings', icon: Building2, roles: ['Manager'], group: 'listings' , external: '/crm' },
+  { id: 'crm-external', label: 'Al Fahim / Makarem LLC', icon: Building2, roles: ['Manager'], group: 'listings' , external: '/crm' },
 
   // Dashboard
   { id: 'dashboard', label: 'Control Room', icon: LayoutDashboard, roles: ['Manager'], group: 'dashboard' },
