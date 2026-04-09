@@ -108,6 +108,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const GROUP_CONFIG: Record<string, { label: string; icon: React.ElementType }> = {
+  listings: { label: 'Listings', icon: Building2 },
   dashboard: { label: 'Dashboard', icon: LayoutDashboard },
   marketing: { label: 'Marketing', icon: Megaphone },
   sales: { label: 'Sales', icon: TrendingUp },
