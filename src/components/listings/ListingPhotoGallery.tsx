@@ -18,8 +18,6 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useDropzone } from 'react-dropzone';
 import {
-  Upload,
-  X,
   Loader2,
   ImageIcon,
   Star,
@@ -27,14 +25,21 @@ import {
   Trash2,
   Maximize2,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useStorageUpload } from '@/hooks/useStorageUpload';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  useListingMedia,
+  useInsertListingMedia,
+  useDeleteListingMedia,
+  useReorderListingMedia,
+  useSetPrimaryMedia,
+  type ListingMediaRow,
+} from '@/hooks/useListingMedia';
 import { toast } from 'sonner';
 
+// Re-export for backward compat
 export interface PhotoItem {
   id: string;
   url: string;
@@ -45,8 +50,10 @@ export interface PhotoItem {
 
 interface ListingPhotoGalleryProps {
   listingId: string;
-  photos: PhotoItem[];
-  onPhotosChange: (photos: PhotoItem[]) => void;
+  /** @deprecated — gallery now self-manages via DB */
+  photos?: PhotoItem[];
+  /** @deprecated */
+  onPhotosChange?: (photos: PhotoItem[]) => void;
   readOnly?: boolean;
 }
 
@@ -58,7 +65,7 @@ function SortablePhoto({
   onPreview,
   readOnly,
 }: {
-  photo: PhotoItem;
+  photo: ListingMediaRow;
   onSetPrimary: () => void;
   onRemove: () => void;
   onPreview: () => void;
@@ -86,29 +93,26 @@ function SortablePhoto({
       style={style}
       className={cn(
         'relative group aspect-square rounded-lg overflow-hidden border',
-        photo.isPrimary ? 'border-primary ring-2 ring-primary/30' : 'border-border',
+        photo.is_primary ? 'border-primary ring-2 ring-primary/30' : 'border-border',
         isDragging && 'shadow-xl'
       )}
     >
       <img
-        src={photo.url}
-        alt=""
+        src={photo.public_url}
+        alt={photo.caption || ''}
         className="w-full h-full object-cover"
         loading="lazy"
       />
 
-      {/* Primary badge */}
-      {photo.isPrimary && (
+      {photo.is_primary && (
         <Badge className="absolute top-1.5 left-1.5 text-[10px] bg-primary text-primary-foreground px-1.5 py-0.5 gap-1">
           <Star className="h-2.5 w-2.5 fill-current" />
           Primary
         </Badge>
       )}
 
-      {/* Overlay actions */}
       {!readOnly && (
         <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
-          {/* Drag handle */}
           <button
             {...attributes}
             {...listeners}
@@ -118,32 +122,17 @@ function SortablePhoto({
             <GripVertical className="h-4 w-4 text-foreground" />
           </button>
 
-          {/* Preview */}
-          <button
-            onClick={onPreview}
-            className="p-1.5 rounded bg-card/80 hover:bg-card"
-            title="Preview"
-          >
+          <button onClick={onPreview} className="p-1.5 rounded bg-card/80 hover:bg-card" title="Preview">
             <Maximize2 className="h-4 w-4 text-foreground" />
           </button>
 
-          {/* Set primary */}
-          {!photo.isPrimary && (
-            <button
-              onClick={onSetPrimary}
-              className="p-1.5 rounded bg-card/80 hover:bg-card"
-              title="Set as primary"
-            >
+          {!photo.is_primary && (
+            <button onClick={onSetPrimary} className="p-1.5 rounded bg-card/80 hover:bg-card" title="Set as primary">
               <Star className="h-4 w-4 text-accent" />
             </button>
           )}
 
-          {/* Remove */}
-          <button
-            onClick={onRemove}
-            className="p-1.5 rounded bg-destructive/80 hover:bg-destructive"
-            title="Remove photo"
-          >
+          <button onClick={onRemove} className="p-1.5 rounded bg-destructive/80 hover:bg-destructive" title="Remove photo">
             <Trash2 className="h-3.5 w-3.5 text-destructive-foreground" />
           </button>
         </div>
@@ -155,49 +144,47 @@ function SortablePhoto({
 // --- Main Gallery ---
 export function ListingPhotoGallery({
   listingId,
-  photos,
-  onPhotosChange,
   readOnly = false,
 }: ListingPhotoGalleryProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { uploadingFiles, isUploading, upload, clearFiles } = useStorageUpload('listing-photos');
+
+  const { data: photos = [], isLoading } = useListingMedia(listingId);
+  const insertMedia = useInsertListingMedia();
+  const deleteMedia = useDeleteListingMedia();
+  const reorderMedia = useReorderListingMedia();
+  const setPrimary = useSetPrimaryMedia();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const sortedPhotos = useMemo(
-    () => [...photos].sort((a, b) => a.order - b.order),
-    [photos]
-  );
-
-  const photoIds = useMemo(() => sortedPhotos.map((p) => p.id), [sortedPhotos]);
+  const photoIds = useMemo(() => photos.map((p) => p.id), [photos]);
 
   // --- Upload handler ---
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       const startOrder = photos.length;
-      const results = await upload(
-        acceptedFiles,
-        `listings/${listingId}`,
-      );
+      const results = await upload(acceptedFiles, `listings/${listingId}`);
 
       if (results.length > 0) {
-        const newPhotos: PhotoItem[] = results.map((r, i) => ({
-          id: `photo-${Date.now()}-${i}`,
-          url: r.url,
-          path: r.path,
-          isPrimary: photos.length === 0 && i === 0,
-          order: startOrder + i,
+        const rows = results.map((r, i) => ({
+          listing_id: listingId,
+          storage_path: r.path,
+          public_url: r.url,
+          caption: null,
+          display_order: startOrder + i,
+          is_primary: photos.length === 0 && i === 0,
+          file_hash: r.hash,
         }));
 
-        onPhotosChange([...photos, ...newPhotos]);
+        await insertMedia.mutateAsync(rows);
         clearFiles();
         toast.success(`${results.length} photo${results.length > 1 ? 's' : ''} uploaded`);
       }
     },
-    [listingId, photos, onPhotosChange, upload, clearFiles]
+    [listingId, photos.length, upload, clearFiles, insertMedia]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -213,60 +200,47 @@ export function ListingPhotoGallery({
       const { active, over } = event;
       if (!over || active.id === over.id) return;
 
-      const oldIndex = sortedPhotos.findIndex((p) => p.id === active.id);
-      const newIndex = sortedPhotos.findIndex((p) => p.id === over.id);
-      const reordered = arrayMove(sortedPhotos, oldIndex, newIndex).map((p, i) => ({
-        ...p,
-        order: i,
+      const oldIndex = photos.findIndex((p) => p.id === active.id);
+      const newIndex = photos.findIndex((p) => p.id === over.id);
+      const reordered = arrayMove(photos, oldIndex, newIndex);
+
+      const orderedIds = reordered.map((p, i) => ({
+        id: p.id,
+        display_order: i,
+        is_primary: p.is_primary,
       }));
-      onPhotosChange(reordered);
+
+      reorderMedia.mutate({ listingId, orderedIds });
     },
-    [sortedPhotos, onPhotosChange]
+    [photos, listingId, reorderMedia]
   );
 
   // --- Set primary ---
   const handleSetPrimary = useCallback(
     (id: string) => {
-      const updated = photos.map((p) => ({ ...p, isPrimary: p.id === id }));
-      onPhotosChange(updated);
-      toast.success('Primary photo updated');
+      setPrimary.mutate({ id, listingId });
     },
-    [photos, onPhotosChange]
+    [listingId, setPrimary]
   );
 
   // --- Remove ---
   const handleRemove = useCallback(
-    async (photo: PhotoItem) => {
-      const { error } = await supabase.storage
-        .from('listing-photos')
-        .remove([photo.path]);
-      if (error) {
-        toast.error('Failed to delete photo');
-        return;
-      }
-
-      let remaining = photos.filter((p) => p.id !== photo.id);
-
-      // If we removed the primary, promote the first remaining
-      if (photo.isPrimary && remaining.length > 0) {
-        remaining = remaining.map((p, i) => ({
-          ...p,
-          isPrimary: i === 0,
-          order: i,
-        }));
-      } else {
-        remaining = remaining.map((p, i) => ({ ...p, order: i }));
-      }
-
-      onPhotosChange(remaining);
-      toast.success('Photo removed');
+    (photo: ListingMediaRow) => {
+      deleteMedia.mutate({ id: photo.id, listingId, storagePath: photo.storage_path });
     },
-    [photos, onPhotosChange]
+    [listingId, deleteMedia]
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
-      {/* Photo count header */}
       {photos.length > 0 && (
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">
@@ -278,23 +252,18 @@ export function ListingPhotoGallery({
         </div>
       )}
 
-      {/* Sortable photo grid */}
-      {sortedPhotos.length > 0 && (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
+      {photos.length > 0 && (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={photoIds} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-              {sortedPhotos.map((photo) => (
+              {photos.map((photo) => (
                 <SortablePhoto
                   key={photo.id}
                   photo={photo}
                   readOnly={readOnly}
                   onSetPrimary={() => handleSetPrimary(photo.id)}
                   onRemove={() => handleRemove(photo)}
-                  onPreview={() => setPreviewUrl(photo.url)}
+                  onPreview={() => setPreviewUrl(photo.public_url)}
                 />
               ))}
             </div>
@@ -302,7 +271,6 @@ export function ListingPhotoGallery({
         </DndContext>
       )}
 
-      {/* Uploading files */}
       {uploadingFiles.length > 0 && (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
           {uploadingFiles.map((item, i) => (
@@ -328,7 +296,6 @@ export function ListingPhotoGallery({
         </div>
       )}
 
-      {/* Dropzone */}
       {!readOnly && (
         <div
           {...getRootProps()}
@@ -356,7 +323,6 @@ export function ListingPhotoGallery({
         </div>
       )}
 
-      {/* Fullscreen preview */}
       <Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
         <DialogContent className="max-w-4xl p-0 bg-background/95 border-border">
           {previewUrl && (

@@ -20,7 +20,7 @@ import { NeighborhoodInsights } from '@/components/maps/NeighborhoodInsights';
 import { CommuteCalculator } from '@/components/maps/CommuteCalculator';
 import { PortalPublishingPanel } from '@/components/listings/PortalPublishingPanel';
 import { ListingPipelineTab } from '@/components/listings/ListingPipelineTab';
-import { ListingPhotoGallery, type PhotoItem } from '@/components/listings/ListingPhotoGallery';
+import { ListingPhotoGallery } from '@/components/listings/ListingPhotoGallery';
 
 interface ListingDisplayData {
   id: string;
@@ -67,7 +67,7 @@ export function ListingDetailModal({
   onPublishSuccess,
 }: ListingDetailModalProps) {
   const [activeTab, setActiveTab] = useState('details');
-  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  
 
   const runCompliance = useRunCompliance();
   const submitOverride = useSubmitOverride();
@@ -329,11 +329,7 @@ export function ListingDetailModal({
           </TabsContent>
 
           <TabsContent value="photos" className="mt-4">
-            <ListingPhotoGallery
-              listingId={listing.id}
-              photos={photos}
-              onPhotosChange={setPhotos}
-            />
+            <ListingPhotoGallery listingId={listing.id} />
           </TabsContent>
 
           <TabsContent value="pipeline" className="mt-4">
