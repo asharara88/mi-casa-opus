@@ -3,9 +3,6 @@ name: Deploy Mi Casa Portfolio
 on:
   push:
     branches: [main]
-    paths:
-      - 'portfolio/**'
-      - 'crm/**'
   workflow_dispatch:
 
 permissions:
@@ -24,10 +21,19 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v4
-      - uses: actions/upload-pages-artifact@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        with:
+          enablement: true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: portfolio
-      - id: deployment
+
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
