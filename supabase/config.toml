@@ -101,3 +101,6 @@ verify_jwt = false
 
 [functions.natoor-vacancy-receive]
 verify_jwt = false
+
+[functions.upload-media]
+verify_jwt = false
