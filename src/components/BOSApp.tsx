@@ -12,7 +12,7 @@ import { MobileSearchSheet } from '@/components/layout/MobileSearchSheet';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useBrokerageContext } from '@/hooks/useBrokerage';
-import { useLeads } from '@/hooks/useLeads';
+import { useLeads, useCreateLead } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
 import { useCommissions } from '@/hooks/useCommissions';
 import { useEventLog } from '@/hooks/useEventLog';
@@ -29,6 +29,7 @@ import {
   Loader2, Sun, Moon, Monitor
 } from 'lucide-react';
 import { DemoBanner } from '@/components/demo/DemoBanner';
+import { AddLeadModal } from '@/components/leads/AddLeadModal';
 
 // Lazy-loaded sections for code splitting - reduces initial bundle by ~70%
 const DashboardView = lazy(() => import('@/components/dashboard/DashboardView').then(m => ({ default: m.DashboardView })));
