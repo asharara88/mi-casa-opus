@@ -1,4 +1,4 @@
-import { Search, Menu } from 'lucide-react';
+import { Search, Menu, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from './ThemeToggle';
@@ -14,9 +14,10 @@ interface HeaderProps {
   onMenuClick?: () => void;
   onSearchClick?: () => void;
   onNavigate?: (entityType: string, entityId: string) => void;
+  onNewLead?: () => void;
 }
 
-export function Header({ title, subtitle, onMenuClick, onSearchClick, onNavigate }: HeaderProps) {
+export function Header({ title, subtitle, onMenuClick, onSearchClick, onNavigate, onNewLead }: HeaderProps) {
   const { isDemoMode } = useDemoMode();
 
   return (
@@ -60,6 +61,19 @@ export function Header({ title, subtitle, onMenuClick, onSearchClick, onNavigate
       </div>
 
       <div className="flex items-center gap-1.5 md:gap-3">
+        {/* New Lead shortcut */}
+        {onNewLead && (
+          <Button
+            size="sm"
+            onClick={onNewLead}
+            className="rounded-full h-8 w-8 p-0 md:h-8 md:w-auto md:px-3 md:gap-1.5 shadow-sm"
+            aria-label="New lead"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden md:inline text-xs font-medium">New Lead</span>
+          </Button>
+        )}
+
         {/* Mobile Search Button */}
         <Button 
           variant="ghost" 
