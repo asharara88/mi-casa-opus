@@ -254,6 +254,7 @@ export function BOSApp() {
           subtitle={sectionInfo.subtitle}
           onMenuClick={() => setSidebarOpen(true)}
           onSearchClick={() => setSearchOpen(true)}
+          onNewLead={() => setAddLeadOpen(true)}
         />
         
         <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 pb-24 lg:pb-6 scrollbar-thin">
