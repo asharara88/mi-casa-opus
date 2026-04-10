@@ -12,7 +12,7 @@ import { MobileSearchSheet } from '@/components/layout/MobileSearchSheet';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useBrokerageContext } from '@/hooks/useBrokerage';
-import { useLeads } from '@/hooks/useLeads';
+import { useLeads, useCreateLead } from '@/hooks/useLeads';
 import { useDeals } from '@/hooks/useDeals';
 import { useCommissions } from '@/hooks/useCommissions';
 import { useEventLog } from '@/hooks/useEventLog';
@@ -29,6 +29,7 @@ import {
   Loader2, Sun, Moon, Monitor
 } from 'lucide-react';
 import { DemoBanner } from '@/components/demo/DemoBanner';
+import { AddLeadModal } from '@/components/leads/AddLeadModal';
 
 // Lazy-loaded sections for code splitting - reduces initial bundle by ~70%
 const DashboardView = lazy(() => import('@/components/dashboard/DashboardView').then(m => ({ default: m.DashboardView })));
@@ -113,6 +114,8 @@ export function BOSApp() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [addLeadOpen, setAddLeadOpen] = useState(false);
+  const createLead = useCreateLead();
   
   // In demo bypass mode, use Manager role
   const effectiveRole: AppRole = isDemoBypass ? 'Manager' : (role || 'Manager');
@@ -253,6 +256,7 @@ export function BOSApp() {
           subtitle={sectionInfo.subtitle}
           onMenuClick={() => setSidebarOpen(true)}
           onSearchClick={() => setSearchOpen(true)}
+          onNewLead={() => setAddLeadOpen(true)}
         />
         
         <main className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 pb-24 lg:pb-6 scrollbar-thin">
@@ -308,6 +312,17 @@ export function BOSApp() {
           setActiveSection(section);
           setSearchOpen(false);
         }}
+      />
+
+      {/* Global Add Lead Modal */}
+      <AddLeadModal
+        open={addLeadOpen}
+        onOpenChange={setAddLeadOpen}
+        onSubmit={async (data) => {
+          await createLead.mutateAsync(data);
+          setAddLeadOpen(false);
+        }}
+        isLoading={createLead.isPending}
       />
 
       {/* Floating AI Chat Button - Lazy loaded */}
