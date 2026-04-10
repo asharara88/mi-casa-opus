@@ -312,6 +312,17 @@ export function BOSApp() {
         }}
       />
 
+      {/* Global Add Lead Modal */}
+      <AddLeadModal
+        open={addLeadOpen}
+        onOpenChange={setAddLeadOpen}
+        onSubmit={async (data) => {
+          await createLead.mutateAsync(data);
+          setAddLeadOpen(false);
+        }}
+        isLoading={createLead.isPending}
+      />
+
       {/* Floating AI Chat Button - Lazy loaded */}
       <Suspense fallback={null}>
         <FloatingAIChat />
