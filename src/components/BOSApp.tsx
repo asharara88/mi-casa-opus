@@ -114,6 +114,7 @@ export function BOSApp() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [addLeadOpen, setAddLeadOpen] = useState(false);
   const createLead = useCreateLead();
   
   // In demo bypass mode, use Manager role
