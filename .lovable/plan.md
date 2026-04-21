@@ -1,74 +1,70 @@
 
 
-# Mi Ai: Conversation Memory + Template-Aware Document Drafting
+## Interactive In-App Presentation — Tech Partner Pitch
 
-## Problem
-1. **No memory**: Each message is sent to the AI as a standalone request. The edge function only sends `[system_prompt, single_user_message]` — no prior conversation turns. The AI cannot reference anything said earlier.
-2. **No template content**: The AI knows template names but cannot read or amend the actual template markdown files. It can only suggest opening a form — it cannot draft documents inline.
+A new `/presentation` route with a fullscreen-capable, keyboard-navigable slide deck (~20 slides) tailored for a technical/integration partner. Built into the app so you can demo it live alongside the real product.
 
-## Solution
+### What gets built
 
-### 1. Pass full conversation history to the edge function
+**1. Route + scaffolding**
+- New page `src/pages/Presentation.tsx` mounted at `/presentation` (public route, no auth required so you can present from any device/screen).
+- Lazy-loaded in `src/App.tsx` alongside existing routes.
 
-**Frontend (`useBosLlm.ts` → `askOps`)**: Accept a `conversationHistory` parameter containing all prior messages. Send it alongside `userIntent`.
+**2. Slide engine** (`src/components/presentation/`)
+- `SlideDeck.tsx` — keyboard nav (←/→/Space/Esc/F), click zones, slide counter, progress bar, auto-hide cursor, fullscreen toggle via Fullscreen API.
+- `SlideLayout.tsx` — 1920×1080 fixed canvas, `transform: scale()` to fit any viewport (works on laptop, projector, mobile).
+- `SlideThumbnails.tsx` — optional grid view (press `G`) to jump to any slide.
+- `Presenter.tsx` — small floating control: prev/next, slide #, exit.
+- Brand-aware: Navy `#1A365D` + Gold `#D4A574`, MiCasa logo on every slide footer.
 
-**Frontend (`FloatingAIChat.tsx`)**: Pass the full `messages` array when calling `askOps`, formatted as `{role, content}` pairs.
+**3. The 20 slides** (tech partner angle)
 
-**Edge function (`bos-llm-ops/index.ts`)**: Accept `conversationHistory` array in the request body. Build the AI messages array as:
-```
-[system_prompt, ...history, current_user_message_with_context]
-```
-Cap history to last 20 messages to stay within token limits.
+| # | Slide | Visual |
+|---|-------|--------|
+| 1 | Title — "MiCasa BOS — A Compliance-Native Real Estate OS" | Logo, tagline, gradient |
+| 2 | The problem — fragmented Abu Dhabi brokerage stack | 4-quadrant diagram |
+| 3 | Our thesis — "Rules Execute, AI Advises" | Concept diagram |
+| 4 | System architecture overview | Reuse `InvestorArchitectureDiagram` |
+| 5 | Tech stack — React 18, Vite, TS, Supabase, Edge Functions | Logo grid |
+| 6 | Data model — unified Contacts → Opportunities → Deals | ER-style diagram |
+| 7 | Unified CRM — Pipeline kanban | **Screenshot** of `/crm` Pipeline tab |
+| 8 | 360° Contact view + activity timeline | **Screenshot** of ContactDetail |
+| 9 | Tasks inbox & analytics | **Screenshot** of CRM analytics |
+| 10 | Lead qualification engine — score-based funnel | Reuse `LeadQualificationLogic` |
+| 11 | Deal lifecycle & workflow gates | Stage-flow diagram |
+| 12 | Compliance automation — DARI / Tawtheeq / Madhmoun / BRN | Portal-evidence map |
+| 13 | AML/KYC + audit-ready closeout | Diagram |
+| 14 | Mi Ai — advisory AI with prompt builder & FAQ | **Screenshot** of Mi Ai |
+| 15 | Mortgage suite — AECB, DBR, residency caps | Diagram |
+| 16 | Onwani address lookup + Natoor sync | Integration map |
+| 17 | Document engine — addendum strategy + naming standards | Layered diagram |
+| 18 | Security model — RLS, roles, edge function auth standard | Diagram |
+| 19 | Extensibility — secondary client pattern, edge function standard, Lovable AI gateway | Integration diagram |
+| 20 | Roadmap + "Where you fit in" — partnership CTA | Timeline |
 
-### 2. Fetch template content on demand in the edge function
+**4. Screenshots (3–4 hero shots)**
+Capture from the running app: Pipeline kanban, Contact 360° view, Mi Ai chat, Architecture diagram. Saved to `src/assets/presentation/` and embedded.
 
-When the AI detects a document intent (user says "draft an MOU", "prepare an offer letter"), the edge function will:
+**5. Reuse existing assets**
+- `InvestorArchitectureDiagram`, `LeadQualificationLogic`, `ExecutiveSummary`, `MarketContextSlide` from `src/components/architecture/` — rendered inside slide frames where they fit.
+- `MiCasaLogo` for branding.
 
-1. Read the relevant template markdown from the `document_templates` table (already synced from the 18 markdown files)
-2. Inject the template content into the system context for that turn
-3. Instruct the AI to populate template blanks with conversation-extracted data and return the amended document
+### Controls
 
-**Edge function changes**:
-- Add a `fetchTemplateContent` helper that queries `document_templates` by template key
-- When intent patterns match document-related keywords AND a template is identified, append the raw template markdown to the context
-- Add instructions to the system prompt: "When template content is provided, fill in the blanks using conversation context and return the completed document within a `[DRAFTED_DOCUMENT]` block"
+- `→` / `Space` / click right — next
+- `←` / click left — previous
+- `F` — fullscreen toggle
+- `G` — grid overview
+- `Esc` — exit fullscreen
+- `1`–`9` — jump to slide
 
-### 3. Render drafted documents in chat
+### Out of scope
 
-**New component**: `DraftedDocumentCard` — renders `[DRAFTED_DOCUMENT]` blocks from AI responses as a card with:
-- Document title
-- Preview of the filled content (collapsible)
-- "Copy to Clipboard" button
-- "Open in Form Wizard" button (with all fields pre-filled)
+- Speaker notes panel, PDF export, audience-sync via BroadcastChannel, slide editor. (Can add in a follow-up if you want.)
 
-**`ChatMessageRenderer.tsx`**: Add parsing for `[DRAFTED_DOCUMENT]...[/DRAFTED_DOCUMENT]` blocks alongside existing `[DOCUMENT_ACTION]` and `[FOLLOWUP_ACTION]` parsing.
+### How to demo
 
-### 4. Persist conversations (optional but recommended)
+After build, navigate to `/presentation`, press `F` to go fullscreen, advance with arrow keys. All screenshots are baked in so it works offline / on any network.
 
-Create a `ai_conversations` table to store chat sessions:
-- `id`, `user_id`, `title` (auto-generated from first message), `created_at`, `updated_at`
-
-Create an `ai_messages` table:
-- `id`, `conversation_id`, `role`, `content`, `mode`, `created_at`
-
-This enables resuming conversations across sessions. RLS: users can only access their own conversations.
-
-## Files Modified
-
-| File | Change |
-|------|--------|
-| `supabase/functions/bos-llm-ops/index.ts` | Accept `conversationHistory`, build multi-turn messages array, add `fetchTemplateContent` helper, update system prompt for document drafting |
-| `src/hooks/useBosLlm.ts` | `askOps` accepts conversation history parameter |
-| `src/components/ai/FloatingAIChat.tsx` | Pass message history to `askOps` |
-| `src/components/ai/AiAssistantPanel.tsx` | Pass message history to `askOps` |
-| `src/components/ai/ChatMessageRenderer.tsx` | Parse `[DRAFTED_DOCUMENT]` blocks |
-| `src/components/ai/DraftedDocumentCard.tsx` | New — renders drafted documents with copy/open actions |
-| `supabase/migrations/` | New — `ai_conversations` + `ai_messages` tables with RLS |
-
-## Technical Notes
-
-- Conversation history is capped at 20 messages (last 10 turns) to manage token costs
-- Template content is only fetched when document-intent keywords are detected, not on every message
-- The AI model remains `google/gemini-3-flash-preview` (fast enough for multi-turn with template context)
-- Database persistence is optional — in-memory history works immediately, DB persistence adds cross-session resume
+Reply **go** to build it.
 
