@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          body: string | null
+          channel: string | null
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          direction: Database["public"]["Enums"]["activity_direction_v2"]
+          duration_seconds: number | null
+          external_id: string | null
+          id: string
+          metadata: Json | null
+          occurred_at: string
+          opportunity_id: string | null
+          status: string | null
+          subject: string | null
+        }
+        Insert: {
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          body?: string | null
+          channel?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          direction?: Database["public"]["Enums"]["activity_direction_v2"]
+          duration_seconds?: number | null
+          external_id?: string | null
+          id?: string
+          metadata?: Json | null
+          occurred_at?: string
+          opportunity_id?: string | null
+          status?: string | null
+          subject?: string | null
+        }
+        Update: {
+          activity_type?: Database["public"]["Enums"]["activity_type"]
+          body?: string | null
+          channel?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          direction?: Database["public"]["Enums"]["activity_direction_v2"]
+          duration_seconds?: number | null
+          external_id?: string | null
+          id?: string
+          metadata?: Json | null
+          occurred_at?: string
+          opportunity_id?: string | null
+          status?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_conversations: {
         Row: {
           created_at: string
@@ -571,6 +640,78 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      contacts: {
+        Row: {
+          alt_phone: string | null
+          company: string | null
+          consents: Json | null
+          contact_type: Database["public"]["Enums"]["contact_type"]
+          created_at: string
+          created_by: string | null
+          custom_fields: Json | null
+          email: string | null
+          full_name: string
+          id: string
+          last_contacted_at: string | null
+          lifecycle_stage: Database["public"]["Enums"]["lifecycle_stage"]
+          nationality: string | null
+          notes: string | null
+          owner_user_id: string | null
+          phone: string | null
+          preferred_language: string | null
+          source: string | null
+          tags: string[] | null
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          alt_phone?: string | null
+          company?: string | null
+          consents?: Json | null
+          contact_type?: Database["public"]["Enums"]["contact_type"]
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json | null
+          email?: string | null
+          full_name: string
+          id?: string
+          last_contacted_at?: string | null
+          lifecycle_stage?: Database["public"]["Enums"]["lifecycle_stage"]
+          nationality?: string | null
+          notes?: string | null
+          owner_user_id?: string | null
+          phone?: string | null
+          preferred_language?: string | null
+          source?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          alt_phone?: string | null
+          company?: string | null
+          consents?: Json | null
+          contact_type?: Database["public"]["Enums"]["contact_type"]
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          last_contacted_at?: string | null
+          lifecycle_stage?: Database["public"]["Enums"]["lifecycle_stage"]
+          nationality?: string | null
+          notes?: string | null
+          owner_user_id?: string | null
+          phone?: string | null
+          preferred_language?: string | null
+          source?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
       }
       contract_events: {
         Row: {
@@ -1898,6 +2039,146 @@ export type Database = {
         }
         Relationships: []
       }
+      opportunities: {
+        Row: {
+          bedrooms_max: number | null
+          bedrooms_min: number | null
+          budget_max: number | null
+          budget_min: number | null
+          closed_at: string | null
+          contact_id: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          custom_fields: Json | null
+          deal_id: string | null
+          expected_close_date: string | null
+          financing: Database["public"]["Enums"]["financing_type"] | null
+          id: string
+          key_requirements: string | null
+          listing_id: string | null
+          listing_type: string | null
+          lost_reason: string | null
+          mortgage_pre_approved: boolean | null
+          notes: string | null
+          owner_user_id: string | null
+          preferred_locations: string[] | null
+          probability: number | null
+          property_type: string | null
+          reference: string
+          source: string | null
+          stage_changed_at: string | null
+          stage_id: string
+          timeframe: string | null
+          title: string
+          unit_count: number | null
+          updated_at: string
+          urgency: string | null
+          value: number | null
+        }
+        Insert: {
+          bedrooms_max?: number | null
+          bedrooms_min?: number | null
+          budget_max?: number | null
+          budget_min?: number | null
+          closed_at?: string | null
+          contact_id: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          custom_fields?: Json | null
+          deal_id?: string | null
+          expected_close_date?: string | null
+          financing?: Database["public"]["Enums"]["financing_type"] | null
+          id?: string
+          key_requirements?: string | null
+          listing_id?: string | null
+          listing_type?: string | null
+          lost_reason?: string | null
+          mortgage_pre_approved?: boolean | null
+          notes?: string | null
+          owner_user_id?: string | null
+          preferred_locations?: string[] | null
+          probability?: number | null
+          property_type?: string | null
+          reference: string
+          source?: string | null
+          stage_changed_at?: string | null
+          stage_id: string
+          timeframe?: string | null
+          title: string
+          unit_count?: number | null
+          updated_at?: string
+          urgency?: string | null
+          value?: number | null
+        }
+        Update: {
+          bedrooms_max?: number | null
+          bedrooms_min?: number | null
+          budget_max?: number | null
+          budget_min?: number | null
+          closed_at?: string | null
+          contact_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          custom_fields?: Json | null
+          deal_id?: string | null
+          expected_close_date?: string | null
+          financing?: Database["public"]["Enums"]["financing_type"] | null
+          id?: string
+          key_requirements?: string | null
+          listing_id?: string | null
+          listing_type?: string | null
+          lost_reason?: string | null
+          mortgage_pre_approved?: boolean | null
+          notes?: string | null
+          owner_user_id?: string | null
+          preferred_locations?: string[] | null
+          probability?: number | null
+          property_type?: string | null
+          reference?: string
+          source?: string | null
+          stage_changed_at?: string | null
+          stage_id?: string
+          timeframe?: string | null
+          title?: string
+          unit_count?: number | null
+          updated_at?: string
+          urgency?: string | null
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_escrow: {
         Row: {
           bank_reference: string | null
@@ -2089,6 +2370,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pipeline_stages: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          probability: number
+          sort_order: number
+          stage_type: Database["public"]["Enums"]["opportunity_stage_type"]
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          probability?: number
+          sort_order?: number
+          stage_type?: Database["public"]["Enums"]["opportunity_stage_type"]
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          probability?: number
+          sort_order?: number
+          stage_type?: Database["public"]["Enums"]["opportunity_stage_type"]
+        }
+        Relationships: []
       }
       portal_inquiries: {
         Row: {
@@ -2943,6 +3257,72 @@ export type Database = {
           },
         ]
       }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_at: string | null
+          id: string
+          opportunity_id: string | null
+          priority: Database["public"]["Enums"]["task_priority"]
+          reminder_at: string | null
+          status: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          opportunity_id?: string | null
+          priority?: Database["public"]["Enums"]["task_priority"]
+          reminder_at?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          opportunity_id?: string | null
+          priority?: Database["public"]["Enums"]["task_priority"]
+          reminder_at?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_meeting_participants: {
         Row: {
           id: string
@@ -3337,6 +3717,16 @@ export type Database = {
       }
     }
     Enums: {
+      activity_direction_v2: "inbound" | "outbound" | "internal"
+      activity_type:
+        | "call"
+        | "email"
+        | "whatsapp"
+        | "sms"
+        | "meeting"
+        | "note"
+        | "viewing"
+        | "system"
       ad_platform:
         | "Bayut"
         | "PropertyFinder"
@@ -3397,6 +3787,7 @@ export type Database = {
       compliance_context_type: "listing" | "transaction" | "marketing"
       compliance_rule_severity: "BLOCK" | "ESCALATE"
       compliance_status: "APPROVED" | "BLOCKED" | "ESCALATED"
+      contact_type: "Person" | "Company"
       contract_execution_status:
         | "Draft"
         | "Pending"
@@ -3459,6 +3850,7 @@ export type Database = {
         | "Email"
         | "Contract"
         | "Other"
+      financing_type: "cash" | "mortgage" | "mixed" | "unknown"
       generated_document_status: "Draft" | "Finalized" | "Voided"
       immutability_class: "External" | "Internal" | "System"
       lead_source:
@@ -3478,6 +3870,12 @@ export type Database = {
         | "Qualified"
         | "Disqualified"
         | "Converted"
+      lifecycle_stage:
+        | "Lead"
+        | "Prospect"
+        | "Customer"
+        | "Past_Customer"
+        | "Disqualified"
       listing_status: "Draft" | "Active" | "Reserved" | "Sold" | "Withdrawn"
       listing_type: "Sale" | "Lease" | "OffPlan"
       lost_reason:
@@ -3523,6 +3921,7 @@ export type Database = {
         | "Handover"
         | "ClosedWon"
         | "ClosedLost"
+      opportunity_stage_type: "active" | "won" | "lost"
       party_role:
         | "Buyer"
         | "Seller"
@@ -3580,6 +3979,8 @@ export type Database = {
         | "ClosedWon"
         | "ClosedLost"
       signature_status: "Pending" | "Signed" | "Declined" | "Expired"
+      task_priority: "low" | "medium" | "high" | "urgent"
+      task_status: "open" | "in_progress" | "completed" | "cancelled"
       template_status: "Draft" | "Published" | "Deprecated"
       token_status: "Draft" | "Minted" | "Active" | "Frozen" | "Burned"
       viewing_status:
@@ -3717,6 +4118,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_direction_v2: ["inbound", "outbound", "internal"],
+      activity_type: [
+        "call",
+        "email",
+        "whatsapp",
+        "sms",
+        "meeting",
+        "note",
+        "viewing",
+        "system",
+      ],
       ad_platform: [
         "Bayut",
         "PropertyFinder",
@@ -3782,6 +4194,7 @@ export const Constants = {
       compliance_context_type: ["listing", "transaction", "marketing"],
       compliance_rule_severity: ["BLOCK", "ESCALATE"],
       compliance_status: ["APPROVED", "BLOCKED", "ESCALATED"],
+      contact_type: ["Person", "Company"],
       contract_execution_status: [
         "Draft",
         "Pending",
@@ -3851,6 +4264,7 @@ export const Constants = {
         "Contract",
         "Other",
       ],
+      financing_type: ["cash", "mortgage", "mixed", "unknown"],
       generated_document_status: ["Draft", "Finalized", "Voided"],
       immutability_class: ["External", "Internal", "System"],
       lead_source: [
@@ -3871,6 +4285,13 @@ export const Constants = {
         "Qualified",
         "Disqualified",
         "Converted",
+      ],
+      lifecycle_stage: [
+        "Lead",
+        "Prospect",
+        "Customer",
+        "Past_Customer",
+        "Disqualified",
       ],
       listing_status: ["Draft", "Active", "Reserved", "Sold", "Withdrawn"],
       listing_type: ["Sale", "Lease", "OffPlan"],
@@ -3921,6 +4342,7 @@ export const Constants = {
         "ClosedWon",
         "ClosedLost",
       ],
+      opportunity_stage_type: ["active", "won", "lost"],
       party_role: [
         "Buyer",
         "Seller",
@@ -3985,6 +4407,8 @@ export const Constants = {
         "ClosedLost",
       ],
       signature_status: ["Pending", "Signed", "Declined", "Expired"],
+      task_priority: ["low", "medium", "high", "urgent"],
+      task_status: ["open", "in_progress", "completed", "cancelled"],
       template_status: ["Draft", "Published", "Deprecated"],
       token_status: ["Draft", "Minted", "Active", "Frozen", "Burned"],
       viewing_status: [
