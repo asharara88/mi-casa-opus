@@ -331,14 +331,15 @@ export function useCreateActivity() {
   return useMutation({
     mutationFn: async (input: Partial<Activity>) => {
       if (!user) throw new Error('Not authenticated');
+      const payload = {
+        ...input,
+        activity_type: input.activity_type!,
+        direction: input.direction ?? 'outbound',
+        created_by: user.id,
+      };
       const { data, error } = await supabase
         .from('activities')
-        .insert({
-          ...input,
-          activity_type: input.activity_type!,
-          direction: input.direction ?? 'outbound',
-          created_by: user.id,
-        })
+        .insert(payload as never)
         .select()
         .single();
       if (error) throw error;
