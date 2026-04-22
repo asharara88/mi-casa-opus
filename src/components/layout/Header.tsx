@@ -1,4 +1,5 @@
-import { Search, Menu, Plus } from 'lucide-react';
+import { Search, Menu, Plus, Presentation as PresentationIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from './ThemeToggle';
@@ -61,6 +62,20 @@ export function Header({ title, subtitle, onMenuClick, onSearchClick, onNavigate
       </div>
 
       <div className="flex items-center gap-1.5 md:gap-3">
+        {/* Presentation launcher */}
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className="rounded-full h-8 w-8 p-0 md:h-8 md:w-auto md:px-3 md:gap-1.5"
+          aria-label="Open presentation"
+        >
+          <Link to="/presentation" target="_blank" rel="noopener noreferrer">
+            <PresentationIcon className="w-4 h-4" />
+            <span className="hidden md:inline text-xs font-medium">Pitch Deck</span>
+          </Link>
+        </Button>
+
         {/* New Lead shortcut */}
         {onNewLead && (
           <Button
